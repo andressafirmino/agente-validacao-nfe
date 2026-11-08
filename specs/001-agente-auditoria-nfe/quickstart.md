@@ -328,15 +328,24 @@ connection string ou chave é cadastrada no projeto Vercel.
    ```
 
    Esperado: o mesmo card com a URL pública; `/health/live` responde 200; `/swagger`, `/api/v1/...`
-   e `POST /a2a/auditoria-nfe` respondem 404. Em preview, a proteção de deployments do Vercel pode
-   exigir login para abrir a URL.
+   e `POST /a2a/auditoria-nfe` respondem 404. Em preview, a proteção de deployments do Vercel exige
+   login; confira com `vercel curl https://<url-do-preview>/.well-known/agent-card.json`.
+
+   Antes do primeiro `vercel deploy`: o primeiro deploy de um projeto vai para produção, e o
+   `vercel.json` precisa ter `"framework": "container"`, senão o preset "Other" do projeto publica
+   o repositório como site estático. O autor do último commit precisa ser a conta dona do projeto
+   (`git config user.email` deste repositório com o e-mail da conta), senão o deploy fica "Blocked".
+   No PowerShell, repita `--environment` em vez de separar ambientes por vírgula.
 
 3. Produção pela `main`: o `vercel.json` só permite deploy automático da `main`. Depois que a PR
    `dev` → `main` com o `vercel.json` for mesclada, conectar o repositório ao projeto (`vercel git
    connect` ou Project Settings > Git) e conferir que a Production Branch é `main`. A partir daí, cada
    merge na `main` publica a produção; para publicar o merge que já aconteceu, use Redeploy no painel
    ou `vercel deploy --prod` a partir da `main` atualizada. Repita as verificações do passo 2 na URL
-   de produção.
+   de produção, sem autenticação (`Invoke-WebRequest` ou `curl`), porque a produção é pública. O
+   build do contêiner leva alguns minutos; enquanto o deploy estiver "Initializing", a URL responde
+   404. Os domínios `<projeto>-<conta>.vercel.app` e `<projeto>-git-main-<conta>.vercel.app` ficam
+   atrás da proteção de deployments; a SOFIA usa só `https://<projeto>.vercel.app`.
 
 ## 9. Validar a aprovação de recomendações sensíveis (TS-039 a TS-041)
 
@@ -404,6 +413,9 @@ o P17.
 | Vercel responde 502 ou o deploy não fica pronto | `PORT` ausente no projeto Vercel; o tráfego vai para a porta 80 | `vercel env add PORT` com `8080` e novo deploy (seção 8.8) |
 | Card no Vercel com `url` de `localhost` | `A2A__UrlPublica` não cadastrada no ambiente do deploy | Cadastrar a URL do projeto em preview e produção e publicar de novo |
 | A SOFIA recebe 404 ao chamar o agente no Vercel | O Vercel só publica o card (D-08); o canal A2A não existe lá | Usar o agente local para `message/send` até a DP-25 e o fim do D-05 |
+| Vercel serve os arquivos do repositório e o card dá 404 | Preset "Other" do projeto prevaleceu sobre o `Dockerfile.vercel` | `"framework": "container"` no `vercel.json`, remover o deployment estático e publicar de novo |
+| Deploy no Vercel fica "Blocked" | Autor do último commit não é a conta dona do projeto (plano Hobby) | `git config user.email` com o e-mail da conta e um commit novo |
+| Card no Vercel abre a página de login | Domínio de preview ou alias da conta, protegidos pelo Vercel | Usar `https://<projeto>.vercel.app` ou `vercel curl` |
 
 ## 12. Encerrar
 

@@ -680,7 +680,9 @@ testes de arquitetura, health checks, `SemSegredosTests` e a ordem de tarefas do
   - o Container runtime está em beta em todos os planos, roda sobre Vercel Functions e é cobrado
     por CPU ativa, memória provisionada e invocações;
   - `Dockerfile.vercel` prevalece sobre a detecção de framework; a imagem é construída pelo Vercel
-    e guardada no Vercel Container Registry;
+    e guardada no Vercel Container Registry. Na prática (T172), o projeto criado pelo `vercel link`
+    ficou com o preset "Other", que prevaleceu sobre o `Dockerfile.vercel`; foi preciso declarar
+    `"framework": "container"` no `vercel.json`;
   - o tráfego vai para a porta 80; outra porta exige a variável `PORT` no projeto e o servidor
     escutando nela. A imagem do .NET roda sem root, então a porta 8080 com `PORT=8080` evita
     depender de permissão para portas abaixo de 1024;
@@ -698,6 +700,33 @@ testes de arquitetura, health checks, `SemSegredosTests` e a ordem de tarefas do
   contrato; o formato 1.0 continua disponível pelo cabeçalho `A2A-Version: 1.0` a partir da Fase 8.
 - **Alternativas**: JSON estático (rejeitado: não exercita o contêiner .NET e duplica o card);
   aguardar a DP-25 (rejeitado pela autora: adia o cadastro na SOFIA).
+- **Publicação (T172)**: projeto `andressafirminos-projects/agente-auditoria-nfe`, ligado ao
+  repositório `andressafirmino/agente-validacao-nfe` com a `main` como branch de produção; variáveis
+  `PORT` e `A2A__UrlPublica` em produção e preview, sem connection strings nem chaves.
+  - Preview pelo CLI em 2026-11-05 (`dpl_HdDsFqqc5ybuESkdaownC3gAQht7`, commit `2c7ea2a` da branch
+    `feat/001-contrato-sofia-v1`), conferido com `vercel curl` por causa da proteção de preview.
+  - Produção pelo merge da PR #5 (`dev` → `main`), commit `bf96dd8`, deployment
+    `dpl_9H4T36cxZjy5oPo7S5KQ4roWBeuK` (origem `git`, build de cerca de 2 minutos), em
+    `https://agente-auditoria-nfe.vercel.app`.
+- **Verificação da produção** (2026-11-05 e de novo em 2026-11-08, sem autenticação):
+  `GET /.well-known/agent-card.json` → 200 `application/json; charset=utf-8`, com
+  `url` = `https://agente-auditoria-nfe.vercel.app/a2a/auditoria-nfe`, `protocolVersion` `0.3.0`,
+  `preferredTransport` `JSONRPC`, versão `1.0.0`, `implantacao` na extensão e sem
+  `Access-Control-Allow-Origin`; `/health/live` → 200; `/`, `/health/ready`, `/api/v1/execucoes`,
+  `/a2a/auditoria-nfe` (GET e `POST message/send`), `/swagger`, `/openapi/v1.json`,
+  `/appsettings.json`, `/Dockerfile.vercel`, `/src/Api.Agente/Program.cs` e `/.env` → 404. Após
+  ociosidade, a primeira resposta levou cerca de 2 s (instância reiniciada).
+- **Ocorrências da publicação**:
+  - o primeiro deploy de um projeto vai para produção, mesmo sem `--prod`. Sem o
+    `"framework": "container"`, ele publicou o repositório como site estático (código-fonte de
+    `src/` acessível; nenhum segredo, porque o `.vercelignore` excluiu `.env*`, `.vercel/`,
+    `tests/` e `specs/`). O deployment foi removido no mesmo dia, com aprovação da autora;
+  - no plano Hobby, o Vercel bloqueia o deploy quando o autor do último commit não é a conta dona
+    do projeto (estado "Blocked"); o repositório passou a usar o e-mail da conta no
+    `git config user.email` local;
+  - os domínios `agente-auditoria-nfe-andressafirminos-projects.vercel.app` e
+    `agente-auditoria-nfe-git-main-...` ficam atrás da proteção de deployments e devolvem a página
+    de login; o endereço público para a SOFIA é só `agente-auditoria-nfe.vercel.app`.
 
 ## 3. Uso documentado das APIs do Microsoft Agent Framework
 
