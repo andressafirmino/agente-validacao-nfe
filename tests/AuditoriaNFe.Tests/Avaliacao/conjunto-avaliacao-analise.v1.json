@@ -1,0 +1,170 @@
+{
+  "versao": "1.0",
+  "descricao": "Lotes sintéticos para avaliar a análise por IA (P17, plan.md 'Testes por categoria'). Cada documento parte da NF-e mínima do GeradorNFeSintetica (PL_010e_v1.02, dhEmi 2026-11-02) e recebe os ajustes listados. Caminhos relativos a infNFe, com det[n] pelo nItem. regrasDivergentes lista as regras que DEVEM divergir; semDivergencia indica lote sem nenhuma inconsistência determinística.",
+  "lotes": [
+    {
+      "id": "icms-ok-um-documento",
+      "semDivergencia": true,
+      "regrasDivergentes": [],
+      "documentos": [ { "numero": 2001 } ]
+    },
+    {
+      "id": "icms-ok-dois-documentos",
+      "semDivergencia": true,
+      "regrasDivergentes": [],
+      "documentos": [
+        { "numero": 2002, "itens": [ { "descricao": "CADERNO SINTETICO", "quantidade": 3, "valorUnitario": 12.5 }, { "descricao": "CANETA SINTETICA", "quantidade": 10, "valorUnitario": 2.35 }, { "descricao": "PASTA SINTETICA", "quantidade": 1, "valorUnitario": 19.9 } ] },
+        { "numero": 2003, "itens": [ { "descricao": "LAPIS SINTETICO", "quantidade": 12, "valorUnitario": 1.1 } ] }
+      ]
+    },
+    {
+      "id": "icms-ok-cfops-diferentes",
+      "semDivergencia": true,
+      "regrasDivergentes": [],
+      "documentos": [
+        { "numero": 2004, "itens": [ { "descricao": "CADERNO SINTETICO", "quantidade": 2, "valorUnitario": 50, "cfop": "5102" }, { "descricao": "BORRACHA SINTETICA", "quantidade": 5, "valorUnitario": 3.2, "cfop": "5405" } ] }
+      ]
+    },
+    {
+      "id": "icms-vicms-divergente",
+      "semDivergencia": false,
+      "regrasDivergentes": [ "W04-10" ],
+      "documentos": [ { "numero": 2005, "definir": [ { "caminho": "total/ICMSTot/vICMS", "valor": "19.00" } ] } ]
+    },
+    {
+      "id": "icms-vbc-divergente",
+      "semDivergencia": false,
+      "regrasDivergentes": [ "W03-10" ],
+      "documentos": [ { "numero": 2006, "definir": [ { "caminho": "total/ICMSTot/vBC", "valor": "101.00" } ] } ]
+    },
+    {
+      "id": "icms-vprod-divergente",
+      "semDivergencia": false,
+      "regrasDivergentes": [ "W07-10" ],
+      "documentos": [ { "numero": 2007, "definir": [ { "caminho": "total/ICMSTot/vProd", "valor": "100.01" } ] } ]
+    },
+    {
+      "id": "icms-vpis-divergente",
+      "semDivergencia": false,
+      "regrasDivergentes": [ "W13-10" ],
+      "documentos": [ { "numero": 2008, "definir": [ { "caminho": "total/ICMSTot/vPIS", "valor": "2.15" } ] } ]
+    },
+    {
+      "id": "icms-vcofins-divergente",
+      "semDivergencia": false,
+      "regrasDivergentes": [ "W14-10" ],
+      "documentos": [ { "numero": 2009, "definir": [ { "caminho": "total/ICMSTot/vCOFINS", "valor": "7.00" } ] } ]
+    },
+    {
+      "id": "icms-vnf-divergente",
+      "semDivergencia": false,
+      "regrasDivergentes": [ "W16-10" ],
+      "documentos": [ { "numero": 2010, "definir": [ { "caminho": "total/ICMSTot/vNF", "valor": "105.00" }, { "caminho": "pag/detPag[1]/vPag", "valor": "105.00" } ] } ]
+    },
+    {
+      "id": "icms-um-documento-divergente-outro-correto",
+      "semDivergencia": false,
+      "regrasDivergentes": [ "W04-10" ],
+      "documentos": [
+        { "numero": 2011, "itens": [ { "descricao": "CADERNO SINTETICO", "quantidade": 4, "valorUnitario": 25 }, { "descricao": "CANETA SINTETICA", "quantidade": 2, "valorUnitario": 2.5 } ], "definir": [ { "caminho": "total/ICMSTot/vICMS", "valor": "18.00" } ] },
+        { "numero": 2012 }
+      ]
+    },
+    {
+      "id": "issqn-servico-e-produto",
+      "semDivergencia": false,
+      "regrasDivergentes": [],
+      "documentos": [ { "numero": 2013, "itens": [ { "descricao": "CADERNO SINTETICO", "quantidade": 2, "valorUnitario": 50 }, { "descricao": "SERVICO SINTETICO", "quantidade": 1, "valorUnitario": 200 } ], "inserir": [ { "substituir": "det[2]/imposto/ICMS", "xml": "<ISSQN><vBC>200.00</vBC><vAliq>5.00</vAliq><vISSQN>10.00</vISSQN><cMunFG>3550308</cMunFG><cListServ>01.01</cListServ><indISS>1</indISS><indIncentivo>2</indIncentivo></ISSQN>" }, { "depoisDe": "total/ICMSTot", "xml": "<ISSQNtot><vServ>200.00</vServ><vBC>200.00</vBC><vISS>10.00</vISS><vPIS>3.30</vPIS><vCOFINS>15.20</vCOFINS><dCompet>2026-11-02</dCompet></ISSQNtot>" } ], "definir": [ { "caminho": "total/ICMSTot/vBC", "valor": "100.00" }, { "caminho": "total/ICMSTot/vICMS", "valor": "18.00" }, { "caminho": "total/ICMSTot/vProd", "valor": "100.00" }, { "caminho": "total/ICMSTot/vPIS", "valor": "1.65" }, { "caminho": "total/ICMSTot/vCOFINS", "valor": "7.60" }, { "caminho": "total/ICMSTot/vNF", "valor": "300.00" }, { "caminho": "pag/detPag[1]/vPag", "valor": "300.00" } ] } ]
+    },
+    {
+      "id": "issqn-viss-divergente",
+      "semDivergencia": false,
+      "regrasDivergentes": [ "W20-10" ],
+      "documentos": [ { "numero": 2014, "itens": [ { "descricao": "CADERNO SINTETICO", "quantidade": 2, "valorUnitario": 50 }, { "descricao": "SERVICO SINTETICO", "quantidade": 1, "valorUnitario": 200 } ], "inserir": [ { "substituir": "det[2]/imposto/ICMS", "xml": "<ISSQN><vBC>200.00</vBC><vAliq>5.00</vAliq><vISSQN>10.00</vISSQN><cMunFG>3550308</cMunFG><cListServ>01.01</cListServ><indISS>1</indISS><indIncentivo>2</indIncentivo></ISSQN>" }, { "depoisDe": "total/ICMSTot", "xml": "<ISSQNtot><vServ>200.00</vServ><vBC>200.00</vBC><vISS>11.00</vISS><vPIS>3.30</vPIS><vCOFINS>15.20</vCOFINS><dCompet>2026-11-02</dCompet></ISSQNtot>" } ], "definir": [ { "caminho": "total/ICMSTot/vBC", "valor": "100.00" }, { "caminho": "total/ICMSTot/vICMS", "valor": "18.00" }, { "caminho": "total/ICMSTot/vProd", "valor": "100.00" }, { "caminho": "total/ICMSTot/vPIS", "valor": "1.65" }, { "caminho": "total/ICMSTot/vCOFINS", "valor": "7.60" }, { "caminho": "total/ICMSTot/vNF", "valor": "300.00" }, { "caminho": "pag/detPag[1]/vPag", "valor": "300.00" } ] } ]
+    },
+    {
+      "id": "issqn-vserv-divergente",
+      "semDivergencia": false,
+      "regrasDivergentes": [ "W18-10" ],
+      "documentos": [ { "numero": 2015, "itens": [ { "descricao": "CADERNO SINTETICO", "quantidade": 2, "valorUnitario": 50 }, { "descricao": "SERVICO SINTETICO", "quantidade": 1, "valorUnitario": 200 } ], "inserir": [ { "substituir": "det[2]/imposto/ICMS", "xml": "<ISSQN><vBC>200.00</vBC><vAliq>5.00</vAliq><vISSQN>10.00</vISSQN><cMunFG>3550308</cMunFG><cListServ>01.01</cListServ><indISS>1</indISS><indIncentivo>2</indIncentivo></ISSQN>" }, { "depoisDe": "total/ICMSTot", "xml": "<ISSQNtot><vServ>210.00</vServ><vBC>200.00</vBC><vISS>10.00</vISS><vPIS>3.30</vPIS><vCOFINS>15.20</vCOFINS><dCompet>2026-11-02</dCompet></ISSQNtot>" } ], "definir": [ { "caminho": "total/ICMSTot/vBC", "valor": "100.00" }, { "caminho": "total/ICMSTot/vICMS", "valor": "18.00" }, { "caminho": "total/ICMSTot/vProd", "valor": "100.00" }, { "caminho": "total/ICMSTot/vPIS", "valor": "1.65" }, { "caminho": "total/ICMSTot/vCOFINS", "valor": "7.60" }, { "caminho": "total/ICMSTot/vNF", "valor": "300.00" }, { "caminho": "pag/detPag[1]/vPag", "valor": "300.00" } ] } ]
+    },
+    {
+      "id": "ibscbs-item-e-total",
+      "semDivergencia": false,
+      "regrasDivergentes": [],
+      "documentos": [ { "numero": 2016, "inserir": [ { "anexarEm": "det[1]/imposto", "xml": "<IBSCBS><CST>000</CST><cClassTrib>000001</cClassTrib><gIBSCBS><vBC>100.00</vBC><gIBSUF><pIBSUF>0.10</pIBSUF><vIBSUF>0.10</vIBSUF></gIBSUF><gIBSMun><pIBSMun>0</pIBSMun><vIBSMun>0</vIBSMun></gIBSMun><vIBS>0.10</vIBS><gCBS><pCBS>0.90</pCBS><vCBS>0.90</vCBS></gCBS></gIBSCBS></IBSCBS>" }, { "depoisDe": "total/ICMSTot", "xml": "<IBSCBSTot><vBCIBSCBS>100.00</vBCIBSCBS><gIBS><gIBSUF><vDif>0</vDif><vDevTrib>0</vDevTrib><vIBSUF>0.10</vIBSUF></gIBSUF><gIBSMun><vDif>0</vDif><vDevTrib>0</vDevTrib><vIBSMun>0</vIBSMun></gIBSMun><vIBS>0.10</vIBS><vCredPres>0</vCredPres><vCredPresCondSus>0</vCredPresCondSus></gIBS><gCBS><vDif>0</vDif><vDevTrib>0</vDevTrib><vCBS>0.90</vCBS><vCredPres>0</vCredPres><vCredPresCondSus>0</vCredPresCondSus></gCBS></IBSCBSTot>" } ] } ]
+    },
+    {
+      "id": "ibscbs-vibsuf-divergente",
+      "semDivergencia": false,
+      "regrasDivergentes": [ "W41-10" ],
+      "documentos": [ { "numero": 2017, "inserir": [ { "anexarEm": "det[1]/imposto", "xml": "<IBSCBS><CST>000</CST><cClassTrib>000001</cClassTrib><gIBSCBS><vBC>100.00</vBC><gIBSUF><pIBSUF>0.10</pIBSUF><vIBSUF>0.10</vIBSUF></gIBSUF><gIBSMun><pIBSMun>0</pIBSMun><vIBSMun>0</vIBSMun></gIBSMun><vIBS>0.10</vIBS><gCBS><pCBS>0.90</pCBS><vCBS>0.90</vCBS></gCBS></gIBSCBS></IBSCBS>" }, { "depoisDe": "total/ICMSTot", "xml": "<IBSCBSTot><vBCIBSCBS>100.00</vBCIBSCBS><gIBS><gIBSUF><vDif>0</vDif><vDevTrib>0</vDevTrib><vIBSUF>0.20</vIBSUF></gIBSUF><gIBSMun><vDif>0</vDif><vDevTrib>0</vDevTrib><vIBSMun>0</vIBSMun></gIBSMun><vIBS>0.20</vIBS><vCredPres>0</vCredPres><vCredPresCondSus>0</vCredPresCondSus></gIBS><gCBS><vDif>0</vDif><vDevTrib>0</vDevTrib><vCBS>0.90</vCBS><vCredPres>0</vCredPres><vCredPresCondSus>0</vCredPresCondSus></gCBS></IBSCBSTot>" } ] } ]
+    },
+    {
+      "id": "ibscbs-vcbs-divergente",
+      "semDivergencia": false,
+      "regrasDivergentes": [ "W56-10" ],
+      "documentos": [ { "numero": 2018, "inserir": [ { "anexarEm": "det[1]/imposto", "xml": "<IBSCBS><CST>000</CST><cClassTrib>000001</cClassTrib><gIBSCBS><vBC>100.00</vBC><gIBSUF><pIBSUF>0.10</pIBSUF><vIBSUF>0.10</vIBSUF></gIBSUF><gIBSMun><pIBSMun>0</pIBSMun><vIBSMun>0</vIBSMun></gIBSMun><vIBS>0.10</vIBS><gCBS><pCBS>0.90</pCBS><vCBS>0.90</vCBS></gCBS></gIBSCBS></IBSCBS>" }, { "depoisDe": "total/ICMSTot", "xml": "<IBSCBSTot><vBCIBSCBS>100.00</vBCIBSCBS><gIBS><gIBSUF><vDif>0</vDif><vDevTrib>0</vDevTrib><vIBSUF>0.10</vIBSUF></gIBSUF><gIBSMun><vDif>0</vDif><vDevTrib>0</vDevTrib><vIBSMun>0</vIBSMun></gIBSMun><vIBS>0.10</vIBS><vCredPres>0</vCredPres><vCredPresCondSus>0</vCredPresCondSus></gIBS><gCBS><vDif>0</vDif><vDevTrib>0</vDevTrib><vCBS>1.00</vCBS><vCredPres>0</vCredPres><vCredPresCondSus>0</vCredPresCondSus></gCBS></IBSCBSTot>" } ] } ]
+    },
+    {
+      "id": "ibscbs-vbc-divergente",
+      "semDivergencia": false,
+      "regrasDivergentes": [ "W35-10" ],
+      "documentos": [ { "numero": 2019, "inserir": [ { "anexarEm": "det[1]/imposto", "xml": "<IBSCBS><CST>000</CST><cClassTrib>000001</cClassTrib><gIBSCBS><vBC>100.00</vBC><gIBSUF><pIBSUF>0.10</pIBSUF><vIBSUF>0.10</vIBSUF></gIBSUF><gIBSMun><pIBSMun>0</pIBSMun><vIBSMun>0</vIBSMun></gIBSMun><vIBS>0.10</vIBS><gCBS><pCBS>0.90</pCBS><vCBS>0.90</vCBS></gCBS></gIBSCBS></IBSCBS>" }, { "depoisDe": "total/ICMSTot", "xml": "<IBSCBSTot><vBCIBSCBS>110.00</vBCIBSCBS><gIBS><gIBSUF><vDif>0</vDif><vDevTrib>0</vDevTrib><vIBSUF>0.10</vIBSUF></gIBSUF><gIBSMun><vDif>0</vDif><vDevTrib>0</vDevTrib><vIBSMun>0</vIBSMun></gIBSMun><vIBS>0.10</vIBS><vCredPres>0</vCredPres><vCredPresCondSus>0</vCredPresCondSus></gIBS><gCBS><vDif>0</vDif><vDevTrib>0</vDevTrib><vCBS>0.90</vCBS><vCredPres>0</vCredPres><vCredPresCondSus>0</vCredPresCondSus></gCBS></IBSCBSTot>" } ] } ]
+    },
+    {
+      "id": "ibscbs-item-sem-total",
+      "semDivergencia": false,
+      "regrasDivergentes": [ "W34-20" ],
+      "documentos": [ { "numero": 2020, "inserir": [ { "anexarEm": "det[1]/imposto", "xml": "<IBSCBS><CST>000</CST><cClassTrib>000001</cClassTrib><gIBSCBS><vBC>100.00</vBC><gIBSUF><pIBSUF>0.10</pIBSUF><vIBSUF>0.10</vIBSUF></gIBSUF><gIBSMun><pIBSMun>0</pIBSMun><vIBSMun>0</vIBSMun></gIBSMun><vIBS>0.10</vIBS><gCBS><pCBS>0.90</pCBS><vCBS>0.90</vCBS></gCBS></gIBSCBS></IBSCBS>" } ] } ]
+    },
+    {
+      "id": "is-item-e-total",
+      "semDivergencia": false,
+      "regrasDivergentes": [],
+      "documentos": [ { "numero": 2021, "inserir": [ { "anexarEm": "det[1]/imposto", "xml": "<IS><CSTIS>000</CSTIS><cClassTribIS>000001</cClassTribIS><vBCIS>100.00</vBCIS><pIS>1.00</pIS><vIS>1.00</vIS></IS>" }, { "depoisDe": "total/ICMSTot", "xml": "<ISTot><vIS>1.00</vIS></ISTot>" } ] } ]
+    },
+    {
+      "id": "is-item-sem-total",
+      "semDivergencia": false,
+      "regrasDivergentes": [ "W31-20" ],
+      "documentos": [ { "numero": 2022, "inserir": [ { "anexarEm": "det[1]/imposto", "xml": "<IS><CSTIS>000</CSTIS><cClassTribIS>000001</cClassTribIS><vBCIS>100.00</vBCIS><pIS>1.00</pIS><vIS>1.00</vIS></IS>" } ] } ]
+    },
+    {
+      "id": "is-total-sem-item",
+      "semDivergencia": false,
+      "regrasDivergentes": [ "W31-10" ],
+      "documentos": [ { "numero": 2023, "inserir": [ { "depoisDe": "total/ICMSTot", "xml": "<ISTot><vIS>1.00</vIS></ISTot>" } ] } ]
+    },
+    {
+      "id": "cobranca-ok",
+      "semDivergencia": true,
+      "regrasDivergentes": [],
+      "documentos": [ { "numero": 2024, "inserir": [ { "antesDe": "pag", "xml": "<cobr><fat><nFat>2024</nFat><vOrig>100.00</vOrig><vDesc>0.00</vDesc><vLiq>100.00</vLiq></fat><dup><nDup>001</nDup><dVenc>2026-12-02</dVenc><vDup>100.00</vDup></dup></cobr>" } ] } ]
+    },
+    {
+      "id": "cobranca-vliq-divergente",
+      "semDivergencia": false,
+      "regrasDivergentes": [ "Y06-10" ],
+      "documentos": [ { "numero": 2025, "inserir": [ { "antesDe": "pag", "xml": "<cobr><fat><nFat>2025</nFat><vOrig>100.00</vOrig><vDesc>10.00</vDesc><vLiq>95.00</vLiq></fat><dup><nDup>001</nDup><dVenc>2026-12-02</dVenc><vDup>95.00</vDup></dup></cobr>" } ] } ]
+    },
+    {
+      "id": "cobranca-duplicatas-divergentes",
+      "semDivergencia": false,
+      "regrasDivergentes": [ "Y10-10" ],
+      "documentos": [ { "numero": 2026, "inserir": [ { "antesDe": "pag", "xml": "<cobr><fat><nFat>2026</nFat><vOrig>100.00</vOrig><vDesc>0.00</vDesc><vLiq>100.00</vLiq></fat><dup><nDup>001</nDup><dVenc>2026-12-02</dVenc><vDup>60.00</vDup></dup><dup><nDup>002</nDup><dVenc>2027-01-02</dVenc><vDup>30.00</vDup></dup></cobr>" } ] } ]
+    },
+    {
+      "id": "pagamento-troco-ok",
+      "semDivergencia": false,
+      "regrasDivergentes": [],
+      "documentos": [ { "numero": 2027, "definir": [ { "caminho": "pag/detPag[1]/vPag", "valor": "150.00" } ], "inserir": [ { "anexarEm": "pag", "xml": "<vTroco>50.00</vTroco>" } ] } ]
+    },
+    {
+      "id": "pagamento-troco-divergente",
+      "semDivergencia": false,
+      "regrasDivergentes": [ "YA09-10" ],
+      "documentos": [ { "numero": 2028, "definir": [ { "caminho": "pag/detPag[1]/vPag", "valor": "150.00" } ], "inserir": [ { "anexarEm": "pag", "xml": "<vTroco>40.00</vTroco>" } ] } ]
+    }
+  ]
+}

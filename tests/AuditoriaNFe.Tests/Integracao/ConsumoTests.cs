@@ -13,9 +13,17 @@ namespace AuditoriaNFe.Tests.Integracao;
 
 /// <summary>Registro de consumo pelo host contra o PostgreSQL real (NFR-009, P14, constitution 5.4).</summary>
 [Collection(ColecaoIntegracao.Nome)]
-public sealed class ConsumoTests(AmbienteIntegracao ambiente)
+public sealed class ConsumoTests
 {
     private static readonly string Chave = IdentificacaoSolicitante.Criar("usuario-consumo", "teste-consumo").ChaveIsolamento;
+
+    private readonly AmbienteIntegracao ambiente;
+
+    public ConsumoTests(AmbienteIntegracao ambiente)
+    {
+        this.ambiente = ambiente;
+        ambiente.ChatClient.Limpar();
+    }
 
     private static CancellationToken Cancelamento => TestContext.Current.CancellationToken;
 

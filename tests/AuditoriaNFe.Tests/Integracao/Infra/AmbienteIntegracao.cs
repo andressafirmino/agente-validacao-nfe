@@ -47,30 +47,48 @@ public sealed class AmbienteIntegracao : IAsyncLifetime
 
     public HttpClient CriarCliente() => Fabrica.CreateClient();
 
-    /// <summary>Outro host com ambiente e configurações próprios; descartado com o ambiente.</summary>
-    public WebApplicationFactory<Program> CriarFabrica(string ambiente = "Development", IReadOnlyDictionary<string, string?>? configuracoes = null)
+    /// <summary>
+    /// Outro host com ambiente, configurações e serviços próprios (aplicados por último); descartado
+    /// com o ambiente. Com <paramref name="provedorReal"/>, usa <c>Ia:Provedor=OpenAI</c> com a chave
+    /// e o modelo das variáveis de ambiente, sem o <see cref="ChatClientRoteirizado"/> (avaliação).
+    /// </summary>
+    public WebApplicationFactory<Program> CriarFabrica(
+        string ambiente = "Development",
+        IReadOnlyDictionary<string, string?>? configuracoes = null,
+        Action<IServiceCollection>? servicos = null,
+        bool provedorReal = false)
     {
         var fabrica = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
             builder.UseEnvironment(ambiente);
             builder.UseSetting("ConnectionStrings:MongoDb", Mongo.ConnectionString);
             builder.UseSetting("ConnectionStrings:Consumo", Postgres.ConnectionString);
-            builder.UseSetting("Ia:Provedor", "Simulado");
+            builder.UseSetting("Ia:Provedor", provedorReal ? FabricaChatClient.NomeProvedorOpenAI : "Simulado");
             builder.UseSetting("Persistencia:AplicarMigracoes", "true");
             builder.UseSetting("Aprovacao:Diretorio", DiretorioAprovacoes);
+            builder.UseSetting("LimiteTaxa:PermissoesPorJanela", "10000");
             foreach (var (chave, valor) in configuracoes ?? new Dictionary<string, string?>())
             {
                 builder.UseSetting(chave, valor);
             }
 
-            builder.ConfigureTestServices(servicos =>
+            builder.ConfigureTestServices(colecao =>
             {
-                servicos.RemoveAll<IRelogio>();
-                servicos.AddSingleton<IRelogio>(Relogio);
-                servicos.RemoveAll<IChatClient>();
-                servicos.AddSingleton(provedor => provedor.GetRequiredService<FabricaChatClient>()
+                colecao.RemoveAll<IRelogio>();
+                colecao.AddSingleton<IRelogio>(Relogio);
+                if (provedorReal)
+                {
+                    return;
+                }
+
+                colecao.RemoveAll<IChatClient>();
+                colecao.AddSingleton(provedor => provedor.GetRequiredService<FabricaChatClient>()
                     .Montar(ChatClient, ProvedorRoteirizado, OrigemValoresConsumo.InformadoProvedor));
             });
+            if (servicos is not null)
+            {
+                builder.ConfigureTestServices(servicos);
+            }
         });
 
         _fabricas.Add(fabrica);

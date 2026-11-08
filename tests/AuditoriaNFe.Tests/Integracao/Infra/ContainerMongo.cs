@@ -37,5 +37,8 @@ public sealed class ContainerMongo : IAsyncLifetime
 
     public async ValueTask InitializeAsync() => await LogContainer.IniciarAsync(_container, Imagem);
 
+    /// <summary>Para o contêiner, simulando o armazenamento indisponível (TS-064).</summary>
+    public Task PararAsync(CancellationToken cancelamento = default) => _container.StopAsync(cancelamento);
+
     public async ValueTask DisposeAsync() => await _container.DisposeAsync();
 }
