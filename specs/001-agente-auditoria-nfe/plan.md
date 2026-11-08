@@ -295,7 +295,7 @@ infra/
 .github/workflows/ci.yml         # build-test e build da imagem
 Dockerfile.vercel                # Imagem do modo SomenteAgentCard para o Vercel (D-08, ADR-0012)
 .vercelignore                    # Impede o envio de .env, data/ e artefatos ao Vercel (D-08)
-vercel.json                      # Deploy automático só da main (D-08)
+vercel.json                      # Runtime de contêiner e deploy automático só da main (D-08)
 docs/adr/                        # ADR-0001 a ADR-0012 (DP-20)
 
 src/
@@ -525,7 +525,9 @@ está publicado e que `message/send` não está disponível naquela URL.
 - **Projeto Vercel**: variáveis `PORT=8080` e `A2A__UrlPublica` (URL do projeto), sem connection
 string nem chave; `.vercelignore` exclui `.env`, `.env.*`, `data/`, `bin/`, `obj/`, `tests/` e
 `specs/`. Preview verificado antes da produção.
-- **Branch de produção**: a `main` (branch padrão do GitHub). O `vercel.json` desliga o deploy
+- **Branch de produção**: a `main` (branch padrão do GitHub). O `vercel.json` força o runtime de
+contêiner (`"framework": "container"`, porque o preset "Other" do projeto prevalecia sobre o
+`Dockerfile.vercel`), desliga o deploy
 automático em todas as branches (`"**": false`) e o mantém só na `main`; a produção sai do merge
 da PR `dev` → `main` (ADR-0008). O preview é publicado pelo CLI (`vercel deploy`, sem `--prod`) a
 partir da branch da feature, antes da PR para a `main`. O repositório só é conectado ao projeto
