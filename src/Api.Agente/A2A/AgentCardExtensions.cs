@@ -1,8 +1,12 @@
 using Api.Agente.Hospedagem;
+using Api.Agente.Seguranca;
 
 namespace Api.Agente.A2A;
 
-/// <summary>Registro e rota do Agent Card nos modos que o publicam (FR-052f, FR-052g).</summary>
+/// <summary>
+/// Registro e rota do Agent Card nos modos que o publicam (FR-052f, FR-052g), protegidos pela
+/// credencial de serviço da SOFIA (FR-052h).
+/// </summary>
 public static class AgentCardExtensions
 {
     public static IServiceCollection AdicionarAgentCard(this IServiceCollection services, IConfiguration configuration)
@@ -10,6 +14,7 @@ public static class AgentCardExtensions
         services.AddOptions<HospedagemOpcoes>()
             .Bind(configuration.GetSection(HospedagemOpcoes.Secao));
         services.AdicionarOpcoesA2A(configuration);
+        services.AdicionarCredencialServicoSofia(configuration);
         services.AddSingleton<FabricaAgentCard>();
 
         return services;

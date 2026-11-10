@@ -5,8 +5,10 @@
 - **Aprovação**: Aprovado por Andressa Firmino, 2026-11-10
 - **Revisão (2026-11-10, aprovada pela autora)**: a homologação usa o projeto Vercel do Agent Card
   (ADR-0012), e não um projeto separado, para que a SOFIA continue com a URL já cadastrada.
+- **Atualização (2026-11-10, ADR-0014)**: o card e o canal A2A da homologação exigem a credencial
+  de serviço da SOFIA; a API REST `/api/v1` e o Swagger continuam públicos e sem autenticação.
 - **Relacionado a**: desvio D-09 (novo); D-05, D-08; DP-10, DP-25; constitution 3.5, 5.1, 5.2 e P18;
-  FR-004, FR-052b, FR-052f, FR-052g; ADR-0003, ADR-0005, ADR-0006, ADR-0012
+  FR-004, FR-052b, FR-052f, FR-052g; ADR-0003, ADR-0005, ADR-0006, ADR-0012, ADR-0014
 
 ## Contexto
 

@@ -5,6 +5,8 @@
 # - Homologacao (FR-052g, desvio D-09, ADR-0013): agente completo na mesma URL, com Atlas, Neon e
 #   OpenAI; variáveis no plan.md e no quickstart §8.9 (research R-36). Aprovações em /tmp,
 #   gravável e não durável.
+# Nos dois modos, SOFIA_A2A_TOKEN (sensível) é obrigatória: protege o card e o A2A (FR-052h,
+# ADR-0014); sem ela, o agente não inicia.
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0.403 AS build
 WORKDIR /src

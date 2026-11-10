@@ -13,7 +13,12 @@ public sealed record AgentCardV03(
     CapacidadesAgentCard Capabilities,
     IReadOnlyList<string> DefaultInputModes,
     IReadOnlyList<string> DefaultOutputModes,
-    IReadOnlyList<HabilidadeAgentCard> Skills);
+    IReadOnlyList<HabilidadeAgentCard> Skills,
+    IReadOnlyDictionary<string, EsquemaSegurancaAgentCard> SecuritySchemes,
+    IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<string>>> Security);
+
+/// <summary>Esquema declarado no card, sem o valor da credencial (FR-052h).</summary>
+public sealed record EsquemaSegurancaAgentCard(string Type, string Scheme);
 
 public sealed record CapacidadesAgentCard(
     bool Streaming,
@@ -26,7 +31,7 @@ public sealed record ExtensaoAgentCard(
     bool Required,
     ParametrosContratoSofia Params);
 
-/// <summary><c>Implantacao</c> só aparece no modo <c>SomenteAgentCard</c> (FR-052f).</summary>
+/// <summary><c>Implantacao</c> só aparece nos modos <c>SomenteAgentCard</c> e <c>Homologacao</c> (FR-052f, FR-052g).</summary>
 public sealed record ParametrosContratoSofia(
     string VersaoContrato,
     string IdAgente,

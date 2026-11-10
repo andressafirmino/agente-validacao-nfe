@@ -150,6 +150,11 @@ convenção da constitution.
 - Q: O Atlas pode aceitar conexões de qualquer IP? → A: Sim, só na homologação, porque o Vercel não
   tem IP de saída fixo, com usuário de banco de permissão mínima, senha forte, TLS e dados
   sintéticos.
+- Q: Como a SOFIA se autentica no agente? → A: Pela credencial de serviço compartilhada da turma
+  (ADR-0014, aprovado por Andressa Firmino em 2026-11-10), enviada como `Authorization: Bearer` e
+  configurada no agente pela variável `SOFIA_A2A_TOKEN`. Ela protege o Agent Card e as rotas A2A; a
+  API REST `/api/v1` e o Swagger continuam sem autenticação na homologação (D-09). O card declara o
+  esquema Bearer, exigido pela descoberta da SOFIA.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -217,10 +222,10 @@ do mesmo lote pelo canal direto.
 
 **Acceptance Scenarios**:
 
-1. **Given** o agente em execução, **When** a SOFIA consulta o endereço de descoberta, **Then**
-   recebe um Agent Card v0.3 válido com nome, descrição, versão, a habilidade
-   `analisar_documentos`, formatos de entrada e saída, limites, versão do contrato, `idAgente` e a
-   indicação de ausência de autenticação.
+1. **Given** o agente em execução, **When** a SOFIA consulta o endereço de descoberta com a
+   credencial de serviço, **Then** recebe um Agent Card v0.3 válido com nome, descrição, versão, a
+   habilidade `analisar_documentos`, formatos de entrada e saída, limites, versão do contrato,
+   `idAgente` e o esquema de autenticação Bearer (FR-052h).
 2. **Given** um Agent Card obtido, **When** a SOFIA envia por `message/send` uma
    `SolicitacaoAnaliseSofia` válida com uma pergunta e XMLs, **Then** recebe uma Task `completed`
    com um Artifact `analise-sofia-v1` contendo um `ResultadoAnaliseSofia` com os mesmos
@@ -233,8 +238,9 @@ do mesmo lote pelo canal direto.
    não analisado e o motivo.
 5. **Given** uma solicitação com `versaoContrato` diferente de `"1.0"` ou sem campo obrigatório,
    **When** ela é recebida, **Then** o resultado tem status `erro` com `ERR-007`, sem análise.
-6. *(Adiado — desvio D-05)* **Given** uma chamada A2A sem credencial ou com credencial inválida,
-   **When** ela é recebida, **Then** é recusada sem executar nenhuma análise.
+6. **Given** uma chamada A2A ou ao Agent Card sem a credencial de serviço da SOFIA ou com outra
+   chave, **When** ela é recebida, **Then** é recusada com HTTP 401 sem executar nenhuma análise
+   (FR-052h). A credencial por chamador e o ERR-004 continuam adiados (desvio D-05).
 
 Perguntas sem documentos, continuidade de sessão e consulta posterior de recomendações não fazem
 parte do contrato SOFIA v1.0 e ficam no canal direto (User Stories 3, 4 e 7).
@@ -372,8 +378,8 @@ obtém o Agent Card, envia a solicitação e exibe o resultado com os IDs da sol
 **Acceptance Scenarios**:
 
 1. **Given** o endereço do agente, **When** o integrador executa o simulador,
-   **Then** o simulador obtém e exibe o Agent Card, a habilidade, o `idAgente`, os limites e a
-   ausência de autenticação.
+   **Then** o simulador obtém, com a credencial de serviço, e exibe o Agent Card, a habilidade, o
+   `idAgente`, os limites e o esquema de autenticação.
 2. **Given** o Agent Card obtido e os XMLs de exemplo, **When** o simulador envia a solicitação
    com uma pergunta, **Then** exibe o estado da Task, o status, a análise, os achados e as
    observações do `ResultadoAnaliseSofia` e confirma que `idExecucao` e `idSolicitacao` voltaram
@@ -706,8 +712,8 @@ obtém o Agent Card, envia a solicitação e exibe o resultado com os IDs da sol
 - **FR-044**: O agente DEVE publicar um Agent Card no endereço de descoberta do protocolo A2A, no
   formato v0.3 por padrão, contendo: nome, descrição, versão do agente, a habilidade
   `analisar_documentos`, formatos de entrada e saída, e, em extensão do contrato, a versão do
-  contrato, o `idAgente`, o nome do Artifact, os limites, os documentos suportados e a ausência de
-  autenticação na versão 1.
+  contrato, o `idAgente`, o nome do Artifact, os limites, os documentos suportados e a forma de
+  autenticação; fora da extensão, o esquema Bearer da credencial de serviço da SOFIA (FR-052h).
 - **FR-044a**: O `idAgente` DEVE ser configurável (valor inicial `agente-auditoria-nfe`) e igual ao
   cadastrado no registry da SOFIA.
 - **FR-045**: O Agent Card NÃO DEVE conter segredos nem dados de usuários.
@@ -767,9 +773,17 @@ obtém o Agent Card, envia a solicitação e exibe o resultado com os IDs da sol
   a retenção das sessões e execuções. Nomes iguais compartilham o contexto do usuário até a
   autenticação.
 - **FR-052b**: Enquanto o desvio D-05 vigorar, o agente SOMENTE PODE ser executado em ambiente local
-  de testes, com as portas publicadas apenas na interface local da máquina, e o Agent Card DEVE
-  declarar que não há autenticação. Os dados de teste DEVEM ser sintéticos ou anonimizados. As
-  exceções são o modo somente Agent Card (FR-052f) e o modo de homologação (FR-052g).
+  de testes, com as portas publicadas apenas na interface local da máquina. Os dados de teste DEVEM
+  ser sintéticos ou anonimizados. As exceções são o modo somente Agent Card (FR-052f) e o modo de
+  homologação (FR-052g).
+- **FR-052h**: Nos modos que publicam o Agent Card, o card e todo caminho sob `/a2a` DEVEM exigir a
+  credencial de serviço da SOFIA no cabeçalho `Authorization: Bearer`, comparada exatamente e em
+  tempo constante com o valor da variável `SOFIA_A2A_TOKEN`. Cabeçalho ausente, repetido,
+  malformado ou com outra chave DEVE receber HTTP 401 com `WWW-Authenticate: Bearer`, antes de
+  qualquer processamento; a chave NÃO DEVE ser aceita na URL nem no corpo. Sem o valor configurado,
+  o agente NÃO DEVE iniciar. O card DEVE declarar o esquema `http`/`bearer` em `securitySchemes` e
+  exigi-lo em `security`, sem o valor. A chave NÃO DEVE aparecer no código, no card, em exemplos ou
+  em logs. A credencial é compartilhada e não identifica o chamador nem o usuário (FR-052d).
 - **FR-052f** *(desvio D-08)*: O agente PODE ser publicado fora do ambiente
   local apenas no modo `SomenteAgentCard`, que expõe só o Agent Card e a verificação de vida e não
   registra persistência, provedor de IA, documentação da API, rotas `/api/v1` nem o endpoint A2A.
@@ -782,7 +796,8 @@ obtém o Agent Card, envia a solicitação e exibe o resultado com os IDs da sol
   inicialização quando o provedor de IA for o simulado, quando as migrações estiverem configuradas
   para rodar na inicialização ou quando o tamanho total dos arquivos ou o corpo HTTP configurados
   excederem 4.000.000 e 4.500.000 bytes. O Agent Card DEVE informar, na extensão do contrato, que é
-  uma homologação pública, sem autenticação e só para dados sintéticos.
+  uma homologação pública, com a API REST sem autenticação de usuário e só para dados sintéticos.
+  O card e o canal A2A exigem a credencial de serviço da SOFIA (FR-052h).
 - **FR-052e**: As chamadas da SOFIA ao agente (A2A e REST) são de servidor para servidor e NÃO
   DEVEM depender de CORS. O agente DEVE conceder permissão CORS só a navegadores das origens
   configuradas (`Cors:AllowedOrigins`, esquema + host + porta, sem caminho, barra final ou curinga) e
@@ -790,7 +805,8 @@ obtém o Agent Card, envia a solicitação e exibe o resultado com os IDs da sol
   política NÃO DEVE permitir credenciais de navegador, e origem fora da lista NÃO DEVE receber
   permissão. Agent Card, endpoint A2A, health checks e documentação da API ficam sem CORS. Origem
   inválida na configuração DEVE impedir o início do agente. CORS NÃO substitui autenticação: com o
-  fim do D-05, o cabeçalho da credencial entra na política e as rotas exigem a credencial.
+  fim do D-05, o cabeçalho da credencial entra na política e as rotas exigem a credencial. A
+  credencial de serviço da SOFIA (FR-052h) não passa por CORS.
 - **FR-053**: O conteúdo dos XMLs e das perguntas DEVE ser tratado como dado; instruções contidas
   nesse conteúdo NÃO DEVEM alterar regras, contrato de saída ou comportamento do agente
   (constitution P07).
@@ -996,11 +1012,12 @@ ele PODE executá-lo. Os XMLs de teste DEVEM ser sintéticos ou anonimizados.
 | TS-068 | Solicitação A2A repetida com o mesmo `idSolicitacao`: depois de concluída, durante o processamento, depois de falha e com outro `idExecucao` | Concluída: mesmo resultado, sem nova execução nem consumo de IA; em andamento: `erro` com ERR-026; após falha: nova execução; outro `idExecucao`: ERR-007; duas simultâneas: uma execução só | FR-043h | Não |
 | TS-069 | Solicitação A2A com `traceparent` e documento com instruções ao agente no `infCpl` | O trace continua o recebido; logs com os IDs da SOFIA e sem nome, pergunta ou conteúdo; as instruções do documento não são seguidas (como TS-018) | NFR-014, FR-053 | Não |
 | TS-070 | Preflight `OPTIONS` e requisição a `/api/v1` com origem configurada, com origem não configurada, sem `Origin` e com a lista vazia; preflight ao Agent Card e aos health checks; origem inválida na configuração | Origem configurada: `Access-Control-Allow-Origin` igual à origem, métodos e cabeçalhos permitidos, sem `Allow-Credentials`; demais casos: sem permissão CORS; sem `Origin`: resposta normal; configuração inválida: o agente não inicia | FR-052e | Não |
-| TS-071 | Agente em `Production` no modo `SomenteAgentCard`, sem connection strings nem chave; mesmo ambiente no modo `Completo` | Modo restrito: o agente inicia; Agent Card v0.3 com `url` da configuração e `implantacao` na extensão; `/health/live` responde; `/health/ready`, Swagger, OpenAPI, `/api/v1/*` e `POST /a2a/auditoria-nfe` respondem 404. Modo completo: o agente não inicia | FR-052b, FR-052f, FR-045 | Não |
+| TS-071 | Agente em `Production` no modo `SomenteAgentCard`, sem connection strings nem chave; mesmo ambiente no modo `Completo` | Modo restrito: o agente inicia; Agent Card v0.3, com a credencial de serviço, com `url` da configuração e `implantacao` na extensão; `/health/live` responde; `/health/ready`, Swagger, OpenAPI, `/api/v1/*` e `POST /a2a/auditoria-nfe` (com a credencial) respondem 404. Modo completo: o agente não inicia | FR-052b, FR-052f, FR-045, FR-052h | Não |
 | TS-072 | Lote com evento de cancelamento (`procEventoNFe`), NFC-e (modelo 65), NF-e versão 3.10 e XML com namespace diferente | ERR-009 ou ERR-010 por arquivo, com motivo que cita a raiz `procEventoNFe` e diz que é evento, o modelo `65` (NFC-e), a versão `3.10` e o namespace divergente; nenhum trecho do XML no motivo | FR-008 | Não |
 | TS-073 | Lote com uma NF-e válida, uma com `vICMS` divergente e um documento não suportado, com a IA indisponível | Resumo do sistema com contagens, resultado geral, a inconsistência W04-10 com arquivo, campo, informado e esperado, o arquivo não analisado com o motivo e o alerta da IA; sem a palavra "achados"; descrição do achado começa pela frase em linguagem natural | FR-017a, FR-017b | Não |
 | TS-074 | Agente em `Production` no modo `Homologacao`, com autenticação desabilitada; variações com provedor simulado, migrações na inicialização e limites acima de 4.000.000 e 4.500.000 bytes | Configuração válida: o agente inicia; Swagger, OpenAPI e rotas `/api/v1` respondem; card com `implantacao` de homologação; lote acima de 4.000.000 bytes → ERR-002. Cada variação inválida: o agente não inicia. Modo `Completo` fora de `Development` continua recusado | FR-052g, FR-052b, FR-004 | Não |
-| TS-075 | Homologação publicada: card, saúde, Swagger, análise de NF-e sintética, continuidade, contexto do usuário e consumo | Card com a URL da homologação; `/health/live` e `/health/ready` 200; execução concluída com parecer; continuidade na mesma sessão; contexto consultado; linha de consumo no Neon; nenhum segredo nem conteúdo do XML nos logs do Vercel | FR-052g, NFR-008 | Não |
+| TS-075 | Homologação publicada: card, saúde, Swagger, análise de NF-e sintética, continuidade, contexto do usuário e consumo | Card sem a credencial → 401; com a credencial → card com a URL da homologação e o esquema Bearer; `/health/live` e `/health/ready` 200; execução concluída com parecer; continuidade na mesma sessão; contexto consultado; linha de consumo no Neon; nenhum segredo nem conteúdo do XML nos logs do Vercel | FR-052g, FR-052h, NFR-008 | Não |
+| TS-076 | Card e caminhos `/a2a` sem cabeçalho, com cabeçalho malformado, com outro esquema, com a chave em outra caixa, truncada ou estendida, com a chave na URL; card com a chave e esquema em qualquer caixa; `/health/live` sem a chave; `SOFIA_A2A_TOKEN` ausente, vazia ou com espaços; logs | Sem a credencial válida: 401 com `WWW-Authenticate: Bearer`, sem corpo; com a credencial: card 200 com `securitySchemes` e `security` Bearer, sem o valor, e caminho `/a2a` segue ao roteamento; vivacidade 200; configuração inválida: o agente não inicia e a mensagem não traz o valor; nenhum log traz a chave nem a tentativa | FR-052h, FR-045 | Não |
 
 ## Success Criteria *(mandatory)*
 
