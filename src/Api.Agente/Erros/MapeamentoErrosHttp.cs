@@ -1,7 +1,10 @@
 using System.Collections.Frozen;
 using System.Globalization;
 using System.Text.Json;
+using Api.Agente.Identificacao;
+using AuditoriaNFe.Application.Abstracoes;
 using AuditoriaNFe.Application.Contratos;
+using AuditoriaNFe.Domain.Sessoes;
 
 namespace Api.Agente.Erros;
 
@@ -60,6 +63,23 @@ public static class MapeamentoErrosHttp
     {
         var segundos = (int)Math.Clamp(Math.Ceiling(tempoParaNovaTentativa.TotalSeconds), 1, int.MaxValue);
         return new ComRetryAfter(Erro(CodigoErro.LimiteAtingido, MensagensErro.LimiteAtingido(segundos)), segundos);
+    }
+
+    /// <summary>ERR-024 numa rota que inicia execução: envelope <c>Rejeitada</c> com <c>Retry-After</c>.</summary>
+    public static IResult LimiteAtingidoExecucao(HttpContext contexto, TimeSpan tempoParaNovaTentativa)
+    {
+        ArgumentNullException.ThrowIfNull(contexto);
+        var segundos = (int)Math.Clamp(Math.Ceiling(tempoParaNovaTentativa.TotalSeconds), 1, int.MaxValue);
+        var servicos = contexto.RequestServices;
+        LeitorIdentificacaoHttp.TentarLer(contexto.Request, out var identificacao);
+        var envelope = MontadorEnvelope.Rejeitada(
+            servicos.GetRequiredService<IGeradorIds>().Novo(),
+            identificacao,
+            CanalExecucao.Direto,
+            servicos.GetRequiredService<IRelogio>().Agora,
+            CodigoErro.LimiteAtingido,
+            MensagensErro.LimiteAtingido(segundos));
+        return new ComRetryAfter(Envelope(envelope), segundos);
     }
 
     private sealed class ComRetryAfter(IResult interno, int segundos) : IResult

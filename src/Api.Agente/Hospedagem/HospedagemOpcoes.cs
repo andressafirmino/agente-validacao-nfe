@@ -1,12 +1,18 @@
 namespace Api.Agente.Hospedagem;
 
-/// <summary>Modo de hospedagem do host (FR-052f, desvio D-08, ADR-0012).</summary>
+/// <summary>Modo de hospedagem do host (FR-052f, FR-052g; desvios D-08 e D-09; ADR-0012 e ADR-0013).</summary>
 public enum ModoHospedagem
 {
     Completo,
 
-    /// <summary>Só o Agent Card e a vivacidade; único modo aceito fora de <c>Development</c>.</summary>
+    /// <summary>Só o Agent Card e a vivacidade; aceito fora de <c>Development</c> (D-08).</summary>
     SomenteAgentCard,
+
+    /// <summary>
+    /// Agente completo, sem autenticação, para a homologação pública com dados sintéticos; aceito fora
+    /// de <c>Development</c> (D-09).
+    /// </summary>
+    Homologacao,
 }
 
 public sealed class HospedagemOpcoes
@@ -32,6 +38,6 @@ public sealed class HospedagemOpcoes
         return nome is not null
             ? Enum.Parse<ModoHospedagem>(nome)
             : throw new InvalidOperationException(
-                $"{ChaveModo} inválido: use {nameof(ModoHospedagem.Completo)} ou {nameof(ModoHospedagem.SomenteAgentCard)} (desvio D-08).");
+                $"{ChaveModo} inválido: use {nameof(ModoHospedagem.Completo)}, {nameof(ModoHospedagem.SomenteAgentCard)} ou {nameof(ModoHospedagem.Homologacao)} (desvios D-08 e D-09).");
     }
 }

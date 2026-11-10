@@ -1,19 +1,15 @@
 using System.Globalization;
 using System.Text.Json;
-using System.Xml;
 using System.Xml.Linq;
-using System.Xml.Schema;
 using AuditoriaNFe.Domain.Documentos;
 
 namespace AuditoriaNFe.Tests.Fixtures.Xml;
 
 public sealed class GeradorNFeSinteticaTests
 {
-    private static readonly string DiretorioSchemas = Path.Combine(AppContext.BaseDirectory, "Schemas", "NFe");
-
     public static TheoryData<string, string> Pacotes()
     {
-        using var manifesto = JsonDocument.Parse(File.ReadAllText(Path.Combine(DiretorioSchemas, "manifesto.json")));
+        using var manifesto = JsonDocument.Parse(File.ReadAllText(Path.Combine(ValidacaoXsdTeste.DiretorioSchemas, "manifesto.json")));
         var dados = new TheoryData<string, string>();
         foreach (var pacote in manifesto.RootElement.GetProperty("pacotes").EnumerateArray())
         {
@@ -107,19 +103,6 @@ public sealed class GeradorNFeSinteticaTests
     private static XElement Elemento(XDocument documento, string nome) =>
         documento.Descendants(GeradorNFeSintetica.Nfe + nome).First();
 
-    private static List<string> Validar(XDocument documento, string pacote, string schema)
-    {
-        var conjunto = new XmlSchemaSet { XmlResolver = new XmlUrlResolver() };
-        using (var leitor = XmlReader.Create(
-            Path.Combine(DiretorioSchemas, pacote, schema),
-            new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore, XmlResolver = new XmlUrlResolver() }))
-        {
-            conjunto.Add(null, leitor);
-        }
-
-        conjunto.Compile();
-        var erros = new List<string>();
-        documento.Validate(conjunto, (_, e) => erros.Add($"{e.Severity}: {e.Message}"));
-        return erros;
-    }
+    private static List<string> Validar(XDocument documento, string pacote, string schema) =>
+        ValidacaoXsdTeste.Validar(documento, pacote, schema);
 }

@@ -1,2 +1,5 @@
 # Os XSDs oficiais são conferidos byte a byte pelo SHA-256 do manifesto: nenhuma conversão de fim de linha.
 src/AuditoriaNFe.Infrastructure/Schemas/NFe/**/*.xsd -text
+
+# As fixtures XML são comparadas byte a byte com o gerador e por SHA-256 nos testes de duplicidade.
+tests/AuditoriaNFe.Tests/Fixtures/Xml/**/*.xml -text

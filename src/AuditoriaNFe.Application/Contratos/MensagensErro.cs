@@ -41,6 +41,13 @@ public static class MensagensErro
 
     public const string SessaoEncerrada = "Sessão encerrada. Inicie uma nova sessão enviando a solicitação sem o identificador de sessão.";
 
+    public const string ContextoUsuarioNaoEncontrado = "Não há contexto do usuário para esta identificação.";
+
+    public const string UsuarioSemContexto = "Usuário não identificado não tem contexto. Informe o cabeçalho X-Usuario-Id.";
+
+    public const string PreferenciasForaDoContrato =
+        "Preferências fora do contrato: informe nivelDetalhe (Resumido ou Detalhado) e tributosInteresse, sem repetição, só com ICMS, ICMS-ST, FCP, IPI, PIS, COFINS, ISSQN, IBS, CBS ou IS.";
+
     public static string Para(string codigo) =>
         Padrao.TryGetValue(codigo, out var mensagem)
             ? mensagem
@@ -55,6 +62,14 @@ public static class MensagensErro
 
     public static string QuantidadeArquivosExcedida(int limite) =>
         string.Format(PtBr, "A quantidade de arquivos excede o limite de {0} por solicitação. Nenhum arquivo foi processado.", limite);
+
+    /// <summary>ERR-009 com o que foi encontrado no arquivo (FR-008).</summary>
+    public static string DocumentoNaoSuportado(string motivo) =>
+        $"Validação não realizada: documento não suportado — {motivo}. Apenas NF-e modelo 55 é aceita.";
+
+    /// <summary>ERR-010 com a versão encontrada no arquivo (FR-008).</summary>
+    public static string VersaoNaoSuportada(string motivo) =>
+        $"Validação não realizada: {motivo} não suportada. Apenas a versão 4.00 é aceita.";
 
     public static string LimiteAtingido(int segundosParaNovaTentativa) =>
         string.Format(PtBr, "Limite de solicitações atingido. Tente novamente em {0} segundo(s).", segundosParaNovaTentativa);

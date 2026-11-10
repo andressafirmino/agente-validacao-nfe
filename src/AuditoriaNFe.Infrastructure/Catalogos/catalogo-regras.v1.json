@@ -1,0 +1,1828 @@
+{
+  "versaoCatalogo": "1.0",
+  "origem": "specs/001-agente-auditoria-nfe/catalogo-regras-totalizadores.md",
+  "aprovacao": {
+    "por": "Solicitante da feature",
+    "em": "2026-11-04"
+  },
+  "fontes": [
+    {
+      "documento": "MOC 7.0 Anexo I",
+      "versao": "7.03",
+      "sha256": "5eb4cf2010b10b0b62f78197c4eb64025f24535d4c6e61158bc7806dd008f55d"
+    },
+    {
+      "documento": "NT 2016.002",
+      "versao": "1.61",
+      "sha256": "4fa4bb19dbedf7653f00768ed418216395ba3fd5a9cf189f473688556d6987f0"
+    },
+    {
+      "documento": "NT 2020.005",
+      "versao": "1.21",
+      "sha256": "3ce019a6ea73083d65a86123faa5ecb5ec4e76a32dd143e732079862682d7468"
+    },
+    {
+      "documento": "NT 2023.001",
+      "versao": "1.60",
+      "sha256": "2b18d99fdb4989a12044cd491c176a2199ab19bb2462406a6ac03376b7701fe5"
+    },
+    {
+      "documento": "NT 2023.004",
+      "versao": "1.20",
+      "sha256": "1c6db64a5c32b176f8e60baf2ebbfed24632169ddfcd80632c1b5cc65b9ac71d"
+    },
+    {
+      "documento": "NT 2025.002",
+      "versao": "1.53",
+      "sha256": "d62445d7429806b0403b44818e252fea16107794319a029ac7025017e5f4e34c"
+    },
+    {
+      "documento": "NT 2026.008",
+      "versao": "1.01",
+      "sha256": "8134a3f1f460650262ce359566b7993ac3503037f24b223a4c8c53b237b50090"
+    }
+  ],
+  "regras": [
+    {
+      "id": "W03-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vBC (W03) = Σ itens vBC (N15)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "120"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "531"
+      },
+      "condicoes": [],
+      "implementacao": "W03-10.v1"
+    },
+    {
+      "id": "W04-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vICMS (W04) = Σ itens vICMS (N17)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "120"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "532"
+      },
+      "condicoes": [
+        "Não somar itens com CST 40, 41 e 50"
+      ],
+      "implementacao": "W04-10.v1"
+    },
+    {
+      "id": "W04a-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vICMSDeson (W04a) = Σ itens vICMSDeson (N28a)",
+      "fonte": {
+        "documento": "NT 2016.002",
+        "versao": "1.61",
+        "paginas": "62"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "795"
+      },
+      "condicoes": [],
+      "implementacao": "W04a-10.v1"
+    },
+    {
+      "id": "W04b-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vFCP (W04h) = Σ itens vFCP (N17c)",
+      "fonte": {
+        "documento": "NT 2016.002",
+        "versao": "1.61",
+        "paginas": "62"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "861"
+      },
+      "condicoes": [
+        "A regra cita o id \"W04b\", mas no leiaute o vFCP é W04h; o catálogo usa a tag"
+      ],
+      "implementacao": "W04b-10.v1"
+    },
+    {
+      "id": "W04c-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vFCPUFDest (W04c) = Σ itens vFCPUFDest (NA13)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "120"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "798"
+      },
+      "condicoes": [],
+      "implementacao": "W04c-10.v1"
+    },
+    {
+      "id": "W04e-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vICMSUFDest (W04e) = Σ itens vICMSUFDest (NA15)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "120"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "799"
+      },
+      "condicoes": [
+        "Nulo vale zero"
+      ],
+      "implementacao": "W04e-10.v1"
+    },
+    {
+      "id": "W04g-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vICMSUFRemet (W04g) = Σ itens vICMSUFRemet (NA17)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "120"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "800"
+      },
+      "condicoes": [
+        "Nulo vale zero"
+      ],
+      "implementacao": "W04g-10.v1"
+    },
+    {
+      "id": "W05-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vBCST (W05) = Σ itens vBCST (N21)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "120"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "533"
+      },
+      "condicoes": [],
+      "implementacao": "W05-10.v1"
+    },
+    {
+      "id": "W06-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vST (W06) = Σ itens vICMSST (N23)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "120"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "534"
+      },
+      "condicoes": [],
+      "implementacao": "W06-10.v1"
+    },
+    {
+      "id": "W06a-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vFCPST (W06a) = Σ itens vFCPST (N23d)",
+      "fonte": {
+        "documento": "NT 2016.002",
+        "versao": "1.61",
+        "paginas": "62"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "862"
+      },
+      "condicoes": [],
+      "implementacao": "W06a-10.v1"
+    },
+    {
+      "id": "W06b-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vFCPSTRet (W06b) = Σ itens vFCPSTRet (N27d)",
+      "fonte": {
+        "documento": "NT 2016.002",
+        "versao": "1.61",
+        "paginas": "62"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "859"
+      },
+      "condicoes": [],
+      "implementacao": "W06b-10.v1"
+    },
+    {
+      "id": "W06b.1-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "qBCMono (W06b.1) = Σ itens qBCMono (N37a)",
+      "fonte": {
+        "documento": "NT 2023.001",
+        "versao": "1.60",
+        "paginas": "39-40"
+      },
+      "vigencia": {
+        "inicio": "2023-10-30",
+        "fim": null
+      },
+      "severidade": "Baixa",
+      "tolerancia": 0.01,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "700"
+      },
+      "condicoes": [
+        "Tolerância de 0,01 (*4)"
+      ],
+      "implementacao": "W06b.1-10.v1"
+    },
+    {
+      "id": "W06c-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vICMSMono (W06c) = Σ itens vICMSMono (N39)",
+      "fonte": {
+        "documento": "NT 2023.001",
+        "versao": "1.60",
+        "paginas": "39-40"
+      },
+      "vigencia": {
+        "inicio": "2023-10-30",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "967"
+      },
+      "condicoes": [],
+      "implementacao": "W06c-10.v1"
+    },
+    {
+      "id": "W06c.1-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "qBCMonoReten (W06c.1) = Σ itens qBCMonoReten (N39a)",
+      "fonte": {
+        "documento": "NT 2023.001",
+        "versao": "1.60",
+        "paginas": "39-40"
+      },
+      "vigencia": {
+        "inicio": "2023-10-30",
+        "fim": null
+      },
+      "severidade": "Baixa",
+      "tolerancia": 0.01,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "723"
+      },
+      "condicoes": [
+        "Tolerância de 0,01 (*4)"
+      ],
+      "implementacao": "W06c.1-10.v1"
+    },
+    {
+      "id": "W06d-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vICMSMonoReten (W06d) = Σ itens vICMSMonoReten (N41)",
+      "fonte": {
+        "documento": "NT 2023.001",
+        "versao": "1.60",
+        "paginas": "39-40"
+      },
+      "vigencia": {
+        "inicio": "2023-10-30",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "968"
+      },
+      "condicoes": [],
+      "implementacao": "W06d-10.v1"
+    },
+    {
+      "id": "W06d.1-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "qBCMonoRet (W06d.1) = Σ itens qBCMonoRet (N43a)",
+      "fonte": {
+        "documento": "NT 2023.001",
+        "versao": "1.60",
+        "paginas": "39-40"
+      },
+      "vigencia": {
+        "inicio": "2023-10-30",
+        "fim": null
+      },
+      "severidade": "Baixa",
+      "tolerancia": 0.01,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "744"
+      },
+      "condicoes": [
+        "Tolerância de 0,01 (*4)"
+      ],
+      "implementacao": "W06d.1-10.v1"
+    },
+    {
+      "id": "W06e-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vICMSMonoRet (W06e) = Σ itens vICMSMonoRet (N45)",
+      "fonte": {
+        "documento": "NT 2023.001",
+        "versao": "1.60",
+        "paginas": "39-40"
+      },
+      "vigencia": {
+        "inicio": "2023-10-30",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "969"
+      },
+      "condicoes": [],
+      "implementacao": "W06e-10.v1"
+    },
+    {
+      "id": "W07-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vProd (W07) = Σ itens vProd (I11) dos itens sujeitos ao ICMS",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "121"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": "2026-08-02"
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "564"
+      },
+      "condicoes": [
+        "Só itens com indTot (I17b) = 1"
+      ],
+      "implementacao": "W07-10.v1"
+    },
+    {
+      "id": "W07-10",
+      "versaoRegra": 2,
+      "grupo": "ICMSTot",
+      "descricao": "vProd (W07) = Σ itens vProd (I11) dos itens sujeitos ao ICMS ou ao IBS/CBS/IS",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70"
+      },
+      "vigencia": {
+        "inicio": "2026-08-03",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "564"
+      },
+      "condicoes": [
+        "Só itens com indTot (I17b) = 1"
+      ],
+      "implementacao": "W07-10.v2"
+    },
+    {
+      "id": "W08-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vFrete (W08) = Σ itens vFrete (I15)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "121"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "535"
+      },
+      "condicoes": [],
+      "implementacao": "W08-10.v1"
+    },
+    {
+      "id": "W09-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vSeg (W09) = Σ itens vSeg (I16)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "121"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "536"
+      },
+      "condicoes": [],
+      "implementacao": "W09-10.v1"
+    },
+    {
+      "id": "W10-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vDesc (W10) = Σ itens vDesc (I17)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "121"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "537"
+      },
+      "condicoes": [],
+      "implementacao": "W10-10.v1"
+    },
+    {
+      "id": "W11-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vII (W11) = Σ itens vII (P04)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "121"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "601"
+      },
+      "condicoes": [],
+      "implementacao": "W11-10.v1"
+    },
+    {
+      "id": "W12-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vIPI (W12) = Σ itens vIPI (O14)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "121"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "538"
+      },
+      "condicoes": [],
+      "implementacao": "W12-10.v1"
+    },
+    {
+      "id": "W12a-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vIPIDevol (W12a) = Σ itens vIPIDevol (UA04)",
+      "fonte": {
+        "documento": "NT 2016.002",
+        "versao": "1.61",
+        "paginas": "62"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "863"
+      },
+      "condicoes": [],
+      "implementacao": "W12a-10.v1"
+    },
+    {
+      "id": "W13-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vPIS (W13) = Σ itens vPIS (Q09) dos itens com grupo ICMS",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "121"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "602"
+      },
+      "condicoes": [],
+      "implementacao": "W13-10.v1"
+    },
+    {
+      "id": "W14-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vCOFINS (W14) = Σ itens vCOFINS (S11) dos itens com grupo ICMS",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "121"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "603"
+      },
+      "condicoes": [],
+      "implementacao": "W14-10.v1"
+    },
+    {
+      "id": "W15-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vOutro (W15) = Σ itens vOutro (I17a)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "121"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "604"
+      },
+      "condicoes": [],
+      "implementacao": "W15-10.v1"
+    },
+    {
+      "id": "W16-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vNF (W16) = vProd - vDesc - vICMSDeson + vST + vFCPST + vFrete + vSeg + vOutro + vII + vIPI + vIPIDevol + vServ",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "122 e 140"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": "2021-10-03"
+      },
+      "severidade": "Alta",
+      "tolerancia": 0.50,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "610"
+      },
+      "condicoes": [
+        "Tolerância de R$ 0,50 para mais ou para menos (*3)",
+        "Faturamento direto de veículo novo (tpOp = 2): sem vST, vFCPST e vIPIDevol",
+        "Não se aplica a importação (CFOP iniciado por 3)",
+        "Não rejeita se vICMSDeson não foi subtraído"
+      ],
+      "implementacao": "W16-10.v1"
+    },
+    {
+      "id": "W16-10",
+      "versaoRegra": 2,
+      "grupo": "ICMSTot",
+      "descricao": "vNF (W16) = versão 1 + vPIS do grupo PISST (R06), se indSomaPISST = 1, + vCOFINS do grupo COFINSST (T06), se indSomaCOFINSST = 1",
+      "fonte": {
+        "documento": "NT 2020.005",
+        "versao": "1.21",
+        "paginas": "20"
+      },
+      "vigencia": {
+        "inicio": "2021-10-04",
+        "fim": "2023-03-29"
+      },
+      "severidade": "Alta",
+      "tolerancia": 0.50,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "610"
+      },
+      "condicoes": [
+        "Tolerância de R$ 0,50 para mais ou para menos (*3)",
+        "Faturamento direto de veículo novo (tpOp = 2): sem vST, vFCPST, vIPIDevol, PIS-ST e COFINS-ST",
+        "Não se aplica a importação (CFOP iniciado por 3)",
+        "Não rejeita se vICMSDeson não foi subtraído"
+      ],
+      "implementacao": "W16-10.v2"
+    },
+    {
+      "id": "W16-10",
+      "versaoRegra": 3,
+      "grupo": "ICMSTot",
+      "descricao": "vNF (W16) = versão 2 + vICMSMonoReten (W06d)",
+      "fonte": {
+        "documento": "NT 2023.001",
+        "versao": "1.60",
+        "paginas": "11 e 41"
+      },
+      "vigencia": {
+        "inicio": "2023-03-30",
+        "fim": "2024-06-30"
+      },
+      "severidade": "Alta",
+      "tolerancia": 0.50,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "610"
+      },
+      "condicoes": [
+        "Tolerância de R$ 0,50 para mais ou para menos (*3)",
+        "Faturamento direto de veículo novo (tpOp = 2): sem vST, vFCPST, vIPIDevol, PIS-ST e COFINS-ST",
+        "Não se aplica a importação (CFOP iniciado por 3)",
+        "Não rejeita se vICMSDeson não foi subtraído"
+      ],
+      "implementacao": "W16-10.v3"
+    },
+    {
+      "id": "W16-10",
+      "versaoRegra": 4,
+      "grupo": "ICMSTot",
+      "descricao": "vNF (W16) = versão 3",
+      "fonte": {
+        "documento": "NT 2023.004",
+        "versao": "1.20",
+        "paginas": "5-6 e 15-16"
+      },
+      "vigencia": {
+        "inicio": "2024-07-01",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": 0.50,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "610"
+      },
+      "condicoes": [
+        "Tolerância de R$ 0,50 para mais ou para menos (*3)",
+        "Veículo novo (tpOp = 2): sem vST, vFCPST e vIPIDevol, com vICMSMonoReten",
+        "Não se aplica a importação (CFOP iniciado por 3)",
+        "Não rejeita se não foi subtraído o vICMSDeson (N28a) dos itens com indDeduzDeson (N28b) = 0 ou não informado"
+      ],
+      "implementacao": "W16-10.v4"
+    },
+    {
+      "id": "W16a-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vTotTrib (W16a) = Σ itens vTotTrib (M02)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "123"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Informativa",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "685"
+      },
+      "condicoes": [
+        "Campo opcional; ausente vale zero"
+      ],
+      "implementacao": "W16a-10.v1"
+    },
+    {
+      "id": "W01a-10",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vProdLiqTot (W01a) informado quando algum item tiver vProdLiq (I11c)",
+      "fonte": {
+        "documento": "NT 2026.008",
+        "versao": "1.01",
+        "paginas": "8"
+      },
+      "vigencia": {
+        "inicio": "2026-11-16",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1282"
+      },
+      "condicoes": [],
+      "implementacao": "W01a-10.v1"
+    },
+    {
+      "id": "W01a-20",
+      "versaoRegra": 1,
+      "grupo": "ICMSTot",
+      "descricao": "vProdLiqTot (W01a) = Σ itens vProdLiq (I11c)",
+      "fonte": {
+        "documento": "NT 2026.008",
+        "versao": "1.01",
+        "paginas": "8"
+      },
+      "vigencia": {
+        "inicio": "2026-11-16",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1283"
+      },
+      "condicoes": [
+        "Só quando vProdLiqTot for informado"
+      ],
+      "implementacao": "W01a-20.v1"
+    },
+    {
+      "id": "W18-10",
+      "versaoRegra": 1,
+      "grupo": "ISSQNtot",
+      "descricao": "vServ (W18) = Σ itens vProd (I11) dos itens sujeitos ao ISSQN",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "123"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "605"
+      },
+      "condicoes": [],
+      "implementacao": "W18-10.v1"
+    },
+    {
+      "id": "W19-10",
+      "versaoRegra": 1,
+      "grupo": "ISSQNtot",
+      "descricao": "vBC (W19) = Σ itens vBC do ISSQN (U02)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "123"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "606"
+      },
+      "condicoes": [],
+      "implementacao": "W19-10.v1"
+    },
+    {
+      "id": "W20-10",
+      "versaoRegra": 1,
+      "grupo": "ISSQNtot",
+      "descricao": "vISS (W20) = Σ itens vISSQN (U04)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "123"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "607"
+      },
+      "condicoes": [],
+      "implementacao": "W20-10.v1"
+    },
+    {
+      "id": "W21-10",
+      "versaoRegra": 1,
+      "grupo": "ISSQNtot",
+      "descricao": "vPIS (W21) = Σ itens vPIS (Q09) dos itens sujeitos ao ISSQN",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "123"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "608"
+      },
+      "condicoes": [],
+      "implementacao": "W21-10.v1"
+    },
+    {
+      "id": "W22-10",
+      "versaoRegra": 1,
+      "grupo": "ISSQNtot",
+      "descricao": "vCOFINS (W22) = Σ itens vCOFINS (S11) dos itens sujeitos ao ISSQN",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "123"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "609"
+      },
+      "condicoes": [],
+      "implementacao": "W22-10.v1"
+    },
+    {
+      "id": "W22b-10",
+      "versaoRegra": 1,
+      "grupo": "ISSQNtot",
+      "descricao": "vDeducao (W22b) = Σ itens vDeducao (U07)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "123"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Baixa",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "364"
+      },
+      "condicoes": [],
+      "implementacao": "W22b-10.v1"
+    },
+    {
+      "id": "W22c-10",
+      "versaoRegra": 1,
+      "grupo": "ISSQNtot",
+      "descricao": "vOutro (W22c) = Σ itens vOutro (U08)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "123"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Baixa",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "365"
+      },
+      "condicoes": [],
+      "implementacao": "W22c-10.v1"
+    },
+    {
+      "id": "W22d-10",
+      "versaoRegra": 1,
+      "grupo": "ISSQNtot",
+      "descricao": "vDescIncond (W22d) = Σ itens vDescIncond (U09)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "123"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Baixa",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "366"
+      },
+      "condicoes": [],
+      "implementacao": "W22d-10.v1"
+    },
+    {
+      "id": "W22e-10",
+      "versaoRegra": 1,
+      "grupo": "ISSQNtot",
+      "descricao": "vDescCond (W22e) = Σ itens vDescCond (U10)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "123"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Baixa",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "367"
+      },
+      "condicoes": [],
+      "implementacao": "W22e-10.v1"
+    },
+    {
+      "id": "W22f-10",
+      "versaoRegra": 1,
+      "grupo": "ISSQNtot",
+      "descricao": "vISSRet (W22f) = Σ itens vISSRet (U11)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "123"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Baixa",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "368"
+      },
+      "condicoes": [],
+      "implementacao": "W22f-10.v1"
+    },
+    {
+      "id": "W31-10",
+      "versaoRegra": 1,
+      "grupo": "ISTot",
+      "descricao": "Grupo ISTot informado sem nenhum item com IS",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1073"
+      },
+      "condicoes": [
+        "Só com os grupos de IBS, CBS ou IS preenchidos"
+      ],
+      "implementacao": "W31-10.v1"
+    },
+    {
+      "id": "W31-20",
+      "versaoRegra": 1,
+      "grupo": "ISTot",
+      "descricao": "Grupo ISTot ausente com algum item com IS",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1117"
+      },
+      "condicoes": [
+        "Só com os grupos de IBS, CBS ou IS preenchidos"
+      ],
+      "implementacao": "W31-20.v1"
+    },
+    {
+      "id": "W34-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "Grupo IBSCBSTot informado sem nenhum item com IBSCBS (UB12)",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1118"
+      },
+      "condicoes": [
+        "Só com os grupos de IBS, CBS ou IS preenchidos"
+      ],
+      "implementacao": "W34-10.v1"
+    },
+    {
+      "id": "W34-20",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "Grupo IBSCBSTot ausente com algum item com IBSCBS",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1119"
+      },
+      "condicoes": [
+        "Só com os grupos de IBS, CBS ou IS preenchidos"
+      ],
+      "implementacao": "W34-20.v1"
+    },
+    {
+      "id": "W35-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "vBCIBSCBS = Σ itens gIBSCBS/vBC",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1076"
+      },
+      "condicoes": [],
+      "implementacao": "W35-10.v1"
+    },
+    {
+      "id": "W38-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "vDif do IBS estadual = Σ itens",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1077"
+      },
+      "condicoes": [],
+      "implementacao": "W38-10.v1"
+    },
+    {
+      "id": "W39-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "vDevTrib do IBS estadual = Σ itens",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1078"
+      },
+      "condicoes": [],
+      "implementacao": "W39-10.v1"
+    },
+    {
+      "id": "W41-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "vIBSUF do IBS estadual = Σ itens",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1080"
+      },
+      "condicoes": [],
+      "implementacao": "W41-10.v1"
+    },
+    {
+      "id": "W43-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "vDif do IBS municipal = Σ itens",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1081"
+      },
+      "condicoes": [],
+      "implementacao": "W43-10.v1"
+    },
+    {
+      "id": "W44-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "vDevTrib do IBS municipal = Σ itens",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1082"
+      },
+      "condicoes": [],
+      "implementacao": "W44-10.v1"
+    },
+    {
+      "id": "W46-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "vIBSMun do IBS municipal = Σ itens",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1084"
+      },
+      "condicoes": [],
+      "implementacao": "W46-10.v1"
+    },
+    {
+      "id": "W47-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "vIBS = Σ itens gIBSCBS/vIBS",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1085"
+      },
+      "condicoes": [],
+      "implementacao": "W47-10.v1"
+    },
+    {
+      "id": "W48-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "vCredPres do IBS = Σ itens",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1086"
+      },
+      "condicoes": [],
+      "implementacao": "W48-10.v1"
+    },
+    {
+      "id": "W53-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "vDif da CBS = Σ itens",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1088"
+      },
+      "condicoes": [],
+      "implementacao": "W53-10.v1"
+    },
+    {
+      "id": "W54-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "vDevTrib da CBS = Σ itens",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1089"
+      },
+      "condicoes": [],
+      "implementacao": "W54-10.v1"
+    },
+    {
+      "id": "W56-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "vCBS = Σ itens",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1091"
+      },
+      "condicoes": [],
+      "implementacao": "W56-10.v1"
+    },
+    {
+      "id": "W56a-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "vCredPres da CBS = Σ itens",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1087"
+      },
+      "condicoes": [],
+      "implementacao": "W56a-10.v1"
+    },
+    {
+      "id": "W58-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "vIBSMono = Σ itens",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1092"
+      },
+      "condicoes": [],
+      "implementacao": "W58-10.v1"
+    },
+    {
+      "id": "W59-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "vCBSMono = Σ itens",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1093"
+      },
+      "condicoes": [],
+      "implementacao": "W59-10.v1"
+    },
+    {
+      "id": "W59a-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "vIBSMonoReten = Σ itens",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1120"
+      },
+      "condicoes": [],
+      "implementacao": "W59a-10.v1"
+    },
+    {
+      "id": "W59b-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "vCBSMonoReten = Σ itens",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1121"
+      },
+      "condicoes": [],
+      "implementacao": "W59b-10.v1"
+    },
+    {
+      "id": "W59c-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "vIBSMonoRet = Σ itens",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1122"
+      },
+      "condicoes": [],
+      "implementacao": "W59c-10.v1"
+    },
+    {
+      "id": "W59d-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "vCBSMonoRet = Σ itens",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2025-11-10",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1123"
+      },
+      "condicoes": [],
+      "implementacao": "W59d-10.v1"
+    },
+    {
+      "id": "W59f-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "vIBSEstCred = Σ itens gEstornoCred/vIBS",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2026-02-02",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1176"
+      },
+      "condicoes": [],
+      "implementacao": "W59f-10.v1"
+    },
+    {
+      "id": "W59g-10",
+      "versaoRegra": 1,
+      "grupo": "IBSCBSTot",
+      "descricao": "vCBSEstCred = Σ itens gEstornoCred/vCBS",
+      "fonte": {
+        "documento": "NT 2025.002",
+        "versao": "1.53",
+        "paginas": "70-71"
+      },
+      "vigencia": {
+        "inicio": "2026-02-02",
+        "fim": null
+      },
+      "severidade": "Alta",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "1177"
+      },
+      "condicoes": [],
+      "implementacao": "W59g-10.v1"
+    },
+    {
+      "id": "Y05-10",
+      "versaoRegra": 1,
+      "grupo": "Cobranca",
+      "descricao": "Desconto da fatura (vDesc, Y05) não pode ser maior que o valor original (vOrig, Y04)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "125-126"
+      },
+      "vigencia": {
+        "inicio": "2018-06-04",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "901"
+      },
+      "condicoes": [
+        "Campos opcionais não informados valem zero"
+      ],
+      "implementacao": "Y05-10.v1"
+    },
+    {
+      "id": "Y06-10",
+      "versaoRegra": 1,
+      "grupo": "Cobranca",
+      "descricao": "Valor líquido da fatura (vLiq, Y06) = vOrig (Y04) - vDesc (Y05)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "125-126"
+      },
+      "vigencia": {
+        "inicio": "2018-06-04",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "902"
+      },
+      "condicoes": [
+        "Só quando vLiq e vOrig forem informados"
+      ],
+      "implementacao": "Y06-10.v1"
+    },
+    {
+      "id": "Y10-10",
+      "versaoRegra": 1,
+      "grupo": "Cobranca",
+      "descricao": "Σ das duplicatas vDup (Y10) = vLiq (Y06)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "125-126"
+      },
+      "vigencia": {
+        "inicio": "2018-07-02",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "851"
+      },
+      "condicoes": [],
+      "implementacao": "Y10-10.v1"
+    },
+    {
+      "id": "YA03-20",
+      "versaoRegra": 1,
+      "grupo": "Pagamento",
+      "descricao": "Se Σ dos pagamentos vPag (YA03) for maior que vNF (W16), o troco (vTroco, YA09) deve ser informado",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "125-126"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Facultativa",
+        "codigoRejeicao": "866"
+      },
+      "condicoes": [],
+      "implementacao": "YA03-20.v1"
+    },
+    {
+      "id": "YA09-10",
+      "versaoRegra": 1,
+      "grupo": "Pagamento",
+      "descricao": "Troco informado: vTroco (YA09) = Σ vPag (YA03) - vNF (W16)",
+      "fonte": {
+        "documento": "MOC 7.0 Anexo I",
+        "versao": "7.03",
+        "paginas": "125-126"
+      },
+      "vigencia": {
+        "inicio": "2017-12-04",
+        "fim": null
+      },
+      "severidade": "Media",
+      "tolerancia": null,
+      "aplicacaoSefaz": {
+        "tipo": "Obrigatoria",
+        "codigoRejeicao": "869"
+      },
+      "condicoes": [
+        "O texto não diz se vPag é somado; o catálogo usa a soma (pendência C5)"
+      ],
+      "implementacao": "YA09-10.v1"
+    }
+  ]
+}

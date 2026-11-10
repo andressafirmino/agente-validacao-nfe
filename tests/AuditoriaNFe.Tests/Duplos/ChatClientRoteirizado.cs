@@ -25,6 +25,14 @@ public sealed class ChatClientRoteirizado(string modelo = ChatClientRoteirizado.
 
     public int Restantes => _roteiro.Count;
 
+    /// <summary>Descarta o roteiro e as chamadas de testes anteriores que usam a mesma instância.</summary>
+    public ChatClientRoteirizado Limpar()
+    {
+        _roteiro.Clear();
+        _chamadas.Clear();
+        return this;
+    }
+
     /// <summary>
     /// Resposta com o texto dado (válido ou não para o contrato) e o uso informado ou ausente;
     /// <paramref name="modeloResposta"/> substitui o modelo padrão nesta resposta.

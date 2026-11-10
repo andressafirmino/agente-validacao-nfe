@@ -22,6 +22,7 @@ public sealed class FabricaAgentCard(
     public const string Rota = "/.well-known/agent-card.json";
     public const string RotaA2A = "/a2a/auditoria-nfe";
     public const string ImplantacaoSomenteAgentCard = "somente Agent Card publicado; message/send indisponível nesta URL";
+    public const string ImplantacaoHomologacao = "homologação pública, sem autenticação; somente dados sintéticos";
 
     public static JsonSerializerOptions OpcoesJson { get; } = CriarOpcoesJson();
 
@@ -51,7 +52,12 @@ public sealed class FabricaAgentCard(
                         Limites: new LimitesContratoSofia(limites.TamanhoTotalBytes, limites.QuantidadeArquivos),
                         DocumentosSuportados: [new DocumentoSuportadoSofia("NF-e", "55", ["4.00"], "application/xml")],
                         Idioma: "pt-BR",
-                        Implantacao: modo == ModoHospedagem.SomenteAgentCard ? ImplantacaoSomenteAgentCard : null)),
+                        Implantacao: modo switch
+                        {
+                            ModoHospedagem.SomenteAgentCard => ImplantacaoSomenteAgentCard,
+                            ModoHospedagem.Homologacao => ImplantacaoHomologacao,
+                            _ => null,
+                        })),
             ]),
         DefaultInputModes: ["text"],
         DefaultOutputModes: ["text"],

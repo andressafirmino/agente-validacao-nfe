@@ -16,6 +16,7 @@ namespace AuditoriaNFe.Tests.Aplicacao.Consumo;
 /// Comportamento do registro sem PostgreSQL disponível; a gravação real fica em
 /// <c>Integracao/ConsumoTests</c> (T043).
 /// </summary>
+[Collection(ColecaoSemParalelismo.Nome)]
 public sealed class RegistroConsumoChatClientTests
 {
     private const string Chave = "f483983d00000000000000000000000000000000000000000000000000008fe5";
@@ -176,4 +177,14 @@ public sealed class RegistroConsumoChatClientTests
 
         public void Dispose() => _ouvinte.Dispose();
     }
+}
+
+/// <summary>
+/// Testes que medem tempo de parede: sob a carga das coleções de integração em paralelo, o pool de
+/// threads atrasa o disparo do timeout além da tolerância.
+/// </summary>
+[CollectionDefinition(Nome, DisableParallelization = true)]
+public sealed class ColecaoSemParalelismo
+{
+    public const string Nome = "SemParalelismo";
 }

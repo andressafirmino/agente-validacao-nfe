@@ -137,6 +137,20 @@ convenção da constitution.
   segue o contrato SOFIA v1.0 (formato v0.3) e informa que a análise não está disponível naquela
   URL.
 
+### Session 2026-11-10
+
+- Q: O agente completo pode ser publicado para testes de homologação antes do fim do D-05? → A: Sim,
+  pelo desvio D-09 (ADR-0013), aprovado por Andressa Firmino em 2026-11-10: modo de hospedagem
+  `Homologacao` no projeto Vercel do Agent Card, na mesma URL já cadastrada na SOFIA, público e sem
+  autenticação, com MongoDB Atlas Free, Neon Free, OpenAI com chave exclusiva e limite de gasto,
+  Swagger disponível e só dados sintéticos.
+- Q: A homologação aceita o lote de 5 MB? → A: Não. O Vercel limita o corpo da requisição a 4,5 MB;
+  na homologação, o total dos arquivos é limitado a 4.000.000 bytes e o corpo HTTP a 4.500.000
+  bytes, com recusa pelo ERR-002.
+- Q: O Atlas pode aceitar conexões de qualquer IP? → A: Sim, só na homologação, porque o Vercel não
+  tem IP de saída fixo, com usuário de banco de permissão mínima, senha forte, TLS e dados
+  sintéticos.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### Atores
@@ -434,7 +448,11 @@ obtém o Agent Card, envia a solicitação e exibe o resultado com os IDs da sol
   suportado.
 - **FR-008**: Arquivos de tipo, modelo ou versão não suportados, incluindo a NFC-e (modelo 65), que
   usa o mesmo schema da NF-e, DEVEM ser registrados com validação "não realizada" e o motivo, sem
-  serem considerados válidos e sem passar pela validação de schema.
+  serem considerados válidos e sem passar pela validação de schema. O motivo DEVE dizer o que foi
+  encontrado, sem reproduzir conteúdo do documento: o elemento raiz quando não for `NFe` nem
+  `nfeProc` (por exemplo, `procEventoNFe`: evento, não nota fiscal), o namespace divergente, a
+  chave de acesso ausente ou inválida, o modelo informado em `ide/mod` e na chave (por exemplo,
+  `65`: NFC-e) ou a versão de layout informada.
 - **FR-009**: O agente DEVE detectar documentos com a mesma chave de acesso no lote e na sessão,
   analisar cada documento uma única vez e registrar a duplicidade. Arquivos com a mesma chave e
   conteúdo diferente DEVEM gerar achado específico.
@@ -487,6 +505,19 @@ obtém o Agent Card, envia a solicitação e exibe o resultado com os IDs da sol
   (arquivos recebidos, analisados, com achados e não analisados), resultado geral, achados por
   arquivo, categoria e severidade, evidências e referências, limitações, validações não realizadas
   e indicação de necessidade de revisão humana.
+- **FR-017a**: A descrição de um achado determinístico DEVE começar por uma frase em linguagem
+  natural com o campo, o valor informado, o valor esperado e o que a regra exige (por exemplo, "O
+  total do ICMS (`vICMS`) informado, 19.00, é diferente do esperado, 18.00: deve ser igual à soma
+  do `vICMS` dos itens."). O identificador, a versão e a fórmula da regra vêm depois da frase. O
+  texto é montado pelo sistema a partir do catálogo, sem regra nova nem texto inventado.
+- **FR-017b**: O resumo textual montado pelo sistema, quando a análise por IA não estiver
+  disponível, DEVE trazer em linguagem natural: a contagem de arquivos (recebidos, analisados e não
+  analisados); o resultado geral; as inconsistências por arquivo, com campo, valor informado e
+  valor esperado, até 10, informando quantas ficaram de fora; cada arquivo não analisado com o
+  motivo (FR-008); e os alertas, com a indisponibilidade da IA. O texto chama de "inconsistências"
+  os achados `ErroEstrutural` e `InconsistenciaNegocio` e de "alertas" as demais categorias, e não
+  usa o termo "achados". O resumo produzido pela IA DEVE seguir o mesmo vocabulário. Os nomes dos
+  campos do contrato v1 não mudam.
 - **FR-018**: O resultado geral DEVE ser um destes: "Sem inconsistências nas validações
   realizadas", "Com inconsistências" ou "Inconclusiva".
 - **FR-019**: O resultado "Sem inconsistências nas validações realizadas" SOMENTE PODE ser atribuído
@@ -737,14 +768,21 @@ obtém o Agent Card, envia a solicitação e exibe o resultado com os IDs da sol
   autenticação.
 - **FR-052b**: Enquanto o desvio D-05 vigorar, o agente SOMENTE PODE ser executado em ambiente local
   de testes, com as portas publicadas apenas na interface local da máquina, e o Agent Card DEVE
-  declarar que não há autenticação. Os dados de teste DEVEM ser sintéticos ou anonimizados. A única
-  exceção é o modo somente Agent Card (FR-052f).
+  declarar que não há autenticação. Os dados de teste DEVEM ser sintéticos ou anonimizados. As
+  exceções são o modo somente Agent Card (FR-052f) e o modo de homologação (FR-052g).
 - **FR-052f** *(desvio D-08)*: O agente PODE ser publicado fora do ambiente
   local apenas no modo `SomenteAgentCard`, que expõe só o Agent Card e a verificação de vida e não
   registra persistência, provedor de IA, documentação da API, rotas `/api/v1` nem o endpoint A2A.
   Nesse modo, o card DEVE informar, na extensão do contrato, que a análise não está disponível
   naquela URL, e o agente NÃO DEVE exigir connection strings nem chaves. Fora de `Development`,
-  qualquer outro modo DEVE impedir a inicialização.
+  qualquer outro modo, exceto o de homologação (FR-052g), DEVE impedir a inicialização.
+- **FR-052g** *(desvio D-09)*: O agente completo PODE ser executado fora do ambiente local, sem
+  autenticação, apenas no modo `Homologacao`, destinado a testes com dados sintéticos. Nesse modo, o
+  agente DEVE registrar as mesmas rotas do modo completo e a documentação da API, e DEVE impedir a
+  inicialização quando o provedor de IA for o simulado, quando as migrações estiverem configuradas
+  para rodar na inicialização ou quando o tamanho total dos arquivos ou o corpo HTTP configurados
+  excederem 4.000.000 e 4.500.000 bytes. O Agent Card DEVE informar, na extensão do contrato, que é
+  uma homologação pública, sem autenticação e só para dados sintéticos.
 - **FR-052e**: As chamadas da SOFIA ao agente (A2A e REST) são de servidor para servidor e NÃO
   DEVEM depender de CORS. O agente DEVE conceder permissão CORS só a navegadores das origens
   configuradas (`Cors:AllowedOrigins`, esquema + host + porta, sem caminho, barra final ou curinga) e
@@ -816,8 +854,8 @@ parecer; erros por arquivo são registrados no parecer, e os demais arquivos seg
 | ERR-006 | Sessão expirada | Responder "sessão expirada" e orientar o início de nova sessão | Solicitação |
 | ERR-007 | Mensagem A2A malformada ou fora do contrato SOFIA v1.0 | Rejeitar sem executar análise: resultado com status `erro`, ou Task `failed` quando não houver IDs válidos para montar o resultado | Solicitação |
 | ERR-008 | Arquivo não é XML bem formado | Erro estrutural do documento; demais arquivos seguem | Arquivo |
-| ERR-009 | XML não é NF-e, ou modelo não suportado | Validação "não realizada — documento não suportado" | Arquivo |
-| ERR-010 | Versão de layout não suportada | Validação "não realizada — versão não suportada" | Arquivo |
+| ERR-009 | XML não é NF-e, ou modelo não suportado | Validação "não realizada — documento não suportado", com o motivo específico (FR-008) | Arquivo |
+| ERR-010 | Versão de layout não suportada | Validação "não realizada — versão não suportada", com a versão informada (FR-008) | Arquivo |
 | ERR-011 | Documento duplicado no lote ou na sessão | Achado Informativo; documento analisado uma vez | Arquivo |
 | ERR-012 | Mesma chave com conteúdo divergente | Achado de severidade Alta; nenhum dos arquivos é descartado | Arquivo |
 | ERR-013 | Base de conhecimento indisponível | Falha técnica ou dependência indisponível; resultados determinísticos entregues; resultado "Inconclusiva"; revisão humana | Execução |
@@ -959,6 +997,10 @@ ele PODE executá-lo. Os XMLs de teste DEVEM ser sintéticos ou anonimizados.
 | TS-069 | Solicitação A2A com `traceparent` e documento com instruções ao agente no `infCpl` | O trace continua o recebido; logs com os IDs da SOFIA e sem nome, pergunta ou conteúdo; as instruções do documento não são seguidas (como TS-018) | NFR-014, FR-053 | Não |
 | TS-070 | Preflight `OPTIONS` e requisição a `/api/v1` com origem configurada, com origem não configurada, sem `Origin` e com a lista vazia; preflight ao Agent Card e aos health checks; origem inválida na configuração | Origem configurada: `Access-Control-Allow-Origin` igual à origem, métodos e cabeçalhos permitidos, sem `Allow-Credentials`; demais casos: sem permissão CORS; sem `Origin`: resposta normal; configuração inválida: o agente não inicia | FR-052e | Não |
 | TS-071 | Agente em `Production` no modo `SomenteAgentCard`, sem connection strings nem chave; mesmo ambiente no modo `Completo` | Modo restrito: o agente inicia; Agent Card v0.3 com `url` da configuração e `implantacao` na extensão; `/health/live` responde; `/health/ready`, Swagger, OpenAPI, `/api/v1/*` e `POST /a2a/auditoria-nfe` respondem 404. Modo completo: o agente não inicia | FR-052b, FR-052f, FR-045 | Não |
+| TS-072 | Lote com evento de cancelamento (`procEventoNFe`), NFC-e (modelo 65), NF-e versão 3.10 e XML com namespace diferente | ERR-009 ou ERR-010 por arquivo, com motivo que cita a raiz `procEventoNFe` e diz que é evento, o modelo `65` (NFC-e), a versão `3.10` e o namespace divergente; nenhum trecho do XML no motivo | FR-008 | Não |
+| TS-073 | Lote com uma NF-e válida, uma com `vICMS` divergente e um documento não suportado, com a IA indisponível | Resumo do sistema com contagens, resultado geral, a inconsistência W04-10 com arquivo, campo, informado e esperado, o arquivo não analisado com o motivo e o alerta da IA; sem a palavra "achados"; descrição do achado começa pela frase em linguagem natural | FR-017a, FR-017b | Não |
+| TS-074 | Agente em `Production` no modo `Homologacao`, com autenticação desabilitada; variações com provedor simulado, migrações na inicialização e limites acima de 4.000.000 e 4.500.000 bytes | Configuração válida: o agente inicia; Swagger, OpenAPI e rotas `/api/v1` respondem; card com `implantacao` de homologação; lote acima de 4.000.000 bytes → ERR-002. Cada variação inválida: o agente não inicia. Modo `Completo` fora de `Development` continua recusado | FR-052g, FR-052b, FR-004 | Não |
+| TS-075 | Homologação publicada: card, saúde, Swagger, análise de NF-e sintética, continuidade, contexto do usuário e consumo | Card com a URL da homologação; `/health/live` e `/health/ready` 200; execução concluída com parecer; continuidade na mesma sessão; contexto consultado; linha de consumo no Neon; nenhum segredo nem conteúdo do XML nos logs do Vercel | FR-052g, NFR-008 | Não |
 
 ## Success Criteria *(mandatory)*
 
