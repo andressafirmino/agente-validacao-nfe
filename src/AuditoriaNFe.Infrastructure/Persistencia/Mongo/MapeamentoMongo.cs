@@ -13,7 +13,7 @@ namespace AuditoriaNFe.Infrastructure.Persistencia.Mongo;
 /// <summary>
 /// Mapeamento das entidades do Domínio para BSON, registrado uma vez por processo: GUID em
 /// representação padrão (binData 4), datas como BSON date em UTC, decimais como Decimal128, enums
-/// como texto e nomes em camelCase (convenções de <c>infra/mongodb/init/01-colecoes.js</c>).
+/// como texto e nomes em camelCase (convenções de <c>infra/mongodb/init/02-colecoes.js</c>).
 /// </summary>
 internal static class MapeamentoMongo
 {

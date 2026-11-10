@@ -1,3 +1,4 @@
+using Api.Agente.A2A;
 using Api.Agente.Documentacao;
 using Api.Agente.Endpoints;
 using Api.Agente.Erros;
@@ -18,13 +19,20 @@ var builder = WebApplication.CreateBuilder(args);
 
 GuardaDesvioD05.Verificar(builder.Environment, builder.Configuration);
 
-if (HospedagemOpcoes.LerModo(builder.Configuration) == ModoHospedagem.SomenteAgentCard)
+var modo = HospedagemOpcoes.LerModo(builder.Configuration);
+if (modo == ModoHospedagem.SomenteAgentCard)
 {
     builder.Services.AdicionarSomenteAgentCard(builder.Configuration);
     var appCard = builder.Build();
     appCard.MapearSomenteAgentCard();
     await appCard.RunAsync();
     return;
+}
+
+if (modo == ModoHospedagem.Homologacao)
+{
+    ValidadorModoHomologacao.Verificar(builder.Configuration);
+    builder.Services.AdicionarHomologacao(builder.Configuration);
 }
 
 builder.Services
@@ -50,7 +58,7 @@ builder.Services.AddHealthChecks()
     .AddCheck<VerificacaoDiretorioAprovacao>(VerificacaoDiretorioAprovacao.Nome, tags: [Prontidao])
     .AddCheck<SaudeSchemasCatalogos>(SaudeSchemasCatalogos.Nome, tags: [Prontidao]);
 
-builder.Services.AdicionarDocumentacaoApi(builder.Environment);
+builder.Services.AdicionarDocumentacaoApi(builder.Environment, modo);
 
 var app = builder.Build();
 
@@ -58,8 +66,13 @@ app.Services.GetRequiredService<IProcessadorXml>();
 app.Services.GetRequiredService<ICatalogoRegras>();
 await MigracoesConsumo.AplicarSeHabilitadoAsync(app.Services);
 
+if (modo == ModoHospedagem.Homologacao)
+{
+    app.UsarCabecalhosDoProxy();
+}
+
 app.UseExceptionHandler();
-app.UsarDocumentacaoApi();
+app.UsarDocumentacaoApi(modo);
 app.UseRouting();
 app.UseCors();
 app.UseRateLimiter();
@@ -67,6 +80,10 @@ app.UseRateLimiter();
 app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
 app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = registro => registro.Tags.Contains(Prontidao) });
 app.MapearApiV1().MapearExecucoes().MapearSessoes().MapearContextoUsuario();
+if (modo == ModoHospedagem.Homologacao)
+{
+    app.MapearAgentCard();
+}
 
 await app.RunAsync();
 

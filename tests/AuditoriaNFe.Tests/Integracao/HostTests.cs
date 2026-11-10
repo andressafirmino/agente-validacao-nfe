@@ -1,5 +1,6 @@
 using System.Net;
 using Api.Agente.Documentacao;
+using Api.Agente.Hospedagem;
 using AuditoriaNFe.Tests.Integracao.Infra;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
@@ -48,13 +49,13 @@ public sealed class HostTests(AmbienteIntegracao ambiente)
     [InlineData("Production", "/swagger/index.html")]
     [InlineData("Production", DocumentacaoApiExtensions.RotaOpenApi)]
     [InlineData("Staging", DocumentacaoApiExtensions.RotaOpenApi)]
-    public async Task Documentacao_nao_existe_fora_de_Development(string nomeAmbiente, string rota)
+    public async Task Documentacao_nao_existe_fora_de_Development_no_modo_completo(string nomeAmbiente, string rota)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = nomeAmbiente });
         builder.WebHost.UseTestServer();
-        builder.Services.AdicionarDocumentacaoApi(builder.Environment);
+        builder.Services.AdicionarDocumentacaoApi(builder.Environment, ModoHospedagem.Completo);
         await using var app = builder.Build();
-        app.UsarDocumentacaoApi();
+        app.UsarDocumentacaoApi(ModoHospedagem.Completo);
         await app.StartAsync(Cancelamento);
         using var cliente = app.GetTestClient();
 

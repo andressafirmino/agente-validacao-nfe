@@ -1,25 +1,30 @@
-// Executado pelo entrypoint do MongoDB só na primeira inicialização (volume vazio), com o usuário root.
+// Coleções, validadores e índices do Api.Agente. Executado pelo entrypoint do MongoDB local na primeira
+// inicialização (com o usuário root) e, na homologação, uma vez no Atlas com mongosh e o usuário da
+// aplicação (quickstart §8.9). Não lê variáveis de ambiente e pode ser reexecutado: coleções e índices
+// existentes são mantidos.
 // Convenções esperadas pela Infraestrutura (T028):
 // - GUIDs gravados como binData subtipo 4 (GuidRepresentation.Standard do driver);
 // - datas em UTC como BSON date;
 // - chaveIsolamento = SHA-256 em hexadecimal minúsculo (data-model §0).
 
-const nomeBanco = "auditoria_agente";
-const usuarioApp = process.env.MONGO_APP_USERNAME;
-const senhaApp = process.env.MONGO_APP_PASSWORD;
+const banco = db.getSiblingDB("auditoria_agente");
+const existentes = new Set(banco.getCollectionNames());
 
-if (!usuarioApp || !senhaApp) {
-  throw new Error("Defina MONGO_APP_USERNAME e MONGO_APP_PASSWORD no arquivo .env");
+// Uma coleção criada antes deste script (por exemplo, pela primeira gravação da aplicação) fica sem o
+// validador; alterá-lo exige collMod, fora da permissão readWrite do usuário da aplicação.
+function criarColecao(nome, opcoes) {
+  if (!existentes.has(nome)) {
+    banco.createCollection(nome, opcoes);
+    return;
+  }
+
+  const atual = banco.getCollectionInfos({ name: nome })[0];
+  if (opcoes && opcoes.validator && !(atual.options && atual.options.validator)) {
+    throw new Error(`A coleção ${nome} já existe sem o validador $jsonSchema; remova-a ou aplique o validador com collMod.`);
+  }
+
+  print(`Coleção ${nome} já existe; mantida.`);
 }
-
-const banco = db.getSiblingDB(nomeBanco);
-
-// Usuário do Api.Agente: leitura e escrita só neste banco.
-banco.createUser({
-  user: usuarioApp,
-  pwd: senhaApp,
-  roles: [{ role: "readWrite", db: nomeBanco }]
-});
 
 const chaveIsolamento = { bsonType: "string", pattern: "^[0-9a-f]{64}$" };
 const identificador = { bsonType: "string", pattern: "^[A-Za-z0-9._:@-]{1,128}$" };
@@ -40,7 +45,7 @@ const origem = {
 
 // Contexto do usuário (data-model §13, FR-055a): só os campos abaixo. CPF, nomes, endereços,
 // valores de documentos e texto livre não têm onde ser gravados. Não existe para "anonimo" (FR-052c).
-banco.createCollection("contextos_usuario", {
+criarColecao("contextos_usuario", {
   validator: {
     $jsonSchema: {
       bsonType: "object",
@@ -114,12 +119,13 @@ banco.contextos_usuario.createIndex(
   { expiraEm: 1 },
   { name: "ttl_contextos_usuario_expira_em", expireAfterSeconds: 0 });
 
-banco.createCollection("sessoes");
-banco.createCollection("execucoes");
-banco.createCollection("documentos");
-banco.createCollection("sessoes_agente");
+criarColecao("sessoes");
+criarColecao("execucoes");
+criarColecao("documentos");
+criarColecao("sessoes_agente");
 
-// Todo acesso confere a chave de isolamento (FR-039).
+// Todo acesso confere a chave de isolamento (FR-039). createIndex com o mesmo nome e a mesma
+// definição não altera um índice existente.
 banco.sessoes.createIndex(
   { chaveIsolamento: 1, ultimaAtividadeEm: -1 },
   { name: "ix_sessoes_chave_atividade" });

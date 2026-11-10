@@ -18,10 +18,7 @@ public static class SomenteAgentCardExtensions
             .Bind(configuration.GetSection(LimitesOpcoes.Secao))
             .ValidateDataAnnotations()
             .ValidateOnStart();
-        services.AddOptions<HospedagemOpcoes>()
-            .Bind(configuration.GetSection(HospedagemOpcoes.Secao));
-        services.AdicionarOpcoesA2A(configuration);
-        services.AddSingleton<FabricaAgentCard>();
+        services.AdicionarAgentCard(configuration);
         services.AddHealthChecks();
 
         return services;
@@ -29,7 +26,7 @@ public static class SomenteAgentCardExtensions
 
     public static WebApplication MapearSomenteAgentCard(this WebApplication app)
     {
-        app.MapGet(FabricaAgentCard.Rota, (FabricaAgentCard fabrica) => Results.Json(fabrica.Card, FabricaAgentCard.OpcoesJson));
+        app.MapearAgentCard();
         app.MapHealthChecks(RotaVivacidade, new HealthCheckOptions { Predicate = _ => false });
 
         return app;
