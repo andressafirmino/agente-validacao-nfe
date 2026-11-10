@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using AuditoriaNFe.Application.Abstracoes;
 using AuditoriaNFe.Application.Configuracao;
+using AuditoriaNFe.Domain.ContextoUsuario;
 using AuditoriaNFe.Domain.Documentos;
 using AuditoriaNFe.Domain.Identificacao;
 using AuditoriaNFe.Domain.Sessoes;
@@ -159,6 +160,73 @@ public sealed class RepositoriosMongoTests(ContainerMongo mongo) : IClassFixture
         Assert.Equal("100.00", Assert.Single(lido.DadosExtraidos).Valor);
         Assert.DoesNotContain(bruto.Names, nome => nome.Contains("xml", StringComparison.OrdinalIgnoreCase) && nome != "arquivoOrigem");
         Assert.Empty(await repositorio.ListarPorSessaoAsync(sessaoId, Outro.ChaveIsolamento, Cancelamento));
+    }
+
+    [Fact]
+    public async Task Contexto_do_usuario_passa_no_jsonSchema_e_so_e_lido_vigente()
+    {
+        var contexto = Contexto();
+        var repositorio = new ContextoUsuarioRepositorio(contexto);
+        var limites = new LimitesContextoUsuario(TimeSpan.FromDays(90), 200, 100);
+        var usuario = IdentificacaoSolicitante.Criar($"ctx-{Guid.NewGuid():N}"[..20], "sofia");
+        var contextoUsuario = ContextoUsuario.Criar(usuario.ChaveIsolamento, usuario.UsuarioId, usuario.ChamadorId, Agora, limites);
+        var execucaoId = Guid.CreateVersion7();
+        contextoUsuario.ContabilizarExecucao(
+            new ContribuicaoExecucao(execucaoId, Guid.CreateVersion7(), [new DocumentoAuditado(true, "11222333000181", "12ABC34501DE35")],
+                [new Achado(Guid.CreateVersion7(), CategoriaAchado.InconsistenciaNegocio, Severidade.Alta, OrigemAchado.Deterministica,
+                    "Divergência.", valorInformado: "19.00", valorEsperado: "18.00", regraId: "W04-10", versaoRegra: 1)]),
+            Agora,
+            limites);
+        contextoUsuario.DeclararPreferencias(NivelDetalhe.Detalhado, ["ICMS", "ICMS-ST"], Agora, limites);
+
+        Assert.True(await repositorio.SalvarAsync(contextoUsuario, null, Cancelamento));
+        var lido = await repositorio.ObterAsync(usuario.ChaveIsolamento, Agora, Cancelamento);
+
+        Assert.NotNull(lido);
+        Assert.Equal(usuario.UsuarioId, lido.UsuarioId);
+        Assert.Equal(contextoUsuario.CnpjsAuditados, lido.CnpjsAuditados);
+        Assert.Equal(contextoUsuario.AchadosRecorrentes, lido.AchadosRecorrentes);
+        Assert.Equal(["ICMS", "ICMS-ST"], lido.Preferencias!.TributosInteresse);
+        Assert.Equal(new OrigemContexto(TipoOrigemContexto.DeclaracaoUsuario, null, null, Agora), lido.Preferencias.Origem);
+        Assert.Equal([execucaoId], lido.ExecucoesContabilizadas);
+        Assert.Equal(Agora.AddDays(90), lido.ExpiraEm);
+        Assert.Null(await repositorio.ObterAsync(usuario.ChaveIsolamento, lido.ExpiraEm, Cancelamento));
+        Assert.Null(await repositorio.ObterAsync(Outro.ChaveIsolamento, Agora, Cancelamento));
+
+        var bruto = await contexto.Banco.GetCollection<BsonDocument>("contextos_usuario")
+            .Find(new BsonDocument("_id", usuario.ChaveIsolamento))
+            .SingleAsync(Cancelamento);
+        Assert.Equal(BsonType.Int32, bruto["cnpjsAuditados"][0]["quantidadeDocumentos"].BsonType);
+        Assert.Equal("Execucao", bruto["cnpjsAuditados"][0]["origem"]["tipo"].AsString);
+        var indices = await (await contexto.Banco.GetCollection<BsonDocument>("contextos_usuario").Indexes.ListAsync(Cancelamento)).ToListAsync(Cancelamento);
+        Assert.Contains(indices, i => i["name"] == "ttl_contextos_usuario_expira_em" && i["expireAfterSeconds"].ToInt32() == 0);
+    }
+
+    [Fact]
+    public async Task Gravacao_do_contexto_detecta_alteracao_concorrente_e_substitui_so_o_vencido()
+    {
+        var repositorio = new ContextoUsuarioRepositorio(Contexto());
+        var limites = new LimitesContextoUsuario(TimeSpan.FromDays(90), 200, 100);
+        var usuario = IdentificacaoSolicitante.Criar($"ctx-{Guid.NewGuid():N}"[..20], "sofia");
+        var original = ContextoUsuario.Criar(usuario.ChaveIsolamento, usuario.UsuarioId, usuario.ChamadorId, Agora, limites);
+        Assert.True(await repositorio.SalvarAsync(original, null, Cancelamento));
+
+        var concorrente = ContextoUsuario.Criar(usuario.ChaveIsolamento, usuario.UsuarioId, usuario.ChamadorId, Agora.AddMinutes(1), limites);
+        Assert.False(await repositorio.SalvarAsync(concorrente, null, Cancelamento));
+
+        var lido = (await repositorio.ObterAsync(usuario.ChaveIsolamento, Agora, Cancelamento))!;
+        var lidoAntes = lido.AtualizadoEm;
+        lido.DeclararPreferencias(NivelDetalhe.Resumido, ["IPI"], Agora.AddMinutes(2), limites);
+        Assert.True(await repositorio.SalvarAsync(lido, lidoAntes, Cancelamento));
+        Assert.False(await repositorio.SalvarAsync(lido, lidoAntes, Cancelamento));
+
+        var depoisDoPrazo = Agora.AddDays(91);
+        var novo = ContextoUsuario.Criar(usuario.ChaveIsolamento, usuario.UsuarioId, usuario.ChamadorId, depoisDoPrazo, limites);
+        Assert.True(await repositorio.SalvarAsync(novo, null, Cancelamento));
+        Assert.Null((await repositorio.ObterAsync(usuario.ChaveIsolamento, depoisDoPrazo, Cancelamento))!.Preferencias);
+
+        await repositorio.ExcluirAsync(usuario.ChaveIsolamento, Cancelamento);
+        Assert.Null(await repositorio.ObterAsync(usuario.ChaveIsolamento, depoisDoPrazo, Cancelamento));
     }
 
     [Fact]

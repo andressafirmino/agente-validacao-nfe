@@ -61,7 +61,11 @@ public static class LimitesHttpExtensions
                 opcoes.OnRejected = (rejeicao, _) =>
                 {
                     var espera = rejeicao.Lease.TryGetMetadata(MetadataName.RetryAfter, out var tempo) ? tempo : EsperaConcorrencia;
-                    return new ValueTask(MapeamentoErrosHttp.LimiteAtingido(espera).ExecuteAsync(rejeicao.HttpContext));
+                    var contexto = rejeicao.HttpContext;
+                    var resultado = contexto.GetEndpoint()?.Metadata.GetMetadata<LimiteConcorrenciaExecucao>() is null
+                        ? MapeamentoErrosHttp.LimiteAtingido(espera)
+                        : MapeamentoErrosHttp.LimiteAtingidoExecucao(contexto, espera);
+                    return new ValueTask(resultado.ExecuteAsync(contexto));
                 };
             });
 

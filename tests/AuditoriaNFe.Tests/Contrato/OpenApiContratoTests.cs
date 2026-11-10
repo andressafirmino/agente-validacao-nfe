@@ -18,6 +18,12 @@ public sealed class OpenApiContratoTests(AmbienteIntegracao ambiente)
     [Theory]
     [InlineData("post", "/api/v1/execucoes")]
     [InlineData("get", "/api/v1/execucoes/{execucaoId}")]
+    [InlineData("delete", "/api/v1/sessoes/{sessaoId}")]
+    [InlineData("get", "/api/v1/contexto-usuario")]
+    [InlineData("delete", "/api/v1/contexto-usuario")]
+    [InlineData("put", "/api/v1/contexto-usuario/preferencias")]
+    [InlineData("delete", "/api/v1/contexto-usuario/cnpjs/{cnpj}")]
+    [InlineData("delete", "/api/v1/contexto-usuario/achados-recorrentes/{chave}")]
     public async Task Operacao_gerada_e_igual_a_do_contrato(string metodo, string rota)
     {
         var esperada = Assert.Single(ContratoOpenApiYaml.Operacoes(), o => o.Metodo == metodo && o.Rota == rota);

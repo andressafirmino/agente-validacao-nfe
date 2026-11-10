@@ -55,11 +55,16 @@ public sealed class RastreabilidadeExecucaoTests
         EtapasCompletas(execucao);
         var arquivos = execucao["arquivos"].AsBsonArray.Select(a => a.AsBsonDocument).ToList();
         Assert.Equal(2, arquivos.Count);
+        var datasEsperadas = new Dictionary<string, DateOnly>(StringComparer.Ordinal)
+        {
+            [Path.GetFileName(FixturesXml.Casos.TotalizadorDivergente)] = new DateOnly(2026, 11, 2),
+            [Path.GetFileName(NFeValida)] = FixturesXml.Pacotes().Single(p => p.Id == FixturesXml.Casos.Pacote).DataReferencia,
+        };
         Assert.All(arquivos, arquivo =>
         {
             var layout = arquivo["validacaoLayout"].AsBsonDocument;
             Assert.Equal(FixturesXml.Casos.Pacote, layout["pacoteAplicado"].AsString);
-            Assert.Equal(new DateOnly(2026, 11, 2), Data(layout["dataReferencia"]));
+            Assert.Equal(datasEsperadas[arquivo["nome"].AsString], Data(layout["dataReferencia"]));
             var regras = arquivo["regrasAplicadas"].AsBsonArray.Select(r => r.AsBsonDocument).ToList();
             Assert.NotEmpty(regras);
             Assert.All(regras, regra =>

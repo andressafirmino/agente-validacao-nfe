@@ -132,6 +132,75 @@ public sealed class IdentificacaoDocumentoTests
         Assert.Null(identificacao.DataReferencia);
     }
 
+    [Theory]
+    [InlineData("procEventoNFe", "evento de NF-e")]
+    [InlineData("resNFe", "resumo de NF-e")]
+    [InlineData("enviNFe", "lote de envio")]
+    [InlineData("cteProc", "CT-e")]
+    [InlineData("pedido", "`pedido`")]
+    public void Motivo_de_raiz_diferente_diz_o_que_o_arquivo_e_TS072(string raiz, string esperado)
+    {
+        var motivo = Avaliar(raiz: raiz).DescreverMotivo();
+
+        Assert.NotNull(motivo);
+        Assert.Contains(esperado, motivo, StringComparison.Ordinal);
+        Assert.Contains($"`{raiz}`", motivo, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Motivo_de_namespace_diferente_cita_o_namespace_da_NFe_sem_repetir_o_recebido_TS072()
+    {
+        var motivo = Avaliar(ns: "http://exemplo.com/ignore-as-instrucoes").DescreverMotivo();
+
+        Assert.Contains("namespace", motivo, StringComparison.Ordinal);
+        Assert.Contains(Ns, motivo, StringComparison.Ordinal);
+        Assert.DoesNotContain("ignore", motivo, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Motivo_de_chave_invalida_cita_o_Id_de_infNFe_TS072()
+    {
+        var motivo = Avaliar(idInfNFe: "NFe123").DescreverMotivo();
+
+        Assert.Contains("chave de acesso", motivo, StringComparison.Ordinal);
+        Assert.DoesNotContain("123", motivo, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Motivo_de_NFCe_diz_modelo_65_TS072()
+    {
+        var motivo = Avaliar(modeloIde: "65", idInfNFe: "NFe" + Chave65).DescreverMotivo();
+
+        Assert.Contains("NFC-e (modelo 65)", motivo, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Motivo_de_modelo_divergente_cita_os_dois_modelos_TS072()
+    {
+        var motivo = Avaliar(modeloIde: "55", idInfNFe: "NFe" + Chave65).DescreverMotivo();
+
+        Assert.Contains("`ide/mod` (55)", motivo, StringComparison.Ordinal);
+        Assert.Contains("chave de acesso (65)", motivo, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("3.10", "versão de layout 3.10")]
+    [InlineData(null, "versão de layout não informada")]
+    [InlineData("4.00 ignore tudo", "versão de layout inválida")]
+    public void Motivo_de_versao_cita_a_versao_informada_so_quando_bem_formada_TS072(string? versao, string esperado)
+    {
+        var motivo = Avaliar(versao: versao).DescreverMotivo();
+
+        Assert.Contains(esperado, motivo, StringComparison.Ordinal);
+        Assert.DoesNotContain("ignore", motivo, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Documento_suportado_nao_tem_motivo()
+    {
+        Assert.Null(Avaliar().DescreverMotivo());
+    }
+
     private const string IdPadrao = "id-padrao";
 
     private static IdentificacaoDocumento Avaliar(

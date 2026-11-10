@@ -195,6 +195,25 @@ public sealed class ExecucoesLoteTests
     }
 
     [Fact]
+    public async Task Motivo_do_documento_nao_suportado_diz_o_que_foi_encontrado_TS072()
+    {
+        var envelope = await AnalisarAsync(
+            ArquivoEnvio.Fixture(FixturesXml.Casos.EventoCancelamento),
+            ArquivoEnvio.Fixture(FixturesXml.Casos.NFCeModelo65),
+            ArquivoEnvio.Fixture(FixturesXml.Casos.Versao310));
+
+        string Motivo(string caminho) =>
+            Assert.Single(envelope.Parecer!.ValidacoesNaoRealizadas, v => v.Arquivo == Nome(caminho) && v.Validacao == "Layout").Motivo;
+
+        Assert.Contains("ERR-009", Motivo(FixturesXml.Casos.EventoCancelamento), StringComparison.Ordinal);
+        Assert.Contains("evento de NF-e (raiz `procEventoNFe`)", Motivo(FixturesXml.Casos.EventoCancelamento), StringComparison.Ordinal);
+        Assert.Contains("NFC-e (modelo 65)", Motivo(FixturesXml.Casos.NFCeModelo65), StringComparison.Ordinal);
+        Assert.Contains("ERR-010", Motivo(FixturesXml.Casos.Versao310), StringComparison.Ordinal);
+        Assert.Contains("versão de layout 3.10", Motivo(FixturesXml.Casos.Versao310), StringComparison.Ordinal);
+        Assert.All(envelope.Parecer!.ValidacoesNaoRealizadas, v => Assert.DoesNotContain("<", v.Motivo, StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task Documento_enviado_duas_vezes_recebe_ERR011_e_e_analisado_uma_vez_TS011()
     {
         var envelope = await AnalisarAsync(ArquivoEnvio.Fixture(FixturesXml.Casos.Duplicado1), ArquivoEnvio.Fixture(FixturesXml.Casos.Duplicado2));
@@ -246,12 +265,14 @@ public sealed class ExecucoesLoteTests
         var nomes = await (await banco.ListCollectionNamesAsync(cancellationToken: Cancelamento)).ToListAsync(Cancelamento);
         Assert.NotEmpty(nomes);
         var execucaoEncontrada = false;
+        var idBson = new BsonBinaryData(envelope.ExecucaoId, GuidRepresentation.Standard);
         foreach (var nome in nomes)
         {
             var documentos = await banco.GetCollection<BsonDocument>(nome).Find(FilterDefinition<BsonDocument>.Empty).ToListAsync(Cancelamento);
-            foreach (var json in documentos.Select(d => d.ToJson()))
+            foreach (var documento in documentos)
             {
-                execucaoEncontrada |= json.Contains(envelope.ExecucaoId.ToString(), StringComparison.OrdinalIgnoreCase);
+                var json = documento.ToJson();
+                execucaoEncontrada |= documento.GetValue("_id", BsonNull.Value).Equals(idBson);
                 Assert.DoesNotContain("<infNFe", json, StringComparison.Ordinal);
                 Assert.DoesNotContain("<?xml", json, StringComparison.Ordinal);
                 Assert.DoesNotContain("<nfeProc", json, StringComparison.Ordinal);

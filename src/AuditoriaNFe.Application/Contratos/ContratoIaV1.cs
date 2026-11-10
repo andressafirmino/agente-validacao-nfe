@@ -1,4 +1,7 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace AuditoriaNFe.Application.Contratos;
 
@@ -8,28 +11,45 @@ namespace AuditoriaNFe.Application.Contratos;
 /// datas, consumo, resultado geral nem contexto do usuário (P09, FR-057).
 /// </summary>
 public sealed record ContratoIaV1(
-    string VersaoContrato,
+    [property: AllowedValues(ContratoIa.Versao)] string VersaoContrato,
     IReadOnlyList<IndicioIaV1> Indicios,
     IReadOnlyList<AusenciaEvidenciaIaV1> AusenciasEvidencia,
     RespostaIaV1? Resposta,
     bool ForaDeEscopo,
     bool InformacaoIndisponivel,
     IReadOnlyList<RecomendacaoIaV1> Recomendacoes,
-    string Resumo)
+    [property: MinLength(1)] string Resumo)
 {
-    /// <summary>Opções usadas na geração do schema e na desserialização da resposta do provedor.</summary>
-    public static JsonSerializerOptions OpcoesJson => throw new NotImplementedException("T080");
+    /// <summary>
+    /// Opções usadas na geração do schema e na desserialização da resposta do provedor: camelCase,
+    /// todas as propriedades obrigatórias e nenhuma propriedade fora do contrato.
+    /// </summary>
+    public static JsonSerializerOptions OpcoesJson { get; } = CriarOpcoes();
+
+    private static JsonSerializerOptions CriarOpcoes()
+    {
+        var opcoes = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+            PropertyNameCaseInsensitive = false,
+            RespectNullableAnnotations = true,
+            RespectRequiredConstructorParameters = true,
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+        };
+        opcoes.MakeReadOnly();
+        return opcoes;
+    }
 }
 
 public sealed record IndicioIaV1(
-    string Descricao,
-    string Severidade,
-    IReadOnlyList<EvidenciaIaV1> Evidencias,
+    [property: MinLength(1)] string Descricao,
+    [property: AllowedValues("Alta", "Media", "Baixa", "Informativa")] string Severidade,
+    [property: MinLength(1)] IReadOnlyList<EvidenciaIaV1> Evidencias,
     IReadOnlyList<string> AchadosRelacionados);
 
 /// <summary><c>Tipo</c>: <c>CampoXml</c>, <c>RegraCatalogo</c>, <c>TrechoManual</c> ou <c>Calculo</c>.</summary>
 public sealed record EvidenciaIaV1(
-    string Tipo,
+    [property: AllowedValues("CampoXml", "RegraCatalogo", "TrechoManual", "Calculo")] string Tipo,
     string? ChaveAcesso,
     string? Caminho,
     string? Valor,
@@ -37,18 +57,22 @@ public sealed record EvidenciaIaV1(
     string? ChunkId,
     string? CalculoId);
 
-public sealed record AusenciaEvidenciaIaV1(string PontoAvaliado, string Motivo);
+public sealed record AusenciaEvidenciaIaV1([property: MinLength(1)] string PontoAvaliado, [property: MinLength(1)] string Motivo);
 
 public sealed record RespostaIaV1(
-    string Texto,
+    [property: MinLength(1)] string Texto,
     IReadOnlyList<ValorCitadoIaV1> ValoresCitados,
     IReadOnlyList<DocumentoExcluidoIaV1> DocumentosExcluidos);
 
-public sealed record ValorCitadoIaV1(string Valor, string? CalculoId, string? ChaveAcesso, string? Caminho);
+public sealed record ValorCitadoIaV1(
+    [property: RegularExpression(@"^-?[0-9]+(\.[0-9]+)?$")] string Valor,
+    string? CalculoId,
+    string? ChaveAcesso,
+    string? Caminho);
 
 public sealed record DocumentoExcluidoIaV1(string ChaveAcesso, string Motivo);
 
 public sealed record RecomendacaoIaV1(
-    string Texto,
-    IReadOnlyList<string> AchadosVinculados,
+    [property: MinLength(1)] string Texto,
+    [property: MinLength(1)] IReadOnlyList<string> AchadosVinculados,
     IReadOnlyList<ValorCitadoIaV1> ValoresCitados);

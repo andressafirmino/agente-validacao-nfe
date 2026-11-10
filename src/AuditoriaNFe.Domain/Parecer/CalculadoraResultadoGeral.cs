@@ -8,7 +8,58 @@ namespace AuditoriaNFe.Domain.Parecer;
 /// </summary>
 public static class CalculadoraResultadoGeral
 {
-    public static AvaliacaoParecer Calcular(EntradaResultadoGeral entrada) => throw new NotImplementedException("T068");
+    public static AvaliacaoParecer Calcular(EntradaResultadoGeral entrada)
+    {
+        ArgumentNullException.ThrowIfNull(entrada);
+
+        var deterministicos = entrada.Achados.Any(a =>
+            a.Categoria is CategoriaAchado.ErroEstrutural or CategoriaAchado.InconsistenciaNegocio);
+        var incompleta =
+            entrada.Etapas.Values.Any(e => e is EstadoEtapa.Falhou or EstadoEtapa.NaoExecutada)
+            || entrada.ValidacoesNaoRealizadas.Count > 0
+            || entrada.DependenciaIndisponivel
+            || entrada.Achados.Any(a => a.Categoria == CategoriaAchado.FalhaTecnica);
+
+        var resultado = deterministicos
+            ? ResultadoGeral.ComInconsistencias
+            : incompleta ? ResultadoGeral.Inconclusiva : ResultadoGeral.SemInconsistencias;
+
+        var limitacoes = new List<string>();
+        var motivos = new List<string>();
+
+        if (resultado == ResultadoGeral.Inconclusiva)
+        {
+            motivos.Add(RevisaoHumana.MotivoResultadoInconclusivo);
+        }
+
+        if (entrada.Achados.Any(a => a.Categoria == CategoriaAchado.IndicioIa && a.Severidade is Severidade.Alta or Severidade.Media))
+        {
+            motivos.Add(RevisaoHumana.MotivoIndicioIa);
+        }
+
+        if (entrada.Achados.Any(a => a.Categoria == CategoriaAchado.AusenciaEvidencias))
+        {
+            motivos.Add(RevisaoHumana.MotivoAusenciaEvidencias);
+        }
+
+        if (!entrada.IntegracaoMcpHabilitada)
+        {
+            limitacoes.Add(LimitacoesParecer.ConsultaManuaisNaoHabilitada);
+            motivos.Add(RevisaoHumana.MotivoConsultaManuaisNaoHabilitada);
+        }
+
+        if (!entrada.UsuarioIdentificado)
+        {
+            limitacoes.Add(LimitacoesParecer.UsuarioNaoIdentificado);
+        }
+
+        if (entrada.SemBaseAnalisada)
+        {
+            limitacoes.Add(LimitacoesParecer.SemBaseAnalisada);
+        }
+
+        return new AvaliacaoParecer(resultado, limitacoes, new RevisaoHumana(motivos.Count > 0, motivos));
+    }
 }
 
 /// <summary>Situação da execução que o cálculo do resultado geral considera.</summary>
@@ -25,6 +76,9 @@ public sealed record EntradaResultadoGeral
     public IReadOnlyList<Achado> Achados { get; init; } = [];
     public required bool IntegracaoMcpHabilitada { get; init; }
     public required bool UsuarioIdentificado { get; init; }
+
+    /// <summary>Pergunta numa sessão sem nenhum documento analisado (FR-042).</summary>
+    public bool SemBaseAnalisada { get; init; }
 }
 
 /// <summary><c>Validacao</c> é <c>Layout</c> ou <c>Conteudo</c>.</summary>

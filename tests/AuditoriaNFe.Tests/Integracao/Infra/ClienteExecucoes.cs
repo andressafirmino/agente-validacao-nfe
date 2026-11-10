@@ -82,7 +82,7 @@ public static class ClienteExecucoes
         return await EnviarAsync(cliente, requisicao, cancelamento);
     }
 
-    private static void Identificar(HttpRequestMessage requisicao, string? usuarioId, string? chamadorId)
+    public static void Identificar(HttpRequestMessage requisicao, string? usuarioId, string? chamadorId)
     {
         if (usuarioId is not null)
         {
@@ -95,7 +95,7 @@ public static class ClienteExecucoes
         }
     }
 
-    private static async Task<RespostaExecucao> EnviarAsync(HttpClient cliente, HttpRequestMessage requisicao, CancellationToken cancelamento)
+    public static async Task<RespostaExecucao> EnviarAsync(HttpClient cliente, HttpRequestMessage requisicao, CancellationToken cancelamento)
     {
         using var resposta = await cliente.SendAsync(requisicao, cancelamento);
         return new RespostaExecucao(resposta.StatusCode, await resposta.Content.ReadAsStringAsync(cancelamento), resposta.Headers);

@@ -27,6 +27,7 @@ public sealed class ColecaoIntegracao : ICollectionFixture<AmbienteIntegracao>
 public sealed class AmbienteIntegracao : IAsyncLifetime
 {
     public const string ProvedorRoteirizado = "OpenAI";
+    public const string IndiceTtlContextos = "ttl_contextos_usuario_expira_em";
 
     private readonly List<WebApplicationFactory<Program>> _fabricas = [];
 
@@ -42,6 +43,10 @@ public sealed class AmbienteIntegracao : IAsyncLifetime
     public async ValueTask InitializeAsync()
     {
         await Task.WhenAll(Mongo.InitializeAsync().AsTask(), Postgres.InitializeAsync().AsTask());
+
+        // O TTL do MongoDB usa o relógio real, e o RelogioControlado fica parado em 2026-11-04: o
+        // monitor apagaria no meio dos testes os contextos cujo expiraEm já passou no relógio real.
+        await BancoMongoTeste.Colecao(Mongo, "contextos_usuario").Indexes.DropOneAsync(IndiceTtlContextos);
         Fabrica = CriarFabrica();
     }
 

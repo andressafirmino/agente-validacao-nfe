@@ -26,5 +26,6 @@ public sealed record RegraConteudo
     /// <summary>Id da <see cref="IImplementacaoRegra"/> que avalia esta versão.</summary>
     public required string Implementacao { get; init; }
 
-    public bool VigenteEm(DateOnly dataReferencia) => throw new NotImplementedException("T063");
+    public bool VigenteEm(DateOnly dataReferencia) =>
+        VigenciaInicio <= dataReferencia && (VigenciaFim is null || dataReferencia <= VigenciaFim);
 }
