@@ -69,6 +69,7 @@ await MigracoesConsumo.AplicarSeHabilitadoAsync(app.Services);
 if (modo == ModoHospedagem.Homologacao)
 {
     app.UsarCabecalhosDoProxy();
+    app.UsarCredencialServicoSofia();
 }
 
 app.UseExceptionHandler();

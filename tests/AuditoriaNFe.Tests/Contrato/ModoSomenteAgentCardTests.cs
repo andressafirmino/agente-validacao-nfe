@@ -24,7 +24,7 @@ public sealed class ModoSomenteAgentCardTests
     public async Task Card_em_Production_traz_a_url_publica_o_idAgente_e_a_implantacao()
     {
         await using var fabrica = CriarFabrica();
-        using var cliente = fabrica.CreateClient();
+        using var cliente = CredencialServicoSofiaTests.ClienteAutenticado(fabrica);
 
         using var resposta = await cliente.GetAsync(FabricaAgentCard.Rota, Cancelamento);
 
@@ -41,14 +41,14 @@ public sealed class ModoSomenteAgentCardTests
         Assert.Equal("1.0", (string?)parametros["versaoContrato"]);
         Assert.Equal(FabricaAgentCard.ImplantacaoSomenteAgentCard, (string?)parametros["implantacao"]);
         Assert.Equal("analisar_documentos", (string?)card["skills"]![0]!["id"]);
-        Assert.Null(card["securitySchemes"]);
+        Assert.Equal("bearer", (string?)card["securitySchemes"]!["sofiaService"]!["scheme"]);
     }
 
     [Fact]
     public async Task Card_e_o_exemplo_do_contrato_acrescido_da_implantacao()
     {
         await using var fabrica = CriarFabrica(urlPublica: "http://localhost:5310/");
-        using var cliente = fabrica.CreateClient();
+        using var cliente = CredencialServicoSofiaTests.ClienteAutenticado(fabrica);
         var exemplo = JsonNode.Parse(await File.ReadAllTextAsync(
             Path.Combine(Repositorio.Raiz(), "specs", "001-agente-auditoria-nfe", "contracts", "exemplos", "agent-card-v03.json"), Cancelamento));
 
@@ -81,7 +81,7 @@ public sealed class ModoSomenteAgentCardTests
     public async Task Rotas_alem_do_card_e_da_vivacidade_respondem_404(string metodo, string rota)
     {
         await using var fabrica = CriarFabrica();
-        using var cliente = fabrica.CreateClient();
+        using var cliente = CredencialServicoSofiaTests.ClienteAutenticado(fabrica);
 
         using var resposta = await cliente.SendAsync(new HttpRequestMessage(new HttpMethod(metodo), rota), Cancelamento);
 
@@ -92,7 +92,7 @@ public sealed class ModoSomenteAgentCardTests
     public async Task Card_nao_concede_permissao_CORS()
     {
         await using var fabrica = CriarFabrica();
-        using var cliente = fabrica.CreateClient();
+        using var cliente = CredencialServicoSofiaTests.ClienteAutenticado(fabrica);
         using var requisicao = new HttpRequestMessage(HttpMethod.Get, FabricaAgentCard.Rota);
         requisicao.Headers.Add("Origin", "https://site.example");
 
@@ -170,6 +170,7 @@ public sealed class ModoSomenteAgentCardTests
             builder.UseEnvironment(Environments.Production);
             builder.UseSetting(HospedagemOpcoes.ChaveModo, modo);
             builder.UseSetting($"{A2AOpcoes.Secao}:{nameof(A2AOpcoes.UrlPublica)}", urlPublica);
+            builder.UseSetting(CredencialServicoSofiaOpcoes.ChaveToken, CredencialServicoSofiaTests.Chave);
         });
 
     private static IConfiguration Configuracao(string modo) =>

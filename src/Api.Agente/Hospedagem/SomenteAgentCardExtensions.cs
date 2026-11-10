@@ -1,4 +1,5 @@
 using Api.Agente.A2A;
+using Api.Agente.Seguranca;
 using AuditoriaNFe.Application.Configuracao;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
@@ -26,6 +27,7 @@ public static class SomenteAgentCardExtensions
 
     public static WebApplication MapearSomenteAgentCard(this WebApplication app)
     {
+        app.UsarCredencialServicoSofia();
         app.MapearAgentCard();
         app.MapHealthChecks(RotaVivacidade, new HealthCheckOptions { Predicate = _ => false });
 

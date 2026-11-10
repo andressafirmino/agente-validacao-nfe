@@ -63,7 +63,7 @@ public sealed class ModoHomologacaoTests
     [Fact]
     public async Task Card_declara_a_homologacao_com_a_url_publica_e_o_limite_do_lote()
     {
-        using var cliente = CriarFabrica().CreateClient();
+        using var cliente = CredencialServicoSofiaTests.ClienteAutenticado(CriarFabrica());
 
         using var resposta = await cliente.GetAsync(FabricaAgentCard.Rota, Cancelamento);
 
@@ -73,7 +73,41 @@ public sealed class ModoHomologacaoTests
         var parametros = card["capabilities"]!["extensions"]![0]!["params"]!;
         Assert.Equal(FabricaAgentCard.ImplantacaoHomologacao, (string?)parametros["implantacao"]);
         Assert.Equal(ValidadorModoHomologacao.TamanhoTotalMaximoBytes, (long)parametros["limites"]!["tamanhoTotalBytes"]!);
-        Assert.Null(card["securitySchemes"]);
+        Assert.Equal("bearer", (string?)card["securitySchemes"]!["sofiaService"]!["scheme"]);
+    }
+
+    /// <summary>FR-052h: card e rotas A2A exigem a credencial; a API REST continua aberta (D-09).</summary>
+    [Theory]
+    [InlineData("GET", FabricaAgentCard.Rota)]
+    [InlineData("POST", FabricaAgentCard.RotaA2A)]
+    public async Task Card_e_A2A_sem_credencial_recebem_401(string metodo, string rota)
+    {
+        using var cliente = CriarFabrica().CreateClient();
+
+        using var resposta = await cliente.SendAsync(new HttpRequestMessage(new HttpMethod(metodo), rota), Cancelamento);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, resposta.StatusCode);
+    }
+
+    [Fact]
+    public async Task API_REST_continua_sem_a_credencial_da_SOFIA()
+    {
+        using var cliente = CriarFabrica().CreateClient();
+
+        using var resposta = await cliente.GetAsync($"{RotasApiV1.Prefixo}/execucoes/{Guid.NewGuid()}", Cancelamento);
+
+        Assert.NotEqual(HttpStatusCode.Unauthorized, resposta.StatusCode);
+        Assert.False(resposta.Headers.Contains("WWW-Authenticate"));
+    }
+
+    [Fact]
+    public void Homologacao_sem_a_credencial_da_SOFIA_nao_inicia()
+    {
+        var fabrica = CriarFabrica(new Dictionary<string, string?> { [CredencialServicoSofiaOpcoes.ChaveToken] = "" });
+
+        var erro = Assert.ThrowsAny<Exception>(() => fabrica.Services);
+
+        Assert.Contains(CredencialServicoSofiaOpcoes.ChaveToken, Mensagens(erro), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -159,6 +193,7 @@ public sealed class ModoHomologacaoTests
             ["Limites:TamanhoTotalBytes"] = "4000000",
             ["Limites:CorpoHttpBytes"] = "4500000",
             [$"{A2AOpcoes.Secao}:{nameof(A2AOpcoes.UrlPublica)}"] = UrlPublica,
+            [CredencialServicoSofiaOpcoes.ChaveToken] = CredencialServicoSofiaTests.Chave,
         };
         foreach (var (chave, valor) in ajustes ?? new Dictionary<string, string?>())
         {
