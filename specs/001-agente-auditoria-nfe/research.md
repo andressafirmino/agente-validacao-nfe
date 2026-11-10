@@ -728,6 +728,78 @@ testes de arquitetura, health checks, `SemSegredosTests` e a ordem de tarefas do
     `agente-auditoria-nfe-git-main-...` ficam atrás da proteção de deployments e devolvem a página
     de login; o endereço público para a SOFIA é só `agente-auditoria-nfe.vercel.app`.
 
+### R-36 — Homologação pública do agente completo (D-09, ADR-0013)
+
+- **Fatos verificados em 2026-11-10** ([guia de contêineres](https://vercel.com/kb/guide/does-vercel-support-docker-deployments),
+  [limites das Functions](https://vercel.com/docs/functions/limitations),
+  [plano Hobby](https://vercel.com/docs/plans/hobby),
+  [limites do Atlas Free](https://www.mongodb.com/docs/atlas/reference/free-shared-limitations/),
+  [preços do Neon](https://neon.com/pricing)):
+  - Vercel Hobby: duração máxima de 300 s; 2 GB e 1 vCPU; corpo de requisição e de resposta até
+    4,5 MB (413 `FUNCTION_PAYLOAD_TOO_LARGE`); região padrão `iad1`; 4 horas de CPU ativa e 360
+    GB-hora de memória por mês; ao estourar, o recurso fica pausado até 30 dias; logs de execução
+    retidos por 1 hora; uso só pessoal e não comercial (confirmado pela autora para o projeto do
+    curso);
+  - Container runtime: instâncias ociosas encerradas após 5 minutos em produção e 30 segundos em
+    preview; memória e disco não duráveis; sem IP estático nem Secure Compute;
+  - Atlas Free: um cluster por projeto, 0,5 GB, 100 operações por segundo, 500 conexões, 10 GB por
+    semana em cada sentido, sem private endpoint nem peering, pausa após 30 dias sem conexões;
+    usuários de banco criados pelo painel (o shell não grava no banco `admin`);
+  - Neon Free: 1 GB por projeto, 100 CU-hora por mês, suspensão do compute após 5 minutos ocioso
+    (retomada em centenas de milissegundos), 5 GB de tráfego de saída, extensões como `vector`
+    disponíveis, sem regras de IP; ao estourar compute ou tráfego, o compute fica suspenso até o
+    próximo ciclo.
+- **Compatibilidade do agente completo**:
+
+  | Item | Situação | Tratamento |
+  | ---- | -------- | ---------- |
+  | Imagem .NET 10 (`Api.Agente.dll`) | OK | `Dockerfile.vercel` existente, com o modo vindo da variável do projeto |
+  | Análise em até 120 s (NFR-001) | OK | Cabe nos 300 s |
+  | Lote de 5 MB (FR-004) | Adaptação | 4.000.000 bytes de arquivos e 4.500.000 de corpo na homologação (D-09) |
+  | Inicialização a frio | Adaptação | Migrações fora da inicialização; medir o tempo da primeira resposta |
+  | Limites de taxa e concorrência em memória | Adaptação | Valem por instância; teto de custo pelo limite de gasto da OpenAI |
+  | Checkpoints de aprovação em arquivo (Fase 7) | Bloqueio para produção | `/tmp/aprovacoes` na homologação, sem durabilidade |
+  | Tasks A2A em memória (Fase 8) | OK na homologação | A Task final volta na mesma requisição do `message/send` |
+  | MongoDB (coleções, validadores e índices) | Adaptação | Script `mongosh` sem criação de usuário, executado uma vez no Atlas |
+  | PostgreSQL de consumo | OK | Neon com schema `consumo` e migrações por script SQL idempotente |
+  | Acesso do Vercel ao Atlas | Adaptação com risco | `0.0.0.0/0` com controles compensatórios (aprovado) |
+  | Swagger fora de `Development` | Adaptação | Habilitado só no modo `Homologacao` (D-09) |
+  | Integração com a SOFIA (A2A) | Bloqueio temporário | Depende da Fase 8 |
+
+- **Decisão**: homologação no Vercel Hobby, pelo modo `Homologacao` (ADR-0013), com Atlas e Neon na
+  AWS `us-east-1`, perto do `iad1`. Revisão de 2026-11-10, aprovada pela autora: no mesmo projeto
+  do Agent Card (`agente-auditoria-nfe`, ADR-0012), para que a SOFIA continue com a URL já
+  cadastrada; o código do modo chega à `main` antes de as variáveis serem cadastradas, porque o
+  projeto publica a cada merge na `main`.
+- **Modo pela variável do projeto**: o `Dockerfile.vercel` mantém `Hospedagem__Modo=SomenteAgentCard`
+  como padrão; o projeto define `Hospedagem__Modo=Homologacao`. Falta confirmar na publicação
+  (T184) que a variável do projeto prevalece sobre o `ENV` da imagem; se não prevalecer, retirar o
+  `ENV` do modo do `Dockerfile.vercel`, e então, sem a variável, a guarda do D-05 impede a
+  inicialização em vez de publicar só o card. Com a variável removida e o `ENV` mantido, a imagem
+  volta ao modo restrito.
+- **Connection strings**: o Npgsql não aceita o formato URI (`postgresql://`) que o Neon mostra;
+  usar o formato de chaves (`Host={host};Database={banco};Username={usuario};Password={senha};SSL Mode=Require`), com
+  o host com pooling (`-pooler`) para a aplicação e o host direto para as migrações. No Atlas, a
+  string `mongodb+srv://` traz o banco `auditoria_agente` no caminho; o usuário fica no `admin` do
+  Atlas, então sem `authSource=auditoria_agente`.
+- **Usuário do Neon** ([Manage roles](https://neon.com/docs/manage/roles), 2026-11-10): usuários
+  criados pelo painel, pelo CLI sem `--access` ou pela API recebem `neon_superuser` (CREATEDB,
+  CREATEROLE, BYPASSRLS); os criados por SQL só têm os privilégios concedidos. Por isso o
+  `auditoria_app` é criado por SQL, com senha de pelo menos 60 bits de entropia, e o
+  `neon-consumo.sql` recusa usuário com privilégio administrativo.
+- **Validação local (T180 e T181, 2026-11-10)**:
+  - `neon-consumo.sql` e o script idempotente das migrações executados duas vezes num PostgreSQL 17
+    com dono do banco sem superusuário, como no Neon: tabelas com dono `auditoria_app`,
+    `search_path = consumo`, sem criação no `public`; usuário membro de `neon_superuser` recusado;
+  - `02-colecoes.js` executado num MongoDB 8.0 vazio com usuário só `readWrite` (como no Atlas) e
+    reexecutado sobre o banco criado pelo entrypoint: coleções, validador e TTL presentes, sem erro;
+  - imagem do `Dockerfile.vercel` com `Hospedagem__Modo=Homologacao` na rede do compose: card com a
+    implantação de homologação e limite de 4.000.000 bytes, `/health/ready`, `/swagger` e
+    `/openapi/v1.json` 200, servidor `https` com `X-Forwarded-Proto`, `/tmp/aprovacoes` criado pelo
+    usuário não root, logs sem senhas nem chave; sem a variável, modo `SomenteAgentCard`; com o
+    provedor simulado e os limites padrão, a inicialização é recusada citando o D-09.
+- **Alternativas**: preview protegido pelo login do Vercel; Render Free; esperar a DP-10 (ADR-0013).
+
 ## 3. Uso documentado das APIs do Microsoft Agent Framework
 
 Fonte principal: documentação oficial do Microsoft Agent Framework em Microsoft Learn (páginas
@@ -979,6 +1051,8 @@ IList<McpClientTool> ferramentas = await cliente.ListToolsAsync();
 | Identificação pelo nome (D-05) | Homônimos compartilham o contexto do usuário; nome é dado pessoal | Nome fora de logs, do LLM e do contexto; hash no isolamento; TS-067; fim do D-05 antes da SOFIA real |
 | Tasks só em memória | Perda das Tasks ao reiniciar; uma instância | `tasks/get` não é contratual; o resultado vai na resposta do `message/send` |
 | Checkpoints JSON locais | Perda em contêiner sem volume; sem suporte a várias instâncias | Volume obrigatório no compose; limitação registrada; uma instância |
+| Homologação pública sem autenticação (D-09) | Uso da chave da OpenAI por terceiros; leitura de dados de outro usuário por quem souber os identificadores | Limite de gasto no projeto da OpenAI; só dados sintéticos; limites de corpo abaixo do Vercel; card declarando a homologação; segredos só no projeto Vercel (R-36) |
+| Atlas aberto a qualquer IP | Tentativas de acesso ao banco pela internet | Usuário só com `readWrite` no banco, senha forte, TLS, cluster exclusivo e dados sintéticos (R-36) |
 | Tabela de vigência sujeita a ajustes | Pacote errado para alguma data | Manifesto versionado; TS-050 e SC-011 com um XML por período; pendências P1 a P5 da tabela |
 | Concorrência sobre o `XmlSchemaSet` compilado | Erros intermitentes de validação sob carga | Teste de carga (NFR-004); pool por pacote se necessário |
 | Ambiguidades do Anexo I (C2 a C5 do catálogo) | Achado divergente da SEFAZ em casos de borda | Decisões registradas no catálogo; testes com os casos de borda |
@@ -1000,7 +1074,7 @@ IList<McpClientTool> ferramentas = await cliente.ListToolsAsync();
 | Tabela de preços (DP-22) | Arquivo versionado preenchido a partir da fonte oficial (R-16) |
 | Observabilidade (DP-23) | OpenTelemetry (R-22) |
 | CI e proteção de branch (DP-26) | GitHub Actions, branches `dev` e `main` protegidas (R-25) |
-| Implantação (DP-25) | Não implantar nesta feature; Vercel só após ADR e fim do D-05 (R-26) |
+| Implantação (DP-25) | Não implantar em produção nesta feature; só o Agent Card (R-35) e a homologação pública pelo D-09 (R-36) |
 | Documentação da API | Swagger UI, só em `Development` (R-20) |
 | Docker e portas | Compose com portas 5310, 27020 e 5436 em `127.0.0.1` (R-24) |
 | Autenticação (DP-10) | Fora da v1 (desvio D-05); modelo futuro no ADR (R-17) |

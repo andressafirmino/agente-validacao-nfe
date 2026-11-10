@@ -298,7 +298,8 @@ cabeçalhos CORS. `curl` e o PowerShell não aplicam CORS: o bloqueio só aconte
 
 Depois da conclusão da Fase 11 (D-08 e ADR-0012 aprovados em 2026-11-05). O Vercel recebe apenas o
 modo `SomenteAgentCard`: o card e `/health/live`, sem banco, IA nem rotas de análise. Nenhuma
-connection string ou chave é cadastrada no projeto Vercel.
+connection string ou chave é cadastrada no projeto Vercel. A partir da Fase 12, o mesmo projeto
+passa ao modo `Homologacao` (seção 8.9); o modo só card fica como volta rápida.
 
 1. Conferir a imagem localmente (porta só em `127.0.0.1`):
 
@@ -346,6 +347,173 @@ connection string ou chave é cadastrada no projeto Vercel.
    build do contêiner leva alguns minutos; enquanto o deploy estiver "Initializing", a URL responde
    404. Os domínios `<projeto>-<conta>.vercel.app` e `<projeto>-git-main-<conta>.vercel.app` ficam
    atrás da proteção de deployments; a SOFIA usa só `https://<projeto>.vercel.app`.
+
+### 8.9 Homologação pública (D-09, TS-075)
+
+Depois da conclusão das tarefas T178 a T182 (D-09 e ADR-0013 aprovados em 2026-11-10). O agente
+completo roda no modo `Homologacao` no mesmo projeto Vercel do Agent Card (seção 8.8),
+`agente-auditoria-nfe`, e na mesma URL, `https://agente-auditoria-nfe.vercel.app`, com MongoDB
+Atlas Free, Neon Free e OpenAI. A SOFIA continua com o card já cadastrado; o `message/send` só
+funciona depois da Fase 8. **Não há autenticação**: qualquer pessoa com a URL pode enviar XMLs e
+ler dados de outro usuário se souber os identificadores. Use só XMLs sintéticos.
+
+Segredos (senhas, connection strings e a chave da OpenAI) vão direto do painel do provedor para as
+variáveis do projeto Vercel ou para um gerenciador de senhas. Nunca entram no Git, no chat, no `.env`
+versionado nem em comandos com o valor visível. Nos comandos abaixo, `Read-Host -MaskInput` lê o
+valor sem exibi-lo.
+
+Limites dos planos gratuitos verificados em 2026-11-10 (research R-36; confira de novo no dia, pois
+mudam sem aviso):
+
+| Serviço | Limites relevantes |
+| ------- | ------------------ |
+| Vercel Hobby | Uso pessoal e não comercial; 300 s por requisição; corpo até 4,5 MB; 4 horas de CPU ativa por mês (ao estourar, o projeto fica pausado até 30 dias); logs retidos por 1 hora; instância ociosa encerrada após 5 minutos |
+| MongoDB Atlas Free | 1 cluster por projeto; 0,5 GB; 100 operações por segundo; pausa após 30 dias sem conexões |
+| Neon Free | 1 GB; 100 CU-hora por mês; compute suspenso após 5 minutos ocioso; 5 GB de tráfego de saída |
+| OpenAI | Não é gratuito: o teto de custo é o limite de gasto do projeto da OpenAI |
+
+1. **MongoDB Atlas** (painel em `cloud.mongodb.com`):
+   1. Crie um projeto `auditoria-nfe-homolog` e, nele, um cluster **Free** na AWS, região
+      `us-east-1` (N. Virginia), perto do `iad1` do Vercel.
+   2. **Database Access** > Add New Database User: autenticação por senha, **Autogenerate Secure
+      Password** (guarde no gerenciador de senhas), **Specific Privileges** com `readWrite` no banco
+      `auditoria_agente`, e nada além disso.
+   3. **Network Access** > Add IP Address > `0.0.0.0/0`, com o comentário "Vercel homologação
+      D-09". O Vercel não tem IP de saída fixo; os controles compensatórios estão no ADR-0013.
+   4. **Connect** > Drivers: copie a string `mongodb+srv://...` e acrescente `/auditoria_agente`
+      antes do `?`, como em `mongodb+srv://{usuario}:{senha}@{cluster}.mongodb.net/auditoria_agente?retryWrites=true&w=majority`.
+      Sem `authSource`: o usuário do Atlas fica no banco `admin`. Caracteres especiais da senha
+      precisam de codificação de URL.
+   5. Crie as coleções, os validadores e os índices com o script comum ao ambiente local:
+
+      ```powershell
+      $uri = Read-Host -MaskInput 'String mongodb+srv do Atlas'
+      docker run --rm -v "${PWD}/infra/mongodb/init:/scripts:ro" mongo:8.0.32 `
+        mongosh $uri --quiet --file /scripts/02-colecoes.js
+      docker run --rm mongo:8.0.32 mongosh $uri --quiet --eval `
+        "print(db.getCollectionNames().sort().join(', ')); print(db.contextos_usuario.getIndexes().map(i => i.name).join(', '))"
+      Remove-Variable uri
+      ```
+
+      Esperado: as coleções `contextos_usuario`, `documentos`, `execucoes`, `sessoes` e
+      `sessoes_agente`, e o índice `ttl_contextos_usuario_expira_em`. O script pode ser executado
+      de novo; coleções e índices existentes são mantidos.
+
+2. **Neon** (painel em `console.neon.tech`):
+   1. Crie um projeto `auditoria-nfe-homolog` com Postgres 17 na AWS `us-east-1` e, em
+      **Databases**, o banco `auditoria_agente` com o dono padrão do projeto.
+   2. Crie o usuário da aplicação **por SQL**. Usuários criados pelo painel recebem `neon_superuser`
+      (privilégios de administrador), e o script do passo seguinte os recusa. Gere a senha na sua
+      máquina, copie-a para a área de transferência e guarde-a no gerenciador de senhas:
+
+      ```powershell
+      [Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(24)).ToLowerInvariant() | Set-Clipboard
+      ```
+
+      No **SQL Editor**, com o banco `auditoria_agente`, execute
+      `CREATE ROLE auditoria_app WITH LOGIN PASSWORD '<colar>';` e depois apague a consulta do
+      histórico do editor.
+   3. No mesmo editor, execute o conteúdo de `infra/homologacao/neon-consumo.sql`. Ele recusa
+      usuário com privilégio administrativo, revoga o acesso público ao banco e ao schema `public`,
+      cria o schema `consumo` e dá ao `auditoria_app` uso e criação nesse schema.
+   4. Gere o script das migrações sem acesso ao banco e aplique-o com o usuário da aplicação, no
+      **host direto** (sem `-pooler`), para que as tabelas fiquem com ele:
+
+      ```powershell
+      dotnet tool restore
+      dotnet ef migrations script --idempotent --project src/AuditoriaNFe.Infrastructure `
+        --startup-project src/AuditoriaNFe.Infrastructure -o "$env:TEMP\migracoes-consumo.sql"
+      $neonDireto = 'host={endpoint}.us-east-1.aws.neon.tech dbname=auditoria_agente user=auditoria_app sslmode=require'
+      $env:PGPASSWORD = Read-Host -MaskInput 'Senha do auditoria_app'
+      Get-Content -Raw "$env:TEMP\migracoes-consumo.sql" |
+        docker run --rm -i -e PGPASSWORD pgvector/pgvector:0.8.7-pg17 psql $neonDireto -v ON_ERROR_STOP=1 -q
+      'SELECT "MigrationId" FROM consumo."__EFMigrationsHistory"; SELECT count(*) FROM consumo.chamadas_provedor;' |
+        docker run --rm -i -e PGPASSWORD pgvector/pgvector:0.8.7-pg17 psql $neonDireto
+      ```
+
+      Esperado: a migração `20261105132907_Inicial` registrada e a tabela vazia. O script pode ser
+      aplicado de novo sem efeito.
+   5. Monte a connection string da aplicação no formato de chaves (o Npgsql não aceita o
+      `postgresql://` que o painel mostra), com o **host com pooling**:
+      `Host={endpoint}-pooler.us-east-1.aws.neon.tech;Database=auditoria_agente;Username=auditoria_app;Password={senha};SSL Mode=Require`.
+      Em seguida, `Remove-Item Env:PGPASSWORD`.
+
+3. **OpenAI** (painel em `platform.openai.com`): crie um projeto exclusivo da homologação, defina o
+   limite de gasto mensal do projeto e confira no painel se ele bloqueia as chamadas ou só alerta.
+   Depois, crie uma chave desse projeto. O modelo é o aprovado pela avaliação (DP-05).
+
+4. **Vercel**, no projeto do Agent Card (`agente-auditoria-nfe`, seção 8.8), que é ligado ao Git
+   e publica a produção a cada merge na `main`:
+   1. Confirme que o código da Fase 12 já está na `main` e que a produção atual é um deploy dessa
+      versão, ainda no modo só card (o card traz `implantacao` = "somente Agent Card publicado...").
+      Se `Hospedagem__Modo=Homologacao` for cadastrado antes disso, o deploy seguinte da `main` não
+      inicia, porque o código antigo não conhece o modo.
+   2. Em **Settings > Environment Variables**, mantenha `PORT=8080` e
+      `A2A__UrlPublica=https://agente-auditoria-nfe.vercel.app`, já cadastradas na seção 8.8, e
+      acrescente, só para **Production**:
+
+   | Variável | Valor | Sensível |
+   | -------- | ----- | -------- |
+   | `Hospedagem__Modo` | `Homologacao` | Não |
+   | `ConnectionStrings__MongoDb` | string `mongodb+srv` do passo 1 | Sim |
+   | `ConnectionStrings__Consumo` | string do Neon do passo 2 | Sim |
+   | `Ia__Provedor` | `OpenAI` | Não |
+   | `OpenAI__ApiKey` | chave do passo 3 | Sim |
+   | `OpenAI__Modelo` | modelo aprovado (DP-05) | Não |
+   | `Limites__TamanhoTotalBytes` | `4000000` | Não |
+   | `Limites__CorpoHttpBytes` | `4500000` | Não |
+   | `Aprovacao__Diretorio` | `/tmp/aprovacoes` | Não |
+   | `Persistencia__AplicarMigracoes` | `false` | Não |
+
+   3. As variáveis só valem em deploys novos: em **Deployments**, abra o deployment de produção
+      atual e use **Redeploy**. Daí em diante, cada merge na `main` publica o agente completo.
+
+   Sem `Hospedagem__Modo`, a imagem sobe como `SomenteAgentCard`. Com provedor simulado, migrações
+   ligadas ou limites acima de 4.000.000 e 4.500.000 bytes, o agente não inicia e o log cita o D-09;
+   nesse caso, a produção anterior continua no ar até um deploy novo ficar pronto.
+
+5. **Verificações do TS-075** na URL de produção, sem autenticação:
+
+   ```powershell
+   $base = 'https://agente-auditoria-nfe.vercel.app'
+   $inicio = Get-Date; Invoke-RestMethod "$base/health/live"; "primeira resposta: $((Get-Date) - $inicio)"
+   Invoke-RestMethod "$base/health/ready"
+   Invoke-RestMethod "$base/.well-known/agent-card.json" | ConvertTo-Json -Depth 10
+   Invoke-WebRequest "$base/swagger/index.html" | Select-Object StatusCode
+   $cabecalhos = @{ 'X-Usuario-Id' = 'homolog-01'; 'X-Chamador-Id' = 'homologacao' }
+   $form = @{
+     pergunta = 'Quais notas têm totalizador divergente?'
+     arquivos = Get-Item tests/AuditoriaNFe.Tests/Fixtures/Xml/PL_010e_v1.02/*.xml
+   }
+   $envelope = Invoke-RestMethod -Method Post "$base/api/v1/execucoes" -Headers $cabecalhos -Form $form
+   $envelope.estado; $envelope.parecer.resultadoGeral
+   $form.sessaoId = $envelope.sessaoId; $form.pergunta = 'Resuma os achados da análise anterior.'
+   (Invoke-RestMethod -Method Post "$base/api/v1/execucoes" -Headers $cabecalhos -Form $form).sessaoId -eq $envelope.sessaoId
+   Invoke-RestMethod "$base/api/v1/contexto-usuario" -Headers $cabecalhos
+   [IO.File]::WriteAllBytes("$env:TEMP\lote-grande.xml", [byte[]]::new(4000001))
+   Invoke-WebRequest -Method Post "$base/api/v1/execucoes" -Headers $cabecalhos -SkipHttpErrorCheck `
+     -Form @{ arquivos = Get-Item "$env:TEMP\lote-grande.xml" } | Select-Object StatusCode, Content
+   vercel logs <url-do-deployment>
+   ```
+
+   Esperado: `live` e `ready` 200; o card com `url` = `https://agente-auditoria-nfe.vercel.app/a2a/auditoria-nfe`
+   e `implantacao` de homologação; Swagger 200; a primeira análise `Concluida` com parecer; a segunda
+   na mesma sessão; o contexto com os CNPJs auditados; o lote grande com 413 e `ERR-002` no envelope
+   (não o `FUNCTION_PAYLOAD_TOO_LARGE` do Vercel); uma linha nova em `consumo.chamadas_provedor`
+   (consulta do passo 2.4); nos logs, nenhum segredo nem conteúdo de XML (os logs ficam só 1 hora).
+   Até a Fase 8, `POST /a2a/auditoria-nfe` responde 404. Registre no research R-36 a URL, o commit,
+   o deployment e os resultados, sem endereços de cluster, usuários ou senhas.
+
+6. **Rollback, desligamento e limpeza**:
+   - Rollback: **Instant Rollback** para o deployment anterior no painel do Vercel, ou
+     `vercel rollback <url-do-deployment-anterior>`. As migrações só acrescentam; para voltar o
+     banco, recrie o schema `consumo` (dados sintéticos).
+   - Volta ao modo só card, na mesma URL: remova `Hospedagem__Modo` e as variáveis sensíveis do
+     projeto e faça o Redeploy; a SOFIA continua encontrando o card.
+   - Desligamento definitivo da homologação: volte ao modo só card, revogue a chave da OpenAI e
+     apague a entrada `0.0.0.0/0` e o cluster do Atlas e o projeto do Neon.
+   - Limpeza dos dados sem desligar: no Data Explorer do Atlas, apague os documentos das coleções;
+     no Neon, `TRUNCATE consumo.chamadas_provedor` com o usuário da aplicação.
 
 ## 9. Validar a aprovação de recomendações sensíveis (TS-039 a TS-041)
 
@@ -412,10 +580,13 @@ o P17.
 | SOFIA em contêiner não alcança o agente | Uso de `localhost` entre contêineres ou redes diferentes | Rede `auditoria-nfe-net` e `http://api-agente:8080` (seção 8.6) |
 | Vercel responde 502 ou o deploy não fica pronto | `PORT` ausente no projeto Vercel; o tráfego vai para a porta 80 | `vercel env add PORT` com `8080` e novo deploy (seção 8.8) |
 | Card no Vercel com `url` de `localhost` | `A2A__UrlPublica` não cadastrada no ambiente do deploy | Cadastrar a URL do projeto em preview e produção e publicar de novo |
-| A SOFIA recebe 404 ao chamar o agente no Vercel | O Vercel só publica o card (D-08); o canal A2A não existe lá | Usar o agente local para `message/send` até a DP-25 e o fim do D-05 |
+| A SOFIA recebe 404 ao chamar o agente no Vercel | O endpoint A2A só existe depois da Fase 8; no modo só card (D-08), nem a API existe | Usar o agente local para `message/send` até a Fase 8 ser publicada na homologação (seção 8.9) |
 | Vercel serve os arquivos do repositório e o card dá 404 | Preset "Other" do projeto prevaleceu sobre o `Dockerfile.vercel` | `"framework": "container"` no `vercel.json`, remover o deployment estático e publicar de novo |
 | Deploy no Vercel fica "Blocked" | Autor do último commit não é a conta dona do projeto (plano Hobby) | `git config user.email` com o e-mail da conta e um commit novo |
 | Card no Vercel abre a página de login | Domínio de preview ou alias da conta, protegidos pelo Vercel | Usar `https://<projeto>.vercel.app` ou `vercel curl` |
+| Vercel responde 413 (`FUNCTION_PAYLOAD_TOO_LARGE`) em vez do ERR-002 | Corpo acima de 4,5 MB, barrado pela plataforma antes do agente | Lotes de até 4.000.000 bytes na homologação; conferir `Limites__TamanhoTotalBytes=4000000` e `Limites__CorpoHttpBytes=4500000` (seção 8.9) |
+| Homologação não inicia: "Configuração inválida para Hospedagem:Modo = Homologacao (desvio D-09)" | Provedor simulado, migrações ligadas ou limites acima dos da homologação | Corrigir as variáveis listadas na mensagem (seção 8.9) e publicar de novo |
+| Homologação com `ready` 503 | Atlas sem `0.0.0.0/0`, string do Neon no formato `postgresql://` ou senha com caracteres sem codificação na URL do Atlas | Conferir o Network Access e as duas connection strings (seção 8.9) |
 
 ## 12. Encerrar
 
