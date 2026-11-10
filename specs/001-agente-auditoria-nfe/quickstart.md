@@ -297,23 +297,31 @@ cabeçalhos CORS. `curl` e o PowerShell não aplicam CORS: o bloqueio só aconte
 ### 8.8 Agent Card publicado no Vercel (D-08, TS-071)
 
 Depois da conclusão da Fase 11 (D-08 e ADR-0012 aprovados em 2026-11-05). O Vercel recebe apenas o
-modo `SomenteAgentCard`: o card e `/health/live`, sem banco, IA nem rotas de análise. Nenhuma
-connection string ou chave é cadastrada no projeto Vercel. A partir da Fase 12, o mesmo projeto
-passa ao modo `Homologacao` (seção 8.9); o modo só card fica como volta rápida.
+modo `SomenteAgentCard`: o card e `/health/live`, sem banco, IA nem rotas de análise. O único
+segredo do projeto Vercel é `SOFIA_A2A_TOKEN`, a credencial de serviço da SOFIA (FR-052h,
+ADR-0014): o card e os caminhos `/a2a` exigem `Authorization: Bearer {chave}`, e, sem a variável, o
+agente não inicia. A chave é a compartilhada da turma, informada pelo professor; ela não entra no
+Git, no chat nem em comandos com o valor visível. A partir da Fase 12, o mesmo projeto passa ao
+modo `Homologacao` (seção 8.9); o modo só card fica como volta rápida.
 
 1. Conferir a imagem localmente (porta só em `127.0.0.1`):
 
    ```powershell
    docker build -f Dockerfile.vercel -t auditoria-nfe-card:local .
+   $env:SOFIA_A2A_TOKEN = Read-Host -MaskInput 'Credencial de serviço da SOFIA'
    docker run --rm -d --name auditoria-nfe-card -p 127.0.0.1:5311:8080 `
-     -e PORT=8080 -e A2A__UrlPublica=http://localhost:5311 auditoria-nfe-card:local
-   Invoke-RestMethod http://localhost:5311/.well-known/agent-card.json | ConvertTo-Json -Depth 10
+     -e PORT=8080 -e A2A__UrlPublica=http://localhost:5311 -e SOFIA_A2A_TOKEN auditoria-nfe-card:local
+   $sofia = @{ Authorization = "Bearer $env:SOFIA_A2A_TOKEN" }
+   Invoke-WebRequest http://localhost:5311/.well-known/agent-card.json -SkipHttpErrorCheck | Select-Object StatusCode
+   Invoke-RestMethod http://localhost:5311/.well-known/agent-card.json -Headers $sofia | ConvertTo-Json -Depth 10
    Invoke-WebRequest http://localhost:5311/health/ready -SkipHttpErrorCheck | Select-Object StatusCode
    docker stop auditoria-nfe-card
    ```
 
-   Esperado: o card do contrato §2 com `url` = `http://localhost:5311/a2a/auditoria-nfe` e
-   `implantacao` na extensão; `/health/ready` responde 404.
+   Esperado: sem o cabeçalho, 401; com ele, o card do contrato §2 com `url` =
+   `http://localhost:5311/a2a/auditoria-nfe`, `implantacao` na extensão e `securitySchemes`
+   Bearer, sem o valor da chave; `/health/ready` responde 404. Sem `-e SOFIA_A2A_TOKEN`, o
+   contêiner encerra com a mensagem que cita a variável.
 
 2. Publicar em preview e conferir antes da produção (CLI autenticada na conta da autora):
 
@@ -323,13 +331,15 @@ passa ao modo `Homologacao` (seção 8.9); o modo só card fica como volta rápi
    vercel link
    vercel env add PORT production          # valor: 8080 (repetir para preview)
    vercel env add A2A__UrlPublica production   # valor: https://<projeto>.vercel.app
+   vercel env add SOFIA_A2A_TOKEN production --sensitive   # valor digitado no prompt (repetir para preview)
    vercel env ls
    vercel deploy
    Invoke-RestMethod https://<url-do-preview>/.well-known/agent-card.json | ConvertTo-Json -Depth 10
    ```
 
-   Esperado: o mesmo card com a URL pública; `/health/live` responde 200; `/swagger`, `/api/v1/...`
-   e `POST /a2a/auditoria-nfe` respondem 404. Em preview, a proteção de deployments do Vercel exige
+   Esperado: o mesmo card com a URL pública (com o cabeçalho `$sofia` do passo 1; sem ele, 401);
+   `/health/live` responde 200; `/swagger` e `/api/v1/...` respondem 404; `POST /a2a/auditoria-nfe`
+   responde 401 sem o cabeçalho e 404 com ele. Em preview, a proteção de deployments do Vercel exige
    login; confira com `vercel curl https://<url-do-preview>/.well-known/agent-card.json`.
 
    Antes do primeiro `vercel deploy`: o primeiro deploy de um projeto vai para produção, e o
@@ -343,7 +353,10 @@ passa ao modo `Homologacao` (seção 8.9); o modo só card fica como volta rápi
    connect` ou Project Settings > Git) e conferir que a Production Branch é `main`. A partir daí, cada
    merge na `main` publica a produção; para publicar o merge que já aconteceu, use Redeploy no painel
    ou `vercel deploy --prod` a partir da `main` atualizada. Repita as verificações do passo 2 na URL
-   de produção, sem autenticação (`Invoke-WebRequest` ou `curl`), porque a produção é pública. O
+   de produção, sem o login do Vercel (`Invoke-WebRequest` ou `curl`, com o cabeçalho `$sofia`),
+   porque a produção é pública. **Cadastre `SOFIA_A2A_TOKEN` em Production antes de mesclar na
+   `main` o código da credencial de serviço (Fase 13)**: sem a variável, o deploy seguinte não
+   inicia e o card sai do ar. O
    build do contêiner leva alguns minutos; enquanto o deploy estiver "Initializing", a URL responde
    404. Os domínios `<projeto>-<conta>.vercel.app` e `<projeto>-git-main-<conta>.vercel.app` ficam
    atrás da proteção de deployments; a SOFIA usa só `https://<projeto>.vercel.app`.
@@ -354,8 +367,9 @@ Depois da conclusão das tarefas T178 a T182 (D-09 e ADR-0013 aprovados em 2026-
 completo roda no modo `Homologacao` no mesmo projeto Vercel do Agent Card (seção 8.8),
 `agente-auditoria-nfe`, e na mesma URL, `https://agente-auditoria-nfe.vercel.app`, com MongoDB
 Atlas Free, Neon Free e OpenAI. A SOFIA continua com o card já cadastrado; o `message/send` só
-funciona depois da Fase 8. **Não há autenticação**: qualquer pessoa com a URL pode enviar XMLs e
-ler dados de outro usuário se souber os identificadores. Use só XMLs sintéticos.
+funciona depois da Fase 8. **A API REST e o Swagger não têm autenticação**: qualquer pessoa com a
+URL pode enviar XMLs e ler dados de outro usuário se souber os identificadores. Só o card e o A2A
+exigem a credencial de serviço da SOFIA (seção 8.8). Use só XMLs sintéticos.
 
 Segredos (senhas, connection strings e a chave da OpenAI) vão direto do painel do provedor para as
 variáveis do projeto Vercel ou para um gerenciador de senhas. Nunca entram no Git, no chat, no `.env`
@@ -448,9 +462,9 @@ mudam sem aviso):
       versão, ainda no modo só card (o card traz `implantacao` = "somente Agent Card publicado...").
       Se `Hospedagem__Modo=Homologacao` for cadastrado antes disso, o deploy seguinte da `main` não
       inicia, porque o código antigo não conhece o modo.
-   2. Em **Settings > Environment Variables**, mantenha `PORT=8080` e
-      `A2A__UrlPublica=https://agente-auditoria-nfe.vercel.app`, já cadastradas na seção 8.8, e
-      acrescente, só para **Production**:
+   2. Em **Settings > Environment Variables**, mantenha `PORT=8080`,
+      `A2A__UrlPublica=https://agente-auditoria-nfe.vercel.app` e `SOFIA_A2A_TOKEN` (sensível), já
+      cadastradas na seção 8.8, e acrescente, só para **Production**:
 
    | Variável | Valor | Sensível |
    | -------- | ----- | -------- |
@@ -472,13 +486,15 @@ mudam sem aviso):
    ligadas ou limites acima de 4.000.000 e 4.500.000 bytes, o agente não inicia e o log cita o D-09;
    nesse caso, a produção anterior continua no ar até um deploy novo ficar pronto.
 
-5. **Verificações do TS-075** na URL de produção, sem autenticação:
+5. **Verificações do TS-075** na URL de produção, com a API REST sem autenticação:
 
    ```powershell
    $base = 'https://agente-auditoria-nfe.vercel.app'
+   $sofia = @{ Authorization = "Bearer $(Read-Host -MaskInput 'Credencial de serviço da SOFIA')" }
    $inicio = Get-Date; Invoke-RestMethod "$base/health/live"; "primeira resposta: $((Get-Date) - $inicio)"
    Invoke-RestMethod "$base/health/ready"
-   Invoke-RestMethod "$base/.well-known/agent-card.json" | ConvertTo-Json -Depth 10
+   Invoke-WebRequest "$base/.well-known/agent-card.json" -SkipHttpErrorCheck | Select-Object StatusCode
+   Invoke-RestMethod "$base/.well-known/agent-card.json" -Headers $sofia | ConvertTo-Json -Depth 10
    Invoke-WebRequest "$base/swagger/index.html" | Select-Object StatusCode
    $cabecalhos = @{ 'X-Usuario-Id' = 'homolog-01'; 'X-Chamador-Id' = 'homologacao' }
    $form = @{
@@ -496,12 +512,14 @@ mudam sem aviso):
    vercel logs <url-do-deployment>
    ```
 
-   Esperado: `live` e `ready` 200; o card com `url` = `https://agente-auditoria-nfe.vercel.app/a2a/auditoria-nfe`
-   e `implantacao` de homologação; Swagger 200; a primeira análise `Concluida` com parecer; a segunda
+   Esperado: `live` e `ready` 200; o card sem o cabeçalho com 401 e, com ele, com `url` =
+   `https://agente-auditoria-nfe.vercel.app/a2a/auditoria-nfe`, `implantacao` de homologação e
+   `securitySchemes` Bearer; Swagger 200; a primeira análise `Concluida` com parecer; a segunda
    na mesma sessão; o contexto com os CNPJs auditados; o lote grande com 413 e `ERR-002` no envelope
    (não o `FUNCTION_PAYLOAD_TOO_LARGE` do Vercel); uma linha nova em `consumo.chamadas_provedor`
    (consulta do passo 2.4); nos logs, nenhum segredo nem conteúdo de XML (os logs ficam só 1 hora).
-   Até a Fase 8, `POST /a2a/auditoria-nfe` responde 404. Registre no research R-36 a URL, o commit,
+   Até a Fase 8, `POST /a2a/auditoria-nfe` responde 401 sem o cabeçalho e 404 com ele. Ao
+   terminar, `Remove-Variable sofia`. Registre no research R-36 a URL, o commit,
    o deployment e os resultados, sem endereços de cluster, usuários ou senhas.
 
 6. **Rollback, desligamento e limpeza**:
@@ -514,6 +532,37 @@ mudam sem aviso):
      apague a entrada `0.0.0.0/0` e o cluster do Atlas e o projeto do Neon.
    - Limpeza dos dados sem desligar: no Data Explorer do Atlas, apague os documentos das coleções;
      no Neon, `TRUNCATE consumo.chamadas_provedor` com o usuário da aplicação.
+
+### 8.10 Cadastro no catálogo da SOFIA (FR-052h)
+
+A chave autentica a SOFIA, mas não cadastra o agente: a SOFIA só descobre os agentes listados em
+`A2A:Agents` da configuração central. O cadastro é feito pelo responsável pela SOFIA (professor);
+este projeto entrega os dados e não altera a SOFIA. Objeto a entregar:
+
+```json
+{
+  "IdAgente": "agente-auditoria-nfe",
+  "ExpectedName": "AgenteAuditoriaNFe",
+  "Enabled": true,
+  "CardUri": "https://agente-auditoria-nfe.vercel.app/.well-known/agent-card.json",
+  "AllowedDestinations": [
+    "https://agente-auditoria-nfe.vercel.app/.well-known/agent-card.json",
+    "https://agente-auditoria-nfe.vercel.app/a2a/auditoria-nfe"
+  ],
+  "AllowedAddresses": ["{ip-publico-validado-pelo-responsavel-da-SOFIA}"],
+  "AllowedCapabilities": ["analisar_documentos"],
+  "CredentialRef": "SOFIA_A2A_TOKEN",
+  "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN"
+}
+```
+
+- `IdAgente` é o `A2A:IdAgente` e o `agente.idAgente` dos resultados; `ExpectedName` é o `name` do
+  card. As duas referências de credencial são o **nome** da variável na SOFIA, não a chave.
+- O Vercel não tem IP fixo: `AllowedAddresses` depende da política de destino da SOFIA para
+  domínios com IP dinâmico, a validar com o responsável central (`Resolve-DnsName
+  agente-auditoria-nfe.vercel.app` mostra os endereços do momento). Não desativar as proteções.
+- O `message/send` só responde depois da Fase 8; até lá, a descoberta funciona e a execução
+  recebe 404.
 
 ## 9. Validar a aprovação de recomendações sensíveis (TS-039 a TS-041)
 
@@ -581,6 +630,9 @@ o P17.
 | Vercel responde 502 ou o deploy não fica pronto | `PORT` ausente no projeto Vercel; o tráfego vai para a porta 80 | `vercel env add PORT` com `8080` e novo deploy (seção 8.8) |
 | Card no Vercel com `url` de `localhost` | `A2A__UrlPublica` não cadastrada no ambiente do deploy | Cadastrar a URL do projeto em preview e produção e publicar de novo |
 | A SOFIA recebe 404 ao chamar o agente no Vercel | O endpoint A2A só existe depois da Fase 8; no modo só card (D-08), nem a API existe | Usar o agente local para `message/send` até a Fase 8 ser publicada na homologação (seção 8.9) |
+| Card ou `/a2a` respondem 401 | Requisição sem `Authorization: Bearer`, com outro esquema ou com chave diferente de `SOFIA_A2A_TOKEN` (a chave diferencia maiúsculas) | Enviar o cabeçalho com a chave da turma; na SOFIA, conferir `DiscoveryCredentialRef` e `CredentialRef` = `SOFIA_A2A_TOKEN` e o valor da variável (seção 8.10) |
+| Agente não inicia: "SOFIA_A2A_TOKEN deve ser configurada" ou "não pode ter espaços" | Variável ausente, vazia ou com espaço ou quebra de linha nas pontas, nos modos `SomenteAgentCard` ou `Homologacao` | Cadastrar a variável sensível no projeto Vercel (ou no `docker run`) sem espaços e fazer o Redeploy (seção 8.8) |
+| SOFIA marca o agente com `UNSUPPORTED_AGENT_SECURITY` | Card sem `securitySchemes` Bearer, publicado por uma versão anterior à Fase 13 | Publicar a versão atual na `main` (com a variável já cadastrada) |
 | Vercel serve os arquivos do repositório e o card dá 404 | Preset "Other" do projeto prevaleceu sobre o `Dockerfile.vercel` | `"framework": "container"` no `vercel.json`, remover o deployment estático e publicar de novo |
 | Deploy no Vercel fica "Blocked" | Autor do último commit não é a conta dona do projeto (plano Hobby) | `git config user.email` com o e-mail da conta e um commit novo |
 | Card no Vercel abre a página de login | Domínio de preview ou alias da conta, protegidos pelo Vercel | Usar `https://<projeto>.vercel.app` ou `vercel curl` |

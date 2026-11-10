@@ -1,6 +1,6 @@
 {
   "name": "AgenteAuditoriaNFe",
-  "description": "Analisa XMLs de NF-e (modelo 55, layout 4.00) enviados pela SOFIA: valida a estrutura contra o schema oficial vigente na data de cada documento e confere os totalizadores do catálogo aprovado, sem inventar valores. Versão sem autenticação, somente para ambiente local de testes.",
+  "description": "Analisa XMLs de NF-e (modelo 55, layout 4.00) enviados pela SOFIA: valida a estrutura contra o schema oficial vigente na data de cada documento e confere os totalizadores do catálogo aprovado, sem inventar valores. Acesso pela credencial de serviço da SOFIA; somente dados sintéticos.",
   "url": "http://localhost:5310/a2a/auditoria-nfe",
   "version": "1.0.0",
   "protocolVersion": "0.3.0",
@@ -17,7 +17,7 @@
           "versaoContrato": "1.0",
           "idAgente": "agente-auditoria-nfe",
           "nomeArtifact": "analise-sofia-v1",
-          "autenticacao": "nenhuma — somente ambiente local de testes",
+          "autenticacao": "bearer — credencial de serviço da SOFIA",
           "limites": { "tamanhoTotalBytes": 5242880, "quantidadeDocumentos": 20 },
           "documentosSuportados": [{ "tipo": "NF-e", "modelo": "55", "versoesLayout": ["4.00"], "tipoMime": "application/xml" }],
           "idioma": "pt-BR"
@@ -35,5 +35,9 @@
       "tags": ["infis", "fiscal", "sofia", "nfe", "auditoria"],
       "examples": ["Verifique divergências fiscais nos documentos."]
     }
-  ]
+  ],
+  "securitySchemes": {
+    "sofiaService": { "type": "http", "scheme": "bearer" }
+  },
+  "security": [{ "sofiaService": [] }]
 }
