@@ -20,18 +20,23 @@ A2A (perfil v0.3.x). Os JSON Schemas do contrato estão em
 Este contrato complementa a [spec](../spec.md) (FR-043 a FR-047, FR-035g, FR-048 a FR-052d) e o
 [modelo de dados](../data-model.md) (§0, §2, §3 e §18).
 
-> **Sem autenticação na v1 (desvio D-05).** O agente só pode ser executado em ambiente local de
-> testes, com as portas publicadas em `127.0.0.1` e dados sintéticos ou anonimizados (FR-052b). A
-> autenticação é de transporte (fora dos DTOs) e chega com o ADR da DP-10; a integração com a SOFIA
-> real exige o fim do D-05. Exceção (aprovada em 2026-11-05): só o Agent Card pode ser publicado no
-> Vercel, no modo `SomenteAgentCard` (FR-052f, desvio D-08, ADR-0012), sem o endpoint A2A.
+> **Credencial de serviço da SOFIA (FR-052h, ADR-0014, 2026-11-10).** O Agent Card e o endpoint A2A
+> exigem `Authorization: Bearer {chave}`, com a chave compartilhada da turma configurada em
+> `SOFIA_A2A_TOKEN`. A autenticação é de transporte (fora dos DTOs) e não identifica o chamador nem
+> o usuário: isso continua no desvio D-05 e na DP-10. Publicação fora da máquina local: só o card
+> no modo `SomenteAgentCard` (FR-052f, D-08, ADR-0012) ou a homologação (FR-052g, D-09, ADR-0013).
 
 ## 1. Endereços
 
 | Recurso | Método e caminho | Autenticação |
 | ------- | ---------------- | ------------ |
-| Agent Card | `GET /.well-known/agent-card.json` | Pública (sem segredos nem dados de usuário — FR-045) |
-| Endpoint A2A (JSON-RPC 2.0) | `POST /a2a/auditoria-nfe`, método `message/send` | Nenhuma na v1 (D-05) |
+| Agent Card | `GET /.well-known/agent-card.json` | Bearer da credencial de serviço da SOFIA (FR-052h); sem segredos nem dados de usuário (FR-045) |
+| Endpoint A2A (JSON-RPC 2.0) | `POST /a2a/auditoria-nfe`, método `message/send` | Bearer da credencial de serviço da SOFIA (FR-052h); vale para todo caminho sob `/a2a` |
+
+- Sem o cabeçalho, com cabeçalho repetido ou malformado, ou com outra chave: HTTP 401 com
+  `WWW-Authenticate: Bearer`, sem corpo JSON-RPC e antes de qualquer processamento. O esquema
+  `Bearer` não diferencia maiúsculas; a chave sim. A chave na URL ou no corpo não é aceita.
+- `GET /health/live` não exige a credencial.
 
 - A URL base é configurável (`A2A:UrlPublica`; no ambiente local, `http://localhost:5310`). O campo
   `url` do card é `{A2A:UrlPublica}/a2a/auditoria-nfe`.
@@ -50,7 +55,7 @@ produzidos pelo `V03TypeConverter` do SDK e são conferidos pelo teste de contra
 ```json
 {
   "name": "AgenteAuditoriaNFe",
-  "description": "Analisa XMLs de NF-e (modelo 55, layout 4.00) enviados pela SOFIA: valida a estrutura contra o schema oficial vigente na data de cada documento e confere os totalizadores do catálogo aprovado, sem inventar valores. Versão sem autenticação, somente para ambiente local de testes.",
+  "description": "Analisa XMLs de NF-e (modelo 55, layout 4.00) enviados pela SOFIA: valida a estrutura contra o schema oficial vigente na data de cada documento e confere os totalizadores do catálogo aprovado, sem inventar valores. Acesso pela credencial de serviço da SOFIA; somente dados sintéticos.",
   "url": "http://localhost:5310/a2a/auditoria-nfe",
   "version": "1.0.0",
   "protocolVersion": "0.3.0",
@@ -67,7 +72,7 @@ produzidos pelo `V03TypeConverter` do SDK e são conferidos pelo teste de contra
           "versaoContrato": "1.0",
           "idAgente": "agente-auditoria-nfe",
           "nomeArtifact": "analise-sofia-v1",
-          "autenticacao": "nenhuma — somente ambiente local de testes",
+          "autenticacao": "bearer — credencial de serviço da SOFIA",
           "limites": { "tamanhoTotalBytes": 5242880, "quantidadeDocumentos": 20 },
           "documentosSuportados": [{ "tipo": "NF-e", "modelo": "55", "versoesLayout": ["4.00"], "tipoMime": "application/xml" }],
           "idioma": "pt-BR"
@@ -85,19 +90,25 @@ produzidos pelo `V03TypeConverter` do SDK e são conferidos pelo teste de contra
       "tags": ["infis", "fiscal", "sofia", "nfe", "auditoria"],
       "examples": ["Verifique divergências fiscais nos documentos."]
     }
-  ]
+  ],
+  "securitySchemes": {
+    "sofiaService": { "type": "http", "scheme": "bearer" }
+  },
+  "security": [{ "sofiaService": [] }]
 }
 ```
 
 Regras:
 
 - O card publica nome, descrição, versão do agente (`version`), versão do contrato e `idAgente`
-  (extensão), a habilidade, os formatos, os limites e a ausência de autenticação (FR-044, FR-052b).
+  (extensão), a habilidade, os formatos, os limites e o esquema de autenticação (FR-044, FR-052h).
 - `idAgente` vem de `A2A:IdAgente` (inicial `agente-auditoria-nfe`) e DEVE ser igual ao cadastrado
   no registry da SOFIA e ao devolvido em `ResultadoAnaliseSofia.agente.idAgente`.
 - O id da habilidade é `analisar_documentos`, o mesmo do padrão da turma.
-- O card não declara `securitySchemes` na v1. Com o fim do D-05, o esquema da credencial de serviço
-  (ADR da DP-10) entra no card em nova versão menor do contrato.
+- O card declara o esquema `sofiaService` (`http`, `bearer`) em `securitySchemes` e o exige em
+  `security`, sem o valor da chave (FR-052h, ADR-0014). A SOFIA recusa cards sem esse esquema
+  (`UNSUPPORTED_AGENT_SECURITY`). A autenticação é de transporte e não muda a versão `1.0` do
+  contrato de negócio.
 - Mudança de limite por configuração altera o card sem nova versão do contrato (FR-005).
 - O card não contém segredos, chaves, endereços internos nem dados de usuários (FR-045).
 - No modo `SomenteAgentCard` (FR-052f, D-08), a extensão acrescenta o parâmetro
@@ -191,8 +202,9 @@ O adaptador A2A só traduz; a análise é a mesma do canal direto (P18).
 
 ### 4.2 Identificação (D-05)
 
-- `chamadorId` = `A2A:ChamadorPadrao` (inicial `"sofia"`). Na v1 não há credencial; com o fim do
-  D-05, passa a ser o da credencial de serviço autenticada.
+- `chamadorId` = `A2A:ChamadorPadrao` (inicial `"sofia"`). A credencial de serviço da SOFIA
+  (FR-052h) é compartilhada pela turma e não identifica o chamador; com o fim do D-05 e a DP-10,
+  passa a ser o da credencial de serviço do chamador.
 - `usuarioNome` = `usuario.nome` sem espaços nas pontas. É persistido na sessão e na execução
   (data-model §1 e §2), com a retenção do ADR-0005, e NÃO DEVE aparecer em logs, no envio ao
   provedor de IA (ADR-0004) nem no contexto do usuário (FR-055a).
@@ -358,6 +370,7 @@ Na ordem:
 | ERR-008 a ERR-012, ERR-023 (por documento) | Task `completed`, `status: parcial` ou `concluido` (§5.3); detalhes nas observações e nos achados |
 | ERR-013, ERR-014, ERR-015 | Task `completed`, `status: parcial`, resultados determinísticos entregues |
 | ERR-017, ERR-018 | Resposta normal na `analise` (não são erros técnicos) |
+| Card ou caminho `/a2a` sem a credencial de serviço válida (FR-052h) | HTTP 401 com `WWW-Authenticate: Bearer`, sem corpo JSON-RPC (falha técnica de transporte) |
 | ERR-004, ERR-019 | Adiados com o desvio D-05 |
 
 As mensagens são as do catálogo de erros em pt-BR (NFR-010), sem caminho de arquivo, conteúdo de
@@ -397,7 +410,7 @@ documento, nome do usuário ou detalhe de infraestrutura.
 | `result.kind`, `id` (Task), `contextId`, `status.state`, `status.timestamp` | `usuario.nome`, `pergunta`, `contexto` |
 | `artifacts[].artifactId`, `name`, `parts[].kind` | `documentos[]` (`idDocumento`, `nome`, `tipo`, `texto`) |
 | Agent Card (`url`, `capabilities`, `skills`, `protocolVersion`) | `agente`, `status`, `analise`, `achados[]`, `observacoes`, `erro` |
-| Autenticação (D-05, futura credencial de serviço) | — |
+| Autenticação (`Authorization: Bearer`, FR-052h; credencial por chamador na DP-10) | — |
 
 ## 10. Uso pelo Sofia.Simulator
 
@@ -405,7 +418,7 @@ O simulador usa o cliente oficial do perfil v0.3 (`A2A.V0_3`) e só o contrato p
 
 | Cenário | Comportamento esperado | Referência |
 | ------- | ---------------------- | ---------- |
-| Descoberta | Obtém o card v0.3, valida campos do FR-044 e exibe habilidade, `idAgente`, limites e a ausência de autenticação | TS-029 |
+| Descoberta | Obtém o card v0.3 com a credencial de serviço, valida campos do FR-044 e exibe habilidade, `idAgente`, limites e o esquema de autenticação | TS-029 |
 | Fluxo básico | Envia `message/send` com uma `SolicitacaoAnaliseSofia` (IDs gerados, nome fictício, pergunta e XMLs sintéticos); exibe estado da Task, `status`, `analise`, achados, observações e confere os IDs devolvidos | TS-035 |
 | Card inacessível | Informa falha de descoberta e não envia solicitação | TS-035a |
 | Documento não suportado (opcional) | Inclui um texto que não é NF-e; exibe `status: parcial` | TS-065 |
@@ -422,8 +435,8 @@ O simulador usa o cliente oficial do perfil v0.3 (`A2A.V0_3`) e só o contrato p
 - **Rede Docker**: dentro de contêineres, a SOFIA acessa o agente pelo nome do serviço na rede
   compartilhada, nunca por `localhost` de outro contêiner. Nesse caso `A2A:UrlPublica` DEVE ser o
   endereço que a SOFIA alcança (por exemplo `http://api-agente:8080`), porque a SOFIA usa o `url`
-  do card como endpoint RPC. HTTP sem TLS só em rede local isolada (D-05); fora dela, HTTPS e a
-  credencial de serviço da DP-10.
+  do card como endpoint RPC. HTTP sem TLS só em rede local isolada (D-05); fora dela, HTTPS. Em
+  qualquer caso, a SOFIA envia a credencial de serviço (FR-052h).
 - **CORS**: não se aplica. A SOFIA chama o card e o endpoint A2A pelo backend, e essas rotas não
   emitem cabeçalhos CORS; a política `SofiaBrowser` vale só para as rotas REST `/api/v1` (FR-052e).
 - **Exemplos**: mensagens completas em [exemplos/](./exemplos/), validadas contra os JSON Schemas
