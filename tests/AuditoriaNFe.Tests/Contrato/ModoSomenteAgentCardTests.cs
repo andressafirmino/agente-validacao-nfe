@@ -134,9 +134,9 @@ public sealed class ModoSomenteAgentCardTests
     [InlineData("https://agente.example/?x=1")]
     public void UrlPublica_invalida_impede_a_inicializacao(string urlPublica)
     {
-        using var fabrica = CriarFabrica(urlPublica: urlPublica);
-
-        var erro = Assert.ThrowsAny<Exception>(() => fabrica.Services);
+        var erro = Assert.ThrowsAny<Exception>(() => CredencialServicoSofiaTests.ValidarInicializacao(
+            (s, c) => s.AdicionarSomenteAgentCard(c),
+            new Dictionary<string, string?> { [$"{A2AOpcoes.Secao}:{nameof(A2AOpcoes.UrlPublica)}"] = urlPublica }));
 
         Assert.Contains("A2A:UrlPublica", Mensagens(erro), StringComparison.Ordinal);
     }

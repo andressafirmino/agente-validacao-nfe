@@ -6,9 +6,11 @@ using Api.Agente.Hospedagem;
 using Api.Agente.Seguranca;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace AuditoriaNFe.Tests.Contrato;
 
@@ -146,13 +148,44 @@ public sealed class CredencialServicoSofiaTests
     [InlineData(Chave + "\n")]
     public void Configuracao_ausente_ou_invalida_impede_a_inicializacao(string? valor)
     {
-        using var fabrica = CriarFabrica(chave: valor);
-
-        var erro = Assert.ThrowsAny<Exception>(() => fabrica.Services);
+        var erro = Assert.ThrowsAny<Exception>(() => ValidarInicializacao(
+            (s, c) => s.AdicionarAgentCard(c),
+            new Dictionary<string, string?> { [CredencialServicoSofiaOpcoes.ChaveToken] = valor }));
 
         var mensagens = Mensagens(erro);
         Assert.Contains(CredencialServicoSofiaOpcoes.ChaveToken, mensagens, StringComparison.Ordinal);
         Assert.DoesNotContain(Chave, mensagens, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Executa as validações de <c>ValidateOnStart</c> como o host faz ao iniciar. Com o
+    /// <c>WebApplicationFactory</c>, a falha de inicialização às vezes chega ao teste como
+    /// <see cref="ObjectDisposedException"/>, porque o host já foi descartado pelo <c>RunAsync</c>.
+    /// </summary>
+    internal static void ValidarInicializacao(Action<IServiceCollection, IConfiguration> registrar, IReadOnlyDictionary<string, string?> configuracao)
+    {
+        var valores = new Dictionary<string, string?>
+        {
+            [$"{A2AOpcoes.Secao}:{nameof(A2AOpcoes.UrlPublica)}"] = "https://agente-auditoria-nfe.example",
+            [$"{A2AOpcoes.Secao}:{nameof(A2AOpcoes.IdAgente)}"] = "agente-auditoria-nfe",
+            [$"{A2AOpcoes.Secao}:{nameof(A2AOpcoes.ChamadorPadrao)}"] = "sofia",
+            [CredencialServicoSofiaOpcoes.ChaveToken] = Chave,
+        };
+        foreach (var (chave, valor) in configuracao)
+        {
+            valores[chave] = valor;
+        }
+
+        var services = new ServiceCollection();
+        registrar(services, new ConfigurationBuilder().AddInMemoryCollection(valores).Build());
+        using var provedor = services.BuildServiceProvider();
+        provedor.GetRequiredService<IStartupValidator>().Validate();
+    }
+
+    [Fact]
+    public void Configuracao_valida_passa_na_validacao_de_inicializacao()
+    {
+        ValidarInicializacao((s, c) => s.AdicionarAgentCard(c), new Dictionary<string, string?>());
     }
 
     [Fact]
@@ -179,16 +212,13 @@ public sealed class CredencialServicoSofiaTests
         Assert.DoesNotContain(linhas, l => l.Contains(Tentativa, StringComparison.Ordinal));
     }
 
-    private static WebApplicationFactory<Program> CriarFabrica(string? chave = Chave, ColetorLogs? logs = null) =>
+    private static WebApplicationFactory<Program> CriarFabrica(ColetorLogs? logs = null) =>
         new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
             builder.UseEnvironment(Environments.Production);
             builder.UseSetting(HospedagemOpcoes.ChaveModo, nameof(ModoHospedagem.SomenteAgentCard));
             builder.UseSetting($"{A2AOpcoes.Secao}:{nameof(A2AOpcoes.UrlPublica)}", "https://agente-auditoria-nfe.example");
-            if (chave is not null)
-            {
-                builder.UseSetting(CredencialServicoSofiaOpcoes.ChaveToken, chave);
-            }
+            builder.UseSetting(CredencialServicoSofiaOpcoes.ChaveToken, Chave);
 
             if (logs is not null)
             {

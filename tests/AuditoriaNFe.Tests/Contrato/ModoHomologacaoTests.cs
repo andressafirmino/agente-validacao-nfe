@@ -103,9 +103,9 @@ public sealed class ModoHomologacaoTests
     [Fact]
     public void Homologacao_sem_a_credencial_da_SOFIA_nao_inicia()
     {
-        var fabrica = CriarFabrica(new Dictionary<string, string?> { [CredencialServicoSofiaOpcoes.ChaveToken] = "" });
-
-        var erro = Assert.ThrowsAny<Exception>(() => fabrica.Services);
+        var erro = Assert.ThrowsAny<Exception>(() => CredencialServicoSofiaTests.ValidarInicializacao(
+            (s, c) => s.AdicionarHomologacao(c),
+            new Dictionary<string, string?> { [CredencialServicoSofiaOpcoes.ChaveToken] = "" }));
 
         Assert.Contains(CredencialServicoSofiaOpcoes.ChaveToken, Mensagens(erro), StringComparison.Ordinal);
     }
