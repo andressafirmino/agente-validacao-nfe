@@ -137,6 +137,20 @@ convenção da constitution.
   segue o contrato SOFIA v1.0 (formato v0.3) e informa que a análise não está disponível naquela
   URL.
 
+### Session 2026-11-10
+
+- Q: O agente completo pode ser publicado para testes de homologação antes do fim do D-05? → A: Sim,
+  pelo desvio D-09 (ADR-0013), aprovado por Andressa Firmino em 2026-11-10: modo de hospedagem
+  `Homologacao` no projeto Vercel do Agent Card, na mesma URL já cadastrada na SOFIA, público e sem
+  autenticação, com MongoDB Atlas Free, Neon Free, OpenAI com chave exclusiva e limite de gasto,
+  Swagger disponível e só dados sintéticos.
+- Q: A homologação aceita o lote de 5 MB? → A: Não. O Vercel limita o corpo da requisição a 4,5 MB;
+  na homologação, o total dos arquivos é limitado a 4.000.000 bytes e o corpo HTTP a 4.500.000
+  bytes, com recusa pelo ERR-002.
+- Q: O Atlas pode aceitar conexões de qualquer IP? → A: Sim, só na homologação, porque o Vercel não
+  tem IP de saída fixo, com usuário de banco de permissão mínima, senha forte, TLS e dados
+  sintéticos.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### Atores
@@ -754,14 +768,21 @@ obtém o Agent Card, envia a solicitação e exibe o resultado com os IDs da sol
   autenticação.
 - **FR-052b**: Enquanto o desvio D-05 vigorar, o agente SOMENTE PODE ser executado em ambiente local
   de testes, com as portas publicadas apenas na interface local da máquina, e o Agent Card DEVE
-  declarar que não há autenticação. Os dados de teste DEVEM ser sintéticos ou anonimizados. A única
-  exceção é o modo somente Agent Card (FR-052f).
+  declarar que não há autenticação. Os dados de teste DEVEM ser sintéticos ou anonimizados. As
+  exceções são o modo somente Agent Card (FR-052f) e o modo de homologação (FR-052g).
 - **FR-052f** *(desvio D-08)*: O agente PODE ser publicado fora do ambiente
   local apenas no modo `SomenteAgentCard`, que expõe só o Agent Card e a verificação de vida e não
   registra persistência, provedor de IA, documentação da API, rotas `/api/v1` nem o endpoint A2A.
   Nesse modo, o card DEVE informar, na extensão do contrato, que a análise não está disponível
   naquela URL, e o agente NÃO DEVE exigir connection strings nem chaves. Fora de `Development`,
-  qualquer outro modo DEVE impedir a inicialização.
+  qualquer outro modo, exceto o de homologação (FR-052g), DEVE impedir a inicialização.
+- **FR-052g** *(desvio D-09)*: O agente completo PODE ser executado fora do ambiente local, sem
+  autenticação, apenas no modo `Homologacao`, destinado a testes com dados sintéticos. Nesse modo, o
+  agente DEVE registrar as mesmas rotas do modo completo e a documentação da API, e DEVE impedir a
+  inicialização quando o provedor de IA for o simulado, quando as migrações estiverem configuradas
+  para rodar na inicialização ou quando o tamanho total dos arquivos ou o corpo HTTP configurados
+  excederem 4.000.000 e 4.500.000 bytes. O Agent Card DEVE informar, na extensão do contrato, que é
+  uma homologação pública, sem autenticação e só para dados sintéticos.
 - **FR-052e**: As chamadas da SOFIA ao agente (A2A e REST) são de servidor para servidor e NÃO
   DEVEM depender de CORS. O agente DEVE conceder permissão CORS só a navegadores das origens
   configuradas (`Cors:AllowedOrigins`, esquema + host + porta, sem caminho, barra final ou curinga) e
@@ -978,6 +999,8 @@ ele PODE executá-lo. Os XMLs de teste DEVEM ser sintéticos ou anonimizados.
 | TS-071 | Agente em `Production` no modo `SomenteAgentCard`, sem connection strings nem chave; mesmo ambiente no modo `Completo` | Modo restrito: o agente inicia; Agent Card v0.3 com `url` da configuração e `implantacao` na extensão; `/health/live` responde; `/health/ready`, Swagger, OpenAPI, `/api/v1/*` e `POST /a2a/auditoria-nfe` respondem 404. Modo completo: o agente não inicia | FR-052b, FR-052f, FR-045 | Não |
 | TS-072 | Lote com evento de cancelamento (`procEventoNFe`), NFC-e (modelo 65), NF-e versão 3.10 e XML com namespace diferente | ERR-009 ou ERR-010 por arquivo, com motivo que cita a raiz `procEventoNFe` e diz que é evento, o modelo `65` (NFC-e), a versão `3.10` e o namespace divergente; nenhum trecho do XML no motivo | FR-008 | Não |
 | TS-073 | Lote com uma NF-e válida, uma com `vICMS` divergente e um documento não suportado, com a IA indisponível | Resumo do sistema com contagens, resultado geral, a inconsistência W04-10 com arquivo, campo, informado e esperado, o arquivo não analisado com o motivo e o alerta da IA; sem a palavra "achados"; descrição do achado começa pela frase em linguagem natural | FR-017a, FR-017b | Não |
+| TS-074 | Agente em `Production` no modo `Homologacao`, com autenticação desabilitada; variações com provedor simulado, migrações na inicialização e limites acima de 4.000.000 e 4.500.000 bytes | Configuração válida: o agente inicia; Swagger, OpenAPI e rotas `/api/v1` respondem; card com `implantacao` de homologação; lote acima de 4.000.000 bytes → ERR-002. Cada variação inválida: o agente não inicia. Modo `Completo` fora de `Development` continua recusado | FR-052g, FR-052b, FR-004 | Não |
+| TS-075 | Homologação publicada: card, saúde, Swagger, análise de NF-e sintética, continuidade, contexto do usuário e consumo | Card com a URL da homologação; `/health/live` e `/health/ready` 200; execução concluída com parecer; continuidade na mesma sessão; contexto consultado; linha de consumo no Neon; nenhum segredo nem conteúdo do XML nos logs do Vercel | FR-052g, NFR-008 | Não |
 
 ## Success Criteria *(mandatory)*
 

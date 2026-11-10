@@ -22,6 +22,7 @@ Decisões de arquitetura do AgenteAuditoriaNFe, conforme a DP-20 da constitution
 | [0010](./0010-schemas-xsd-versionados.md) | Schemas XSD oficiais versionados e seleção pela data de referência | Aprovado |
 | [0011](./0011-contrato-sofia-v1-a2a-v03.md) | Contrato SOFIA v1.0 sobre A2A v0.3 (substitui o 0007 quando aprovado) | Proposto |
 | [0012](./0012-publicacao-agent-card-vercel.md) | Publicação somente do Agent Card no Vercel (D-08) | Aprovado |
+| [0013](./0013-homologacao-publica-vercel-atlas-neon.md) | Homologação pública do agente completo no Vercel, com MongoDB Atlas e Neon (D-09) | Aprovado |
 
 ## Modelo
 

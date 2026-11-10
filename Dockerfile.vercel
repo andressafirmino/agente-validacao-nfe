@@ -1,6 +1,10 @@
-# Imagem do modo SomenteAgentCard para o Container runtime do Vercel (FR-052f, desvio D-08,
-# ADR-0012): só o Agent Card e /health/live, sem banco, IA nem rotas de análise. Contexto de build:
-# raiz do repositório. Sem segredos; no projeto Vercel, só PORT e A2A__UrlPublica (research R-35).
+# Imagem do Api.Agente para o Container runtime do Vercel. Contexto de build: raiz do repositório.
+# Sem segredos; o modo vem da variável Hospedagem__Modo do projeto Vercel:
+# - sem a variável: SomenteAgentCard (FR-052f, desvio D-08, ADR-0012), só o card e /health/live,
+#   sem banco nem IA; variáveis PORT e A2A__UrlPublica (research R-35);
+# - Homologacao (FR-052g, desvio D-09, ADR-0013): agente completo na mesma URL, com Atlas, Neon e
+#   OpenAI; variáveis no plan.md e no quickstart §8.9 (research R-36). Aprovações em /tmp,
+#   gravável e não durável.
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0.403 AS build
 WORKDIR /src

@@ -3,8 +3,13 @@
 - **Situação**: Aprovado
 - **Data**: 2026-11-05
 - **Aprovação**: Aprovado por Andressa Firmino, 2026-11-05
+- **Atualização (2026-11-10)**: pelo ADR-0013, o projeto Vercel deste ADR passa a rodar o agente
+  completo no modo `Homologacao`, na mesma URL do card. O modo `SomenteAgentCard` continua como
+  padrão da imagem e como volta rápida: sem a variável `Hospedagem__Modo`, o projeto publica só o
+  card.
 - **Relacionado a**: DP-25 (não resolvida para o agente completo), DP-27, DP-10; desvios D-05 e
-  D-08 (novo); constitution 3.5; P18; FR-044, FR-044a, FR-045, FR-052b, FR-052f; ADR-0003, ADR-0011
+  D-08 (novo); constitution 3.5; P18; FR-044, FR-044a, FR-045, FR-052b, FR-052f; ADR-0003, ADR-0011,
+  ADR-0013
 
 ## Contexto
 

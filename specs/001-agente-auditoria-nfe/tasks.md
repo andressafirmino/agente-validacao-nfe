@@ -376,7 +376,7 @@ e comparar os achados do `ResultadoAnaliseSofia` com o parecer do mesmo lote pel
 
 ### Implementation for User Story 2
 
-- [ ] T144 [US2] Estender o domínio e a persistência para o contrato SOFIA (data-model §0 a §3): `IdentificacaoSolicitante.TentarCriarPorNome(nome, chamadorPadrao, out ...)` com `UsuarioNome` e `usuarioId` = `nome-sha256:` + SHA-256 do nome normalizado; em `Sessao`, trocar `ContextoA2A` por `UsuarioNome`; em `Execucao`, acrescentar `IdExecucaoSofia`, `IdSolicitacaoSofia`, `UsuarioNome` e `ChaveIdempotenciaSofia` (removida na transição para `Falhou`); no repositório de execuções, busca pela chave e criação que trata a violação do índice único parcial em `execucoes` (`partialFilterExpression` com `$exists: true`, em `01-colecoes.js`) como execução concorrente (data-model §2, FR-043h); em `ArquivoRecebido`, acrescentar `IdDocumento`; atualizar os mapeamentos MongoDB, o `$jsonSchema` de `infra/mongodb/init/01-colecoes.js` quando a coleção validar campos, `tests/AuditoriaNFe.Tests/Integracao/RepositoriosMongoTests.cs` e os testes de domínio afetados (depende de T138)
+- [ ] T144 [US2] Estender o domínio e a persistência para o contrato SOFIA (data-model §0 a §3): `IdentificacaoSolicitante.TentarCriarPorNome(nome, chamadorPadrao, out ...)` com `UsuarioNome` e `usuarioId` = `nome-sha256:` + SHA-256 do nome normalizado; em `Sessao`, trocar `ContextoA2A` por `UsuarioNome`; em `Execucao`, acrescentar `IdExecucaoSofia`, `IdSolicitacaoSofia`, `UsuarioNome` e `ChaveIdempotenciaSofia` (removida na transição para `Falhou`); no repositório de execuções, busca pela chave e criação que trata a violação do índice único parcial em `execucoes` (`partialFilterExpression` com `$exists: true`, em `02-colecoes.js`) como execução concorrente (data-model §2, FR-043h); em `ArquivoRecebido`, acrescentar `IdDocumento`; atualizar os mapeamentos MongoDB, o `$jsonSchema` de `infra/mongodb/init/02-colecoes.js` quando a coleção validar campos, `tests/AuditoriaNFe.Tests/Integracao/RepositoriosMongoTests.cs` e os testes de domínio afetados (depende de T138)
 - [ ] T145 [P] [US2] Criar os DTOs e o validador do contrato em `src/Api.Agente/A2A/Sofia/`: `SolicitacaoAnaliseSofia`, `DocumentoSofia`, `ResultadoAnaliseSofia`, `AchadoSofia`, `AgenteSofia`, `ErroSofia` e `ValidadorSolicitacaoSofia`, com as regras de T140 e os limites de `Limites:*` (contrato §3.2, data-model §18)
 - [ ] T146 [US2] Implementar `src/Api.Agente/A2A/Sofia/MapeadorSolicitacaoSofia.cs` e estender a entrada de `src/AuditoriaNFe.Application/CasosDeUso/ExecutarSolicitacaoAuditoria.cs` com `idDocumento` por arquivo, IDs da SOFIA e `usuarioNome`, tipo `AnaliseComPergunta`, canal `A2A` e sessão nova; antes de criar a execução, aplicar a tabela de repetição do data-model §2 (execução existente, ERR-026, ERR-007 ou nova execução) e encerrar como `Falhou` quando o cancelamento da requisição chegar (FR-043b, FR-043c, FR-043h, FR-043i, FR-052d) (depende de T144, T145)
 - [ ] T147 [US2] Implementar `src/Api.Agente/A2A/Sofia/MapeadorResultadoSofia.cs`: execução e parecer → `ResultadoAnaliseSofia` pela tabela do data-model §18 (depende de T145)
@@ -456,6 +456,44 @@ rota além do card e de `/health/live` responde.
 
 ---
 
+## Phase 12: Homologação pública do agente completo (D-09)
+
+**Goal**: ambiente de homologação público, sem autenticação, com o agente completo no Container
+runtime do Vercel (mesmo projeto e mesma URL do Agent Card da Fase 11), MongoDB Atlas Free e Neon Free, para testes com dados
+sintéticos pelo canal direto e, depois da Fase 8, pela SOFIA (FR-052g; ADR-0013; research R-36).
+
+**Independent Test**: em `Production` com `Hospedagem:Modo = Homologacao`, o host inicia só com a
+configuração válida e responde às rotas do modo completo e ao Swagger; na URL da homologação, uma
+NF-e sintética é analisada, a sessão continua, o contexto do usuário é consultado e o consumo fica
+gravado no Neon.
+
+**Pré-requisito de aprovação**: D-09 e ADR-0013, aprovados por Andressa Firmino em 2026-11-10
+(plan.md, Complexity Tracking). Depende das Fases 3 e 4.
+
+**Tarefas manuais**: T183 e a parte de painel da T184 são executadas pela autora, com as credenciais
+dela; nenhuma senha, connection string ou chave entra no repositório, no chat ou nos logs.
+
+- [X] T178 [P] Criar `tests/AuditoriaNFe.Tests/Contrato/ModoHomologacaoTests.cs` com `WebApplicationFactory<Program>` em `Production`, `Hospedagem:Modo = Homologacao`, `Seguranca:AutenticacaoHabilitada = false`, connection strings dos Testcontainers, `Ia:Provedor = OpenAI` com chave fictícia e o `IChatClient` substituído pelo dublê do teste: TS-074 (configuração válida → host inicia; `/swagger` e `/openapi/v1.json` → 200; `/health/live` → 200; rotas `/api/v1` mapeadas; card com `implantacao` de homologação e `url` = `{A2A:UrlPublica}/a2a/auditoria-nfe`; lote acima de 4.000.000 bytes → ERR-002; com `X-Forwarded-Proto: https`, o documento OpenAPI usa `https`); cada variação inválida impede a inicialização com mensagem que cita o D-09: `Ia:Provedor = Simulado`, `Persistencia:AplicarMigracoes = true`, `Limites:TamanhoTotalBytes` = 4.000.001, `Limites:CorpoHttpBytes` = 4.500.001; o modo `Completo` em `Production` continua recusado e o `SomenteAgentCard` continua como na TS-071 (FR-052g, FR-052b, FR-004)
+- [X] T179 Implementar o modo `Homologacao` (depende de T178):
+  - `ModoHospedagem.Homologacao` em `src/Api.Agente/Hospedagem/HospedagemOpcoes.cs`;
+  - `src/Api.Agente/Seguranca/GuardaDesvioD05.cs` aceitando ambiente diferente de `Development` nos modos `SomenteAgentCard` e `Homologacao`, com mensagem que cite o D-05, o D-08 e o D-09;
+  - validação na inicialização do modo `Homologacao` (provedor de IA, migrações e limites de 4.000.000 e 4.500.000 bytes), num validador próprio em `src/Api.Agente/Hospedagem/`;
+  - Swagger e OpenAPI também no modo `Homologacao` em `src/Api.Agente/Documentacao/DocumentacaoApiExtensions.cs`;
+  - `UseForwardedHeaders` com `X-Forwarded-Proto` e `X-Forwarded-For` só no modo `Homologacao`, em `src/Api.Agente/Program.cs`;
+  - parâmetro `implantacao` de homologação na extensão do card em `src/Api.Agente/A2A/FabricaAgentCard.cs`;
+  - nenhuma alteração no comportamento dos modos `Completo` e `SomenteAgentCard`
+- [X] T180 [P] Dividir `infra/mongodb/init/01-colecoes.js` em `01-usuario-app.js` (usuário da aplicação, só no contêiner local) e `02-colecoes.js` (coleções, `$jsonSchema`, índices e TTL, sem variáveis de ambiente e reexecutável sem erro quando a coleção ou o índice já existirem); ajustar `tests/AuditoriaNFe.Tests/Integracao/Infra/ContainerMongo.cs` se ele usar o script e confirmar que `RepositoriosMongoTests` e `ContextoUsuarioTests` continuam verdes. Criar `infra/homologacao/neon-consumo.sql`, executado pelo dono do banco depois da criação do usuário da aplicação por SQL (os criados pelo painel do Neon recebem `neon_superuser`): recusa de usuário com privilégio administrativo, revogação do acesso público ao banco e ao `public`, schema `consumo` com `USAGE` e `CREATE` para o usuário da aplicação, que fica dono das tabelas ao aplicar as migrações, e `search_path`; num único bloco, reexecutável e sem meta-comandos do `psql` e `.config/dotnet-tools.json` com `dotnet-ef` na mesma versão do EF Core de `Directory.Packages.props`, para gerar o script idempotente das migrações (`dotnet ef migrations script --idempotent`) sem acesso ao banco
+- [X] T181 Ajustar `Dockerfile.vercel` (depende de T179): manter `Hospedagem__Modo=SomenteAgentCard` como padrão da imagem e o comentário de cabeçalho citando o D-08 e o D-09; confirmar que `/tmp` é gravável pelo usuário não root. Validar localmente: `docker build -f Dockerfile.vercel`, `docker run` com `Hospedagem__Modo=Homologacao`, as connection strings do compose (rede `auditoria-nfe-net`), `Ia__Provedor=OpenAI` com chave fictícia e os limites da homologação; conferir que o host inicia, que o card, `/health/ready` e `/swagger` respondem e que, sem a variável do modo, a imagem sobe como `SomenteAgentCard`
+- [X] T182 [P] Escrever em `specs/001-agente-auditoria-nfe/quickstart.md` a seção 8.9 "Homologação pública (D-09, TS-075)" (depende de T180): criação do cluster Atlas Free na AWS `us-east-1`, do usuário só com `readWrite` no `auditoria_agente`, do acesso de rede `0.0.0.0/0` e execução do `02-colecoes.js` com `mongosh`; criação do projeto Neon Free na AWS `us-east-1`, do usuário da aplicação, execução do `neon-consumo.sql` e do script das migrações no host direto, e montagem da connection string no formato de chaves com `SSL Mode=Require` e host com pooling; projeto da OpenAI com chave exclusiva e limite de gasto; projeto Vercel do Agent Card (`agente-auditoria-nfe`, revisão do ADR-0013): código do modo na `main` antes das variáveis, variáveis do plan.md em Production pelo painel, com os segredos marcados como sensíveis, e redeploy da produção; verificações do TS-075; rollback (redeploy de deployment anterior), desligamento e limpeza dos dados; limites dos planos gratuitos com a data da verificação. Acrescentar a linha do problema "Vercel responde 413" à seção 11
+- [ ] T183 [Manual] Provisionar o Atlas, o Neon e o projeto da OpenAI conforme a seção 8.9 (depende de T180, T182): executar `02-colecoes.js` no Atlas e conferir as coleções e os índices (incluindo o TTL); executar `neon-consumo.sql` e o script das migrações no Neon e conferir `consumo.chamadas_provedor` e `consumo.__EFMigrationsHistory`; registrar no research R-36 só as regiões, as versões e o resultado das conferências, sem endereços de cluster, usuários ou senhas
+- [ ] T184 Publicar a homologação no projeto Vercel do Agent Card conforme a seção 8.9 (depende de T181, T183): conferir que o código da Fase 12 está na `main` (PRs até `dev` → `main` mescladas pela autora) e que a produção atual continua no modo `SomenteAgentCard`; cadastrar as variáveis de Production; fazer o redeploy da produção; confirmar que `Hospedagem__Modo` do projeto prevalece sobre o `ENV` da imagem (se não prevalecer, retirar o `ENV` do modo do `Dockerfile.vercel` e registrar no research R-36); executar o TS-075 sem autenticação: card com a URL já cadastrada na SOFIA, `/health/live` e `/health/ready` → 200, Swagger, `POST /api/v1/execucoes` com NF-e sintética, continuidade na mesma sessão, `GET /api/v1/contexto-usuario`, lote acima de 4.000.000 bytes → ERR-002, linha em `consumo.chamadas_provedor` no Neon, tempo da primeira resposta após ociosidade e logs do Vercel sem segredos nem conteúdo do XML; registrar URL, commit, deployment e resultados no research R-36
+
+**Checkpoint**: TS-074 passa na suíte; TS-075 executado na URL da homologação e registrado no
+research R-36; o projeto do Agent Card (Fase 11) responde no modo `Homologacao` na mesma URL, e a
+remoção de `Hospedagem__Modo` o devolve ao `SomenteAgentCard`.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -480,6 +518,8 @@ rota além do card e de `/health/live` responde.
 - **Agent Card no Vercel (Phase 11)**: depende só da Foundational e da aprovação do D-08 e do
   ADR-0012; não bloqueia nem é bloqueada pelas histórias. A T148 da US2 reaproveita a fábrica da
   T169.
+- **Homologação pública (Phase 12)**: depende da US1 e da US4 e da aprovação do D-09 e do ADR-0013;
+  não bloqueia as demais fases. A integração da SOFIA com a homologação depende da US2 (Phase 8).
 
 ### User Story Dependencies
 
@@ -490,6 +530,7 @@ US4 + US5 → US7
 US1 + US4 + US5 → US2 → US6   (US2 também exige ADR-0011, D-04 revisado e D-07 aprovados)
 histórias concluídas → Polish
 Foundational → Phase 11       (exige D-08 e ADR-0012 aprovados)
+US1 + US4 → Phase 12          (exige D-09 e ADR-0013 aprovados)
 ```
 
 ### Within Each User Story
