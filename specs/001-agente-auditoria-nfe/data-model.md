@@ -355,7 +355,7 @@ Resultado de uma ferramenta de cálculo determinístico, usado para validar valo
 | `validacoesNaoRealizadas` | lista | Arquivo, validação e motivo |
 | `revisaoHumana` | objeto | `necessaria` e `motivos` (FR-024) |
 | `recomendacoes` | lista de `RecomendacaoDemonstrativa` (visão por estado) | FR-033 a FR-035c |
-| `resumoTextual` | string | pt-BR; produzido pela IA e validado, ou por modelo de texto do sistema quando a IA estiver indisponível |
+| `resumoTextual` | string | pt-BR; produzido pela IA e validado, ou por modelo de texto do sistema quando a IA estiver indisponível, com o conteúdo e o vocabulário do FR-017b ("inconsistências" e "alertas", nunca "achados") |
 | `integracaoMcp` | objeto | `habilitada` (FR-047d) |
 | `versoes` | objeto | Manifesto de schemas e catálogo de regras usados |
 

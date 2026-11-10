@@ -1,4 +1,6 @@
+using AuditoriaNFe.Domain.Documentos;
 using AuditoriaNFe.Domain.Identificacao;
+using AuditoriaNFe.Domain.Parecer;
 using AuditoriaNFe.Domain.Validacao;
 
 namespace AuditoriaNFe.Domain.Sessoes;
@@ -15,7 +17,12 @@ public sealed class Execucao
     public static readonly IReadOnlySet<string> CodigosRejeicao =
         new HashSet<string>(["ERR-001", "ERR-002", "ERR-003", "ERR-005", "ERR-006", "ERR-007"], StringComparer.Ordinal);
 
+    /// <summary>Dependências indisponíveis com que a execução ainda conclui, com revisão humana (ERR-013 a ERR-015).</summary>
+    public static readonly IReadOnlySet<string> CodigosDependencia =
+        new HashSet<string>(["ERR-013", "ERR-014", "ERR-015"], StringComparer.Ordinal);
+
     private List<EtapaExecucao> _etapas = [];
+    private List<ArquivoRecebido> _arquivos = [];
     private List<ChamadaFerramenta> _chamadasFerramentas = [];
     private List<TrechoConsultado> _trechosConsultados = [];
     private Dictionary<string, string> _versoes = new(StringComparer.Ordinal);
@@ -50,6 +57,12 @@ public sealed class Execucao
     public bool ContextoUsuarioAtualizado { get; private set; }
 
     public IReadOnlyList<EtapaExecucao> Etapas => _etapas;
+
+    /// <summary>Arquivos recebidos, na ordem de envio, sem o conteúdo (data-model §3).</summary>
+    public IReadOnlyList<ArquivoRecebido> Arquivos => _arquivos;
+
+    public ParecerExecucao? Parecer { get; private set; }
+
     public IReadOnlyList<ChamadaFerramenta> ChamadasFerramentas => _chamadasFerramentas;
     public IReadOnlyList<TrechoConsultado> TrechosConsultados => _trechosConsultados;
 
@@ -138,11 +151,31 @@ public sealed class Execucao
         Etapa(numero).Registrar(estado, inicioEm, fimEm, justificativa);
     }
 
-    public void Concluir(DateTimeOffset agora)
+    public void RegistrarArquivo(ArquivoRecebido arquivo)
+    {
+        ArgumentNullException.ThrowIfNull(arquivo);
+        ExigirNaoFinalizada();
+        _arquivos.Add(arquivo);
+    }
+
+    public void DefinirParecer(ParecerExecucao parecer)
+    {
+        ArgumentNullException.ThrowIfNull(parecer);
+        ExigirNaoFinalizada();
+        Parecer = parecer;
+    }
+
+    /// <param name="erroDependencia">ERR-013 a ERR-015: a execução conclui com o erro registrado.</param>
+    public void Concluir(DateTimeOffset agora, ErroExecucao? erroDependencia = null)
     {
         if (Estado != EstadoExecucao.EmProcessamento)
         {
             throw TransicaoProibida(EstadoExecucao.Concluida);
+        }
+
+        if (erroDependencia is not null && !CodigosDependencia.Contains(erroDependencia.Codigo))
+        {
+            throw new ArgumentException($"{erroDependencia.Codigo} não conclui uma execução.", nameof(erroDependencia));
         }
 
         var pendentes = _etapas.Where(e => !e.Registrada).Select(e => e.Numero).ToList();
@@ -153,6 +186,7 @@ public sealed class Execucao
         }
 
         Estado = EstadoExecucao.Concluida;
+        Erro = erroDependencia;
         ConcluidaEm = agora;
     }
 

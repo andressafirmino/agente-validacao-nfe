@@ -1,7 +1,12 @@
 using AuditoriaNFe.Application.Abstracoes;
 using AuditoriaNFe.Application.Configuracao;
+using AuditoriaNFe.Domain.Regras;
+using AuditoriaNFe.Infrastructure.Catalogos;
 using AuditoriaNFe.Infrastructure.Comum;
 using AuditoriaNFe.Infrastructure.Ia;
+using AuditoriaNFe.Infrastructure.Mcp;
+using AuditoriaNFe.Infrastructure.Schemas;
+using AuditoriaNFe.Infrastructure.Xml;
 using AuditoriaNFe.Infrastructure.Persistencia.Mongo;
 using AuditoriaNFe.Infrastructure.Persistencia.Postgres;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +38,7 @@ public static class InfraestruturaServiceCollectionExtensions
         services.AddSingleton<ISessaoRepositorio, SessaoRepositorio>();
         services.AddSingleton<IExecucaoRepositorio, ExecucaoRepositorio>();
         services.AddSingleton<IDocumentoRepositorio, DocumentoRepositorio>();
+        services.AddSingleton<IContextoUsuarioRepositorio, ContextoUsuarioRepositorio>();
         return services;
     }
 
@@ -62,6 +68,39 @@ public static class InfraestruturaServiceCollectionExtensions
             provedor.GetRequiredService<ILoggerFactory>(),
             ambiente));
         services.TryAddSingleton(provedor => provedor.GetRequiredService<FabricaChatClient>().Criar());
+        return services;
+    }
+
+    /// <summary>
+    /// Leitura, identificação, schemas, catálogos e consulta a manuais. Manifesto e catálogos são
+    /// carregados uma vez; carga inválida lança <see cref="CargaInvalidaException"/>.
+    /// </summary>
+    public static IServiceCollection AdicionarProcessamentoNFe(this IServiceCollection services)
+    {
+        services.AddSingleton(provedor =>
+        {
+            var xml = provedor.GetRequiredService<IOptions<XmlOpcoes>>().Value;
+            var limites = provedor.GetRequiredService<IOptions<LimitesOpcoes>>().Value;
+            return new LeitorXmlSeguro(xml.ProfundidadeMaxima, xml.MaxCaracteresEfetivo(limites));
+        });
+        services.AddSingleton(provedor => new ProvedorPacotesSchema(
+            Path.Combine(AppContext.BaseDirectory, provedor.GetRequiredService<IOptions<SchemasOpcoes>>().Value.Diretorio)));
+        services.AddSingleton(provedor => new ValidadorXsd(provedor.GetRequiredService<ProvedorPacotesSchema>()));
+        services.AddSingleton(provedor =>
+        {
+            var catalogos = provedor.GetRequiredService<IOptions<CatalogosOpcoes>>().Value;
+            return CarregadorCatalogos.Carregar(
+                Path.Combine(AppContext.BaseDirectory, catalogos.Regras),
+                Path.Combine(AppContext.BaseDirectory, catalogos.Extracao),
+                ImplementacoesRegras.Todas());
+        });
+        services.AddSingleton(provedor => new ExtratorDados(provedor.GetRequiredService<CatalogosCarregados>().CamposExtracao));
+        services.AddSingleton<ICatalogoRegras>(provedor => new CatalogoRegras(provedor.GetRequiredService<CatalogosCarregados>()));
+        services.AddSingleton<IProcessadorXml, ProcessadorXml>();
+        services.TryAddSingleton<IConsultaManuais>(provedor =>
+            provedor.GetRequiredService<IOptions<McpOpcoes>>().Value.Habilitado
+                ? new ConsultaManuaisMcp(provedor.GetRequiredService<IOptions<McpOpcoes>>(), provedor.GetRequiredService<ILoggerFactory>())
+                : new ConsultaManuaisDesabilitada());
         return services;
     }
 }

@@ -1,5 +1,6 @@
 using AuditoriaNFe.Application.Abstracoes;
 using AuditoriaNFe.Application.Configuracao;
+using AuditoriaNFe.Domain.ContextoUsuario;
 using AuditoriaNFe.Domain.Documentos;
 using AuditoriaNFe.Domain.Sessoes;
 using Microsoft.Extensions.Options;
@@ -47,6 +48,8 @@ public sealed class ContextoMongo
     public IMongoCollection<Execucao> Execucoes => Banco.GetCollection<Execucao>("execucoes");
 
     public IMongoCollection<DocumentoNFe> Documentos => Banco.GetCollection<DocumentoNFe>("documentos");
+
+    public IMongoCollection<ContextoUsuario> ContextosUsuario => Banco.GetCollection<ContextoUsuario>("contextos_usuario");
 
     public async Task<T> ExecutarAsync<T>(Func<CancellationToken, Task<T>> operacao, CancellationToken cancellationToken)
     {

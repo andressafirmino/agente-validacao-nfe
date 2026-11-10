@@ -1,0 +1,785 @@
+{
+  "versaoCatalogo": "1.0",
+  "campos": [
+    {
+      "caminho": "cobr/dup[*]/nDup",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "cobr/dup[*]/vDup",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "cobr/fat/nFat",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "cobr/fat/vDesc",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "cobr/fat/vLiq",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "cobr/fat/vOrig",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "dest/CNPJ",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "dest/enderDest/UF",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "emit/CNPJ",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "emit/enderEmit/UF",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "ide/cUF",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "ide/dhEmi",
+      "tipo": "dataHora",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "ide/finNFe",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "ide/idDest",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "ide/mod",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "ide/nNF",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "ide/serie",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "ide/tpNF",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "pag/detPag[*]/tPag",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "pag/detPag[*]/vPag",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "pag/vTroco",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/IBSCBSTot/gCBS/vCBS",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/IBSCBSTot/gCBS/vCredPres",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/IBSCBSTot/gCBS/vDevTrib",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/IBSCBSTot/gCBS/vDif",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/IBSCBSTot/gEstornoCred/vCBSEstCred",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/IBSCBSTot/gEstornoCred/vIBSEstCred",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/IBSCBSTot/gIBS/gIBSMun/vDevTrib",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/IBSCBSTot/gIBS/gIBSMun/vDif",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/IBSCBSTot/gIBS/gIBSMun/vIBSMun",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/IBSCBSTot/gIBS/gIBSUF/vDevTrib",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/IBSCBSTot/gIBS/gIBSUF/vDif",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/IBSCBSTot/gIBS/gIBSUF/vIBSUF",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/IBSCBSTot/gIBS/vCredPres",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/IBSCBSTot/gIBS/vIBS",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/IBSCBSTot/gMono/vCBSMono",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/IBSCBSTot/gMono/vCBSMonoRet",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/IBSCBSTot/gMono/vCBSMonoReten",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/IBSCBSTot/gMono/vIBSMono",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/IBSCBSTot/gMono/vIBSMonoRet",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/IBSCBSTot/gMono/vIBSMonoReten",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/IBSCBSTot/vBCIBSCBS",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/qBCMono",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/qBCMonoRet",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/qBCMonoReten",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vBC",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vBCST",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vCOFINS",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vDesc",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vFCP",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vFCPST",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vFCPSTRet",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vFCPUFDest",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vFrete",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vICMS",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vICMSDeson",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vICMSMono",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vICMSMonoRet",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vICMSMonoReten",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vICMSUFDest",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vICMSUFRemet",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vII",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vIPI",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vIPIDevol",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vNF",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vOutro",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vPIS",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vProd",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vST",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vSeg",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ICMSTot/vTotTrib",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ISSQNtot/vBC",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ISSQNtot/vCOFINS",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ISSQNtot/vDeducao",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ISSQNtot/vDescCond",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ISSQNtot/vDescIncond",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ISSQNtot/vISS",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ISSQNtot/vISSRet",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ISSQNtot/vOutro",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ISSQNtot/vPIS",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ISSQNtot/vServ",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/ISTot/vIS",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "total/vProdLiqTot",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/COFINS/*/vCOFINS",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/COFINSST/indSomaCOFINSST",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/COFINSST/vCOFINS",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/CST",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/gCredPresOper/gCBSCredPres/vCredPres",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/gCredPresOper/gIBSCredPres/vCredPres",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/gEstornoCred/vCBSEstCred",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/gEstornoCred/vIBSEstCred",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/gIBSCBS/gCBS/gDevTrib/vDevTrib",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/gIBSCBS/gCBS/gDif/vDif",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/gIBSCBS/gCBS/vCBS",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/gIBSCBS/gIBSMun/gDevTrib/vDevTrib",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/gIBSCBS/gIBSMun/gDif/vDif",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/gIBSCBS/gIBSMun/vIBSMun",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/gIBSCBS/gIBSUF/gDevTrib/vDevTrib",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/gIBSCBS/gIBSUF/gDif/vDif",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/gIBSCBS/gIBSUF/vIBSUF",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/gIBSCBS/vBC",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/gIBSCBS/vIBS",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/gIBSCBSMono/gMonoPadrao/vCBSMono",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/gIBSCBSMono/gMonoPadrao/vIBSMono",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/gIBSCBSMono/gMonoRet/vCBSMonoRet",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/gIBSCBSMono/gMonoRet/vIBSMonoRet",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/gIBSCBSMono/gMonoReten/vCBSMonoReten",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IBSCBS/gIBSCBSMono/gMonoReten/vIBSMonoReten",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ICMS/*/CSOSN",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ICMS/*/CST",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ICMS/*/indDeduzDeson",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ICMS/*/qBCMono",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ICMS/*/qBCMonoRet",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ICMS/*/qBCMonoReten",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ICMS/*/vBC",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ICMS/*/vBCST",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ICMS/*/vFCP",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ICMS/*/vFCPST",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ICMS/*/vFCPSTRet",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ICMS/*/vICMS",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ICMS/*/vICMSDeson",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ICMS/*/vICMSMono",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ICMS/*/vICMSMonoRet",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ICMS/*/vICMSMonoReten",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ICMS/*/vICMSST",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ICMSUFDest/vFCPUFDest",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ICMSUFDest/vICMSUFDest",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ICMSUFDest/vICMSUFRemet",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/II/vII",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IPI/*/vIPI",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/IS/CSTIS",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ISSQN/cListServ",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ISSQN/vBC",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ISSQN/vDeducao",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ISSQN/vDescCond",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ISSQN/vDescIncond",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ISSQN/vISSQN",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ISSQN/vISSRet",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/ISSQN/vOutro",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/PIS/*/vPIS",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/PISST/indSomaPISST",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/PISST/vPIS",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/imposto/vTotTrib",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/impostoDevol/IPI/vIPIDevol",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/prod/CFOP",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/prod/NCM",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/prod/indTot",
+      "tipo": "string",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/prod/qCom",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/prod/vDesc",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/prod/vFrete",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/prod/vOutro",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/prod/vProd",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/prod/vProdLiq",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/prod/vSeg",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/prod/vUnCom",
+      "tipo": "decimal",
+      "classe": "Fiscal"
+    },
+    {
+      "caminho": "det[*]/prod/veicProd/tpOp",
+      "tipo": "string",
+      "classe": "Fiscal"
+    }
+  ]
+}

@@ -1,4 +1,8 @@
+using AuditoriaNFe.Domain.ContextoUsuario;
+using AuditoriaNFe.Domain.Documentos;
+using AuditoriaNFe.Domain.Parecer;
 using AuditoriaNFe.Domain.Sessoes;
+using AuditoriaNFe.Domain.Validacao;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
@@ -28,6 +32,7 @@ internal static class MapeamentoMongo
             BsonSerializer.TryRegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
             BsonSerializer.TryRegisterSerializer(new DateTimeOffsetSerializer(BsonType.DateTime));
             BsonSerializer.TryRegisterSerializer(new DecimalSerializer(BsonType.Decimal128));
+            BsonSerializer.TryRegisterSerializer(new EstadoValidacaoSerializer());
 
             var convencoes = new ConventionPack
             {
@@ -52,6 +57,7 @@ internal static class MapeamentoMongo
             {
                 mapa.AutoMap();
                 mapa.MapField("_etapas").SetElementName("etapas");
+                mapa.MapField("_arquivos").SetElementName("arquivos");
                 mapa.MapField("_chamadasFerramentas").SetElementName("chamadasFerramentas");
                 mapa.MapField("_trechosConsultados").SetElementName("trechosConsultados");
                 mapa.MapField("_versoes").SetElementName("versoes");
@@ -59,7 +65,53 @@ internal static class MapeamentoMongo
 
             BsonClassMap.TryRegisterClassMap<EtapaExecucao>(mapa => mapa.AutoMap());
 
+            BsonClassMap.TryRegisterClassMap<ArquivoRecebido>(mapa =>
+            {
+                mapa.AutoMap();
+                mapa.MapField("_regrasAplicadas").SetElementName("regrasAplicadas");
+            });
+
+            BsonClassMap.TryRegisterClassMap<ValidacaoLayout>(mapa =>
+            {
+                mapa.AutoMap();
+                mapa.MapField("_pacotesTentados").SetElementName("pacotesTentados");
+            });
+
+            BsonClassMap.TryRegisterClassMap<ParecerExecucao>(mapa =>
+            {
+                mapa.AutoMap();
+                mapa.MapField("_achados").SetElementName("achados");
+                mapa.MapField("_limitacoes").SetElementName("limitacoes");
+                mapa.MapField("_validacoesNaoRealizadas").SetElementName("validacoesNaoRealizadas");
+            });
+
+            BsonClassMap.TryRegisterClassMap<ContextoUsuario>(mapa =>
+            {
+                mapa.AutoMap();
+                mapa.MapIdProperty(c => c.Id);
+                mapa.MapField("_cnpjsAuditados").SetElementName("cnpjsAuditados");
+                mapa.MapField("_achadosRecorrentes").SetElementName("achadosRecorrentes");
+                mapa.MapField("_execucoesContabilizadas").SetElementName("execucoesContabilizadas");
+            });
+
             _registrado = true;
+        }
+    }
+
+    /// <summary>Forma textual do contrato: <c>Realizada</c> ou <c>NaoRealizada — motivo</c>.</summary>
+    private sealed class EstadoValidacaoSerializer : SerializerBase<EstadoValidacao>
+    {
+        private const string PrefixoNaoRealizada = "NaoRealizada — ";
+
+        public override void Serialize(BsonSerializationContext context, BsonSerializationArgs args, EstadoValidacao value) =>
+            context.Writer.WriteString(value.ToString());
+
+        public override EstadoValidacao Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+        {
+            var texto = context.Reader.ReadString();
+            return texto.StartsWith(PrefixoNaoRealizada, StringComparison.Ordinal)
+                ? EstadoValidacao.NaoRealizada(texto[PrefixoNaoRealizada.Length..])
+                : EstadoValidacao.Realizada;
         }
     }
 }

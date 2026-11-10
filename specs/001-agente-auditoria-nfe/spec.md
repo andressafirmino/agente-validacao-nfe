@@ -434,7 +434,11 @@ obtém o Agent Card, envia a solicitação e exibe o resultado com os IDs da sol
   suportado.
 - **FR-008**: Arquivos de tipo, modelo ou versão não suportados, incluindo a NFC-e (modelo 65), que
   usa o mesmo schema da NF-e, DEVEM ser registrados com validação "não realizada" e o motivo, sem
-  serem considerados válidos e sem passar pela validação de schema.
+  serem considerados válidos e sem passar pela validação de schema. O motivo DEVE dizer o que foi
+  encontrado, sem reproduzir conteúdo do documento: o elemento raiz quando não for `NFe` nem
+  `nfeProc` (por exemplo, `procEventoNFe`: evento, não nota fiscal), o namespace divergente, a
+  chave de acesso ausente ou inválida, o modelo informado em `ide/mod` e na chave (por exemplo,
+  `65`: NFC-e) ou a versão de layout informada.
 - **FR-009**: O agente DEVE detectar documentos com a mesma chave de acesso no lote e na sessão,
   analisar cada documento uma única vez e registrar a duplicidade. Arquivos com a mesma chave e
   conteúdo diferente DEVEM gerar achado específico.
@@ -487,6 +491,19 @@ obtém o Agent Card, envia a solicitação e exibe o resultado com os IDs da sol
   (arquivos recebidos, analisados, com achados e não analisados), resultado geral, achados por
   arquivo, categoria e severidade, evidências e referências, limitações, validações não realizadas
   e indicação de necessidade de revisão humana.
+- **FR-017a**: A descrição de um achado determinístico DEVE começar por uma frase em linguagem
+  natural com o campo, o valor informado, o valor esperado e o que a regra exige (por exemplo, "O
+  total do ICMS (`vICMS`) informado, 19.00, é diferente do esperado, 18.00: deve ser igual à soma
+  do `vICMS` dos itens."). O identificador, a versão e a fórmula da regra vêm depois da frase. O
+  texto é montado pelo sistema a partir do catálogo, sem regra nova nem texto inventado.
+- **FR-017b**: O resumo textual montado pelo sistema, quando a análise por IA não estiver
+  disponível, DEVE trazer em linguagem natural: a contagem de arquivos (recebidos, analisados e não
+  analisados); o resultado geral; as inconsistências por arquivo, com campo, valor informado e
+  valor esperado, até 10, informando quantas ficaram de fora; cada arquivo não analisado com o
+  motivo (FR-008); e os alertas, com a indisponibilidade da IA. O texto chama de "inconsistências"
+  os achados `ErroEstrutural` e `InconsistenciaNegocio` e de "alertas" as demais categorias, e não
+  usa o termo "achados". O resumo produzido pela IA DEVE seguir o mesmo vocabulário. Os nomes dos
+  campos do contrato v1 não mudam.
 - **FR-018**: O resultado geral DEVE ser um destes: "Sem inconsistências nas validações
   realizadas", "Com inconsistências" ou "Inconclusiva".
 - **FR-019**: O resultado "Sem inconsistências nas validações realizadas" SOMENTE PODE ser atribuído
@@ -816,8 +833,8 @@ parecer; erros por arquivo são registrados no parecer, e os demais arquivos seg
 | ERR-006 | Sessão expirada | Responder "sessão expirada" e orientar o início de nova sessão | Solicitação |
 | ERR-007 | Mensagem A2A malformada ou fora do contrato SOFIA v1.0 | Rejeitar sem executar análise: resultado com status `erro`, ou Task `failed` quando não houver IDs válidos para montar o resultado | Solicitação |
 | ERR-008 | Arquivo não é XML bem formado | Erro estrutural do documento; demais arquivos seguem | Arquivo |
-| ERR-009 | XML não é NF-e, ou modelo não suportado | Validação "não realizada — documento não suportado" | Arquivo |
-| ERR-010 | Versão de layout não suportada | Validação "não realizada — versão não suportada" | Arquivo |
+| ERR-009 | XML não é NF-e, ou modelo não suportado | Validação "não realizada — documento não suportado", com o motivo específico (FR-008) | Arquivo |
+| ERR-010 | Versão de layout não suportada | Validação "não realizada — versão não suportada", com a versão informada (FR-008) | Arquivo |
 | ERR-011 | Documento duplicado no lote ou na sessão | Achado Informativo; documento analisado uma vez | Arquivo |
 | ERR-012 | Mesma chave com conteúdo divergente | Achado de severidade Alta; nenhum dos arquivos é descartado | Arquivo |
 | ERR-013 | Base de conhecimento indisponível | Falha técnica ou dependência indisponível; resultados determinísticos entregues; resultado "Inconclusiva"; revisão humana | Execução |
@@ -959,6 +976,8 @@ ele PODE executá-lo. Os XMLs de teste DEVEM ser sintéticos ou anonimizados.
 | TS-069 | Solicitação A2A com `traceparent` e documento com instruções ao agente no `infCpl` | O trace continua o recebido; logs com os IDs da SOFIA e sem nome, pergunta ou conteúdo; as instruções do documento não são seguidas (como TS-018) | NFR-014, FR-053 | Não |
 | TS-070 | Preflight `OPTIONS` e requisição a `/api/v1` com origem configurada, com origem não configurada, sem `Origin` e com a lista vazia; preflight ao Agent Card e aos health checks; origem inválida na configuração | Origem configurada: `Access-Control-Allow-Origin` igual à origem, métodos e cabeçalhos permitidos, sem `Allow-Credentials`; demais casos: sem permissão CORS; sem `Origin`: resposta normal; configuração inválida: o agente não inicia | FR-052e | Não |
 | TS-071 | Agente em `Production` no modo `SomenteAgentCard`, sem connection strings nem chave; mesmo ambiente no modo `Completo` | Modo restrito: o agente inicia; Agent Card v0.3 com `url` da configuração e `implantacao` na extensão; `/health/live` responde; `/health/ready`, Swagger, OpenAPI, `/api/v1/*` e `POST /a2a/auditoria-nfe` respondem 404. Modo completo: o agente não inicia | FR-052b, FR-052f, FR-045 | Não |
+| TS-072 | Lote com evento de cancelamento (`procEventoNFe`), NFC-e (modelo 65), NF-e versão 3.10 e XML com namespace diferente | ERR-009 ou ERR-010 por arquivo, com motivo que cita a raiz `procEventoNFe` e diz que é evento, o modelo `65` (NFC-e), a versão `3.10` e o namespace divergente; nenhum trecho do XML no motivo | FR-008 | Não |
+| TS-073 | Lote com uma NF-e válida, uma com `vICMS` divergente e um documento não suportado, com a IA indisponível | Resumo do sistema com contagens, resultado geral, a inconsistência W04-10 com arquivo, campo, informado e esperado, o arquivo não analisado com o motivo e o alerta da IA; sem a palavra "achados"; descrição do achado começa pela frase em linguagem natural | FR-017a, FR-017b | Não |
 
 ## Success Criteria *(mandatory)*
 

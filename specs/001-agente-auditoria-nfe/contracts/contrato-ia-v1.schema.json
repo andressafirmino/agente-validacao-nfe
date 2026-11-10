@@ -64,8 +64,7 @@
     },
     "IdAchado": {
       "type": "string",
-      "description": "Id (GUID) de um achado do parecer, recebido no contexto da execução.",
-      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+      "description": "Id (GUID) de um achado do parecer, recebido no contexto da execução. O formato e a existência na execução são verificados pela validação semântica (data-model §15), porque o schema gerado pelo tipo não aplica pattern a itens de lista."
     },
     "Evidencia": {
       "type": "object",

@@ -5,8 +5,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Agents.AI" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Agente\Instrucoes\*.md" LogicalName="AuditoriaNFe.Application.Agente.Instrucoes.%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>
