@@ -1,3 +1,4 @@
+using Api.RAG.Configuracao;
 using Api.RAG.Mcp;
 using Api.RAG.Servicos;
 using ModelContextProtocol.AspNetCore;
@@ -23,6 +24,7 @@ public static class ApiRagHosting
 
     public static void ConfigurarServicos(WebApplicationBuilder builder)
     {
+        builder.Services.AdicionarOpcoesRag(builder.Configuration);
         builder.Services.AddSingleton<CatalogoTrechos>();
         builder.Services.AddMcpServer()
             .WithHttpTransport(options => options.SessionMode = HttpServerSessionMode.Stateless)

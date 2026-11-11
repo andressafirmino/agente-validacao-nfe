@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://infis.local/schemas/ingestao-rag-v1.json",
+  "title": "IngestaoDocumentoRagV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "versaoContrato",
+    "documentoIdExterno",
+    "titulo",
+    "versaoDocumento",
+    "vigenciaInicio",
+    "conteudoTexto"
+  ],
+  "properties": {
+    "versaoContrato": { "const": "1.0" },
+    "documentoIdExterno": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "titulo": { "type": "string", "minLength": 1, "maxLength": 512 },
+    "tipoDocumento": { "type": "string", "default": "NF-e" },
+    "modelo": { "type": "string", "default": "55" },
+    "versaoLayout": { "type": "string", "default": "4.00" },
+    "versaoDocumento": { "type": "string", "minLength": 1, "maxLength": 32 },
+    "vigenciaInicio": { "type": "string", "format": "date" },
+    "vigenciaFim": { "type": ["string", "null"], "format": "date" },
+    "fonte": { "type": "string", "maxLength": 256 },
+    "regrasRelacionadas": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 32 },
+      "maxItems": 50
+    },
+    "conteudoTexto": { "type": "string", "minLength": 1, "maxLength": 2000000 }
+  }
+}
