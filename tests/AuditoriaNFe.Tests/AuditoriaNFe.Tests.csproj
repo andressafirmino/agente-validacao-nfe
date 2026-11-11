@@ -11,6 +11,7 @@
     <ProjectReference Include="..\..\src\AuditoriaNFe.Application\AuditoriaNFe.Application.csproj" />
     <ProjectReference Include="..\..\src\AuditoriaNFe.Infrastructure\AuditoriaNFe.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Api.Agente\Api.Agente.csproj" />
+    <ProjectReference Include="..\..\src\Api.RAG\Api.RAG.csproj" />
     <ProjectReference Include="..\..\src\Sofia.Simulator\Sofia.Simulator.csproj" />
   </ItemGroup>
 
@@ -20,6 +21,7 @@
 
   <ItemGroup>
     <Content Include="Fixtures\Sofia\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Fixtures\Rag\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

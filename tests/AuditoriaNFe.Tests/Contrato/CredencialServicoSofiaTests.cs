@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http.Headers;
+using Api.Agente;
 using Api.Agente.A2A;
 using Api.Agente.Hospedagem;
 using Api.Agente.Seguranca;
@@ -25,7 +26,7 @@ public sealed class CredencialServicoSofiaTests
 
     private static CancellationToken Cancelamento => TestContext.Current.CancellationToken;
 
-    public static HttpClient ClienteAutenticado(WebApplicationFactory<Program> fabrica)
+    public static HttpClient ClienteAutenticado(WebApplicationFactory<ApiAgenteMarcador> fabrica)
     {
         var cliente = fabrica.CreateClient();
         cliente.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Chave);
@@ -211,8 +212,8 @@ public sealed class CredencialServicoSofiaTests
         Assert.DoesNotContain(linhas, l => l.Contains(Tentativa, StringComparison.Ordinal));
     }
 
-    private static WebApplicationFactory<Program> CriarFabrica(ColetorLogs? logs = null) =>
-        new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+    private static WebApplicationFactory<ApiAgenteMarcador> CriarFabrica(ColetorLogs? logs = null) =>
+        new WebApplicationFactory<ApiAgenteMarcador>().WithWebHostBuilder(builder =>
         {
             builder.UseEnvironment(Environments.Production);
             builder.UseSetting(HospedagemOpcoes.ChaveModo, nameof(ModoHospedagem.SomenteAgentCard));

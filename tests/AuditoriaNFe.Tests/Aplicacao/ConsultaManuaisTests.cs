@@ -1,3 +1,4 @@
+using Api.Agente;
 using AuditoriaNFe.Application.Abstracoes;
 using AuditoriaNFe.Application.Contratos;
 using AuditoriaNFe.Tests.Duplos;
@@ -122,7 +123,7 @@ public sealed class ConsultaManuaisTests
         Assert.Contains("manual-sintetico-1.0-001", string.Join("\n", _ambiente.ChatClient.Chamadas.SelectMany(c => c.Mensagens).Select(m => m.Text)), StringComparison.Ordinal);
     }
 
-    private Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<Program> FabricaComConsulta(ConsultaManuaisFalsa consulta) =>
+    private Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<ApiAgenteMarcador> FabricaComConsulta(ConsultaManuaisFalsa consulta) =>
         _ambiente.CriarFabrica(
             configuracoes: new Dictionary<string, string?> { ["Mcp:Habilitado"] = "true", ["Mcp:Endpoint"] = "http://127.0.0.1:9/mcp" },
             servicos: s =>
