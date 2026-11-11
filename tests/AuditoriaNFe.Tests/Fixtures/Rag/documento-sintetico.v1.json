@@ -1,0 +1,14 @@
+{
+  "versaoContrato": "1.0",
+  "documentoIdExterno": "NT-SINTETICA-2026-001",
+  "titulo": "Nota técnica sintética para testes de ingestão RAG",
+  "tipoDocumento": "NF-e",
+  "modelo": "55",
+  "versaoLayout": "4.00",
+  "versaoDocumento": "v1",
+  "vigenciaInicio": "2026-01-01",
+  "vigenciaFim": null,
+  "fonte": "fixture-teste-infis",
+  "regrasRelacionadas": ["W16-10", "W16-20"],
+  "conteudoTexto": "Seção A — Contexto fiscal sintético.\n\nO grupo de tributação W16 aplica-se à combinação de CST e CFOP informados na linha do item, desde que o modelo do documento seja o 55 e a versão do layout seja 4.00.\n\nParágrafo 1. Valores de base de cálculo devem respeitar o total declarado no grupo de impostos correspondente, sem extrapolar campos somente leitura do leiaute.\n\nParágrafo 2. A regra W16-10 exige coerência entre o código de situação tributária do item e o enquadramento do imposto no XML.\n\nSeção B — Vigência e interpretação.\n\nTrecho adicional para forçar pelo menos um segundo chunk na segmentação quando o tamanho alvo for reduzido nos testes. O analista deve citar o identificador chunk retornado pela ferramenta buscar_trechos_manual ao fundamentar o parecer.\n\nFim do documento sintético."
+}

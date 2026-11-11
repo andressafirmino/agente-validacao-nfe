@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <Content Include="Fixtures\Sofia\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Fixtures\Rag\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

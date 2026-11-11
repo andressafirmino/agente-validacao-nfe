@@ -31,16 +31,16 @@
 
 ### Tests US1
 
-- [ ] T208 [P] [US1] Fixture `tests/AuditoriaNFe.Tests/Fixtures/Rag/documento-sintetico.v1.json` + teste `IngestaoRagContratoTests` validando schema `ingestao-rag-v1.schema.json`
-- [ ] T209 [US1] `tests/AuditoriaNFe.Tests/Rag/IngestaoRagIntegracaoTests.cs`: POST sem Bearer → 401; ingestão duas vezes → idempotência; vigência gravada
+- [X] T208 [P] [US1] Fixture `tests/AuditoriaNFe.Tests/Fixtures/Rag/documento-sintetico.v1.json` + teste `IngestaoRagContratoTests` validando schema `ingestao-rag-v1.schema.json`
+- [X] T209 [US1] `tests/AuditoriaNFe.Tests/Rag/IngestaoRagIntegracaoTests.cs`: POST sem Bearer → 401; ingestão duas vezes → idempotência; vigência gravada
 
 ### Implementation US1
 
-- [ ] T210 [US1] `src/Api.RAG/Servicos/SegmentadorTexto.cs` (tamanho/overlap configuráveis, research R-04)
-- [ ] T211 [US1] `src/Api.RAG/Servicos/ServicoIngestao.cs`: hash SHA-256, transação substituir chunks, estados de job
-- [ ] T212 [US1] `src/Api.RAG/Infraestrutura/ProvedorEmbeddingsOpenAi.cs` + persistência `chamadas_embedding`
-- [ ] T213 [US1] `src/Api.RAG/Endpoints/IngestaoEndpoints.cs`: `POST /api/v1/rag/ingestao` conforme `contracts/api-rag-ingestao.md`
-- [ ] T214 [US1] Middleware/filter Bearer `Rag:ChaveAdministracao` para rotas `/api/v1/rag/*`
+- [X] T210 [US1] `src/Api.RAG/Servicos/SegmentadorTexto.cs` (tamanho/overlap configuráveis, research R-04)
+- [X] T211 [US1] `src/Api.RAG/Servicos/ServicoIngestao.cs`: hash SHA-256, transação substituir chunks, estados de job
+- [X] T212 [US1] `src/Api.RAG/Infraestrutura/ProvedorEmbeddingsOpenAi.cs` + persistência `chamadas_embedding`
+- [X] T213 [US1] `src/Api.RAG/Endpoints/IngestaoEndpoints.cs`: `POST /api/v1/rag/ingestao` conforme `contracts/api-rag-ingestao.md`
+- [X] T214 [US1] Middleware/filter Bearer `Rag:ChaveAdministracao` para rotas `/api/v1/rag/*`
 
 **Checkpoint US1**: ingestão manual via quickstart §3 funciona localmente.
 
