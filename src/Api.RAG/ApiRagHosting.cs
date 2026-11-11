@@ -1,6 +1,7 @@
 using Api.RAG.Configuracao;
 using Api.RAG.Endpoints;
 using Api.RAG.Mcp;
+using Api.RAG.Seguranca;
 using Api.RAG.Servicos;
 using ModelContextProtocol.AspNetCore;
 
@@ -9,7 +10,10 @@ namespace Api.RAG;
 /// <summary>Composição compartilhada entre <c>Program</c> e testes de integração MCP.</summary>
 public static class ApiRagHosting
 {
-    public static WebApplication CriarAplicacao(WebApplicationOptions? opcoes = null, string[]? urls = null)
+    public static WebApplication CriarAplicacao(
+        WebApplicationOptions? opcoes = null,
+        string[]? urls = null,
+        Action<IServiceCollection>? personalizarServicos = null)
     {
         var builder = WebApplication.CreateBuilder(opcoes ?? new WebApplicationOptions { Args = urls ?? [] });
         if (urls is { Length: > 0 })
@@ -18,7 +22,9 @@ public static class ApiRagHosting
         }
 
         ConfigurarServicos(builder);
+        personalizarServicos?.Invoke(builder.Services);
         var app = builder.Build();
+        app.UsarProtecaoAdministracaoRag();
         MapearEndpoints(app);
         return app;
     }
@@ -36,6 +42,7 @@ public static class ApiRagHosting
     public static void MapearEndpoints(WebApplication app)
     {
         SaudeRagEndpoints.Mapear(app);
+        IngestaoEndpoints.Mapear(app);
         app.MapMcp("/mcp");
     }
 }

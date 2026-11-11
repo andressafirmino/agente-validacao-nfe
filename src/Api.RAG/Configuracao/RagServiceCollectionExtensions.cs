@@ -1,5 +1,7 @@
 using Api.RAG.Infraestrutura;
 using Api.RAG.Infraestrutura.Embeddings;
+using Api.RAG.Seguranca;
+using Api.RAG.Servicos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,7 +28,19 @@ public static class RagServiceCollectionExtensions
         services.AddDbContextFactory<RagDbContext>((_, builder) =>
             RagDbContext.Configurar(builder, connectionString));
 
-        services.AddSingleton<IProvedorEmbeddings, ProvedorEmbeddingsIndisponivel>();
+        if (!string.IsNullOrWhiteSpace(configuration["OpenAI:ApiKey"]))
+        {
+            services.AddSingleton<IProvedorEmbeddings, ProvedorEmbeddingsOpenAi>();
+        }
+        else
+        {
+            services.AddSingleton<IProvedorEmbeddings, ProvedorEmbeddingsIndisponivel>();
+        }
+
+        services.AdicionarProtecaoAdministracaoRag();
+        services.AddSingleton<SegmentadorTexto>();
+        services.AddSingleton<ValidadorIngestaoRag>();
+        services.AddScoped<ServicoIngestao>();
         return services;
     }
 }

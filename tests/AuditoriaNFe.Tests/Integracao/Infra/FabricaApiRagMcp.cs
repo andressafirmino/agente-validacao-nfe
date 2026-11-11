@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Sockets;
 using Api.RAG;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace AuditoriaNFe.Tests.Integracao.Infra;
@@ -16,7 +17,11 @@ public sealed class ServidorApiRagMcp : IAsyncDisposable
 
     public string EndpointMcp => $"{BaseUrl}/mcp";
 
-    public async Task IniciarAsync(string? connectionStringRag = null, CancellationToken cancellationToken = default)
+    public async Task IniciarAsync(
+        string? connectionStringRag = null,
+        string? chaveAdministracao = null,
+        Action<IServiceCollection>? personalizarServicos = null,
+        CancellationToken cancellationToken = default)
     {
         if (_app is not null)
         {
@@ -30,13 +35,19 @@ public sealed class ServidorApiRagMcp : IAsyncDisposable
             Environment.SetEnvironmentVariable("ConnectionStrings__Rag", connectionStringRag);
         }
 
+        if (chaveAdministracao is not null)
+        {
+            Environment.SetEnvironmentVariable("Rag__ChaveAdministracao", chaveAdministracao);
+        }
+
         _app = ApiRagHosting.CriarAplicacao(
             new WebApplicationOptions
             {
                 ContentRootPath = raiz,
                 EnvironmentName = Environments.Development,
             },
-            [url]);
+            [url],
+            personalizarServicos);
         await _app.StartAsync(cancellationToken).ConfigureAwait(false);
     }
 

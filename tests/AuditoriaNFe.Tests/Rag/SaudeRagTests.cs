@@ -20,7 +20,7 @@ public sealed class SaudeRagTests(RagPostgresIntegracaoFixture ambiente) : IAsyn
         }
 
         _servidor = new ServidorApiRagMcp();
-        await _servidor.IniciarAsync(ambiente.ConnectionString, Cancelamento);
+        await _servidor.IniciarAsync(ambiente.ConnectionString, cancellationToken: Cancelamento);
     }
 
     public async ValueTask DisposeAsync()
