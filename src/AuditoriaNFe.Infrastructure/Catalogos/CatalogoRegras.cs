@@ -11,6 +11,12 @@ public sealed class CatalogoRegras : ICatalogoRegras
         ArgumentNullException.ThrowIfNull(carregados);
         Carregados = carregados;
         Aplicador = new AplicadorRegras(carregados.Regras, ImplementacoesRegras.Todas(), carregados.VersaoCatalogoRegras);
+        CaminhosCatalogoExtracao = carregados.CamposExtracao.Select(c => c.Caminho).ToHashSet(StringComparer.Ordinal);
+        CaminhosNumericosExtracao = carregados.CamposExtracao
+            .Where(c => string.Equals(c.Tipo, "decimal", StringComparison.Ordinal))
+            .Select(c => c.Caminho)
+            .ToHashSet(StringComparer.Ordinal);
+        ClassePorCaminhoExtracao = carregados.CamposExtracao.ToDictionary(c => c.Caminho, c => c.Classe, StringComparer.Ordinal);
     }
 
     public CatalogosCarregados Carregados { get; }
@@ -18,4 +24,7 @@ public sealed class CatalogoRegras : ICatalogoRegras
     public string VersaoCatalogoExtracao => Carregados.VersaoCatalogoExtracao;
     public IReadOnlyList<RegraConteudo> Regras => Carregados.Regras;
     public AplicadorRegras Aplicador { get; }
+    public IReadOnlySet<string> CaminhosCatalogoExtracao { get; }
+    public IReadOnlySet<string> CaminhosNumericosExtracao { get; }
+    public IReadOnlyDictionary<string, string> ClassePorCaminhoExtracao { get; }
 }

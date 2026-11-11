@@ -32,10 +32,11 @@ public sealed class HistoricoSessaoTests
     {
         const string Usuario = "usuario-historico";
         string[] perguntas = ["Primeira pergunta sobre o lote?", "Segunda pergunta sobre o lote?", "Terceira pergunta sobre o lote?"];
-        for (var i = 0; i < 4; i++)
-        {
-            _ambiente.ChatClient.Responder(RespostasIa.Valida());
-        }
+        _ambiente.ChatClient
+            .Responder(RespostasIa.Valida())
+            .Responder(RespostasIa.RespostaPerguntaSimples("Continuidade respondida."))
+            .Responder(RespostasIa.RespostaPerguntaSimples("Continuidade respondida."))
+            .Responder(RespostasIa.RespostaPerguntaSimples("Continuidade respondida."));
 
         var cliente = _ambiente.CriarFabrica(configuracoes: new Dictionary<string, string?> { ["Historico:MaxMensagens"] = "2" }).CreateClient();
         var sessaoId = Concluida(await ClienteExecucoes.CriarAsync(
@@ -61,7 +62,8 @@ public sealed class HistoricoSessaoTests
     [Fact]
     public async Task Pergunta_em_sessao_sem_analise_informa_que_nao_ha_base_analisada()
     {
-        _ambiente.ChatClient.Responder(RespostasIa.Valida());
+        _ambiente.ChatClient.Responder(RespostasIa.ComIndisponibilidade(
+            "Não há notas analisadas nesta sessão; envie os XMLs para formar a base antes de perguntar sobre valores."));
 
         var envelope = Concluida(await ClienteExecucoes.CriarAsync(
             _ambiente.CriarCliente(), pergunta: "Qual é o total do ICMS das notas?", usuarioId: "usuario-sem-base", cancelamento: Cancelamento));

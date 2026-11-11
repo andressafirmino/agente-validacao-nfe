@@ -9,4 +9,7 @@ public interface ICatalogoRegras
     string VersaoCatalogoExtracao { get; }
     IReadOnlyList<RegraConteudo> Regras { get; }
     AplicadorRegras Aplicador { get; }
+    IReadOnlySet<string> CaminhosCatalogoExtracao { get; }
+    IReadOnlySet<string> CaminhosNumericosExtracao { get; }
+    IReadOnlyDictionary<string, string> ClassePorCaminhoExtracao { get; }
 }

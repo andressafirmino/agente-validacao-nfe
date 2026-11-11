@@ -1,3 +1,4 @@
+using AuditoriaNFe.Domain.Calculos;
 using AuditoriaNFe.Domain.Documentos;
 using AuditoriaNFe.Domain.Identificacao;
 using AuditoriaNFe.Domain.Parecer;
@@ -24,6 +25,7 @@ public sealed class Execucao
     private List<EtapaExecucao> _etapas = [];
     private List<ArquivoRecebido> _arquivos = [];
     private List<ChamadaFerramenta> _chamadasFerramentas = [];
+    private List<RegistroCalculo> _calculos = [];
     private List<TrechoConsultado> _trechosConsultados = [];
     private Dictionary<string, string> _versoes = new(StringComparer.Ordinal);
 
@@ -69,8 +71,10 @@ public sealed class Execucao
     public IReadOnlyList<ArquivoRecebido> Arquivos => _arquivos;
 
     public ParecerExecucao? Parecer { get; private set; }
+    public RespostaPerguntaExecucao? RespostaPergunta { get; private set; }
 
     public IReadOnlyList<ChamadaFerramenta> ChamadasFerramentas => _chamadasFerramentas;
+    public IReadOnlyList<RegistroCalculo> Calculos => _calculos;
     public IReadOnlyList<TrechoConsultado> TrechosConsultados => _trechosConsultados;
 
     /// <summary>Versões do envelope, contrato do LLM, manifesto, catálogos, instruções e tabela de preços.</summary>
@@ -188,6 +192,20 @@ public sealed class Execucao
         ArgumentNullException.ThrowIfNull(parecer);
         ExigirNaoFinalizada();
         Parecer = parecer;
+    }
+
+    public void DefinirRespostaPergunta(RespostaPerguntaExecucao resposta)
+    {
+        ArgumentNullException.ThrowIfNull(resposta);
+        ExigirNaoFinalizada();
+        RespostaPergunta = resposta;
+    }
+
+    public void RegistrarCalculo(RegistroCalculo calculo)
+    {
+        ArgumentNullException.ThrowIfNull(calculo);
+        ExigirNaoFinalizada();
+        _calculos.Add(calculo);
     }
 
     /// <param name="erroDependencia">ERR-013 a ERR-015: a execução conclui com o erro registrado.</param>

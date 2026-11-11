@@ -90,6 +90,31 @@ public sealed class RastreabilidadeExecucaoTests
     }
 
     [Fact]
+    public async Task Pergunta_com_calculo_registra_chamadas_de_ferramentas()
+    {
+        _ambiente.ChatClient.Responder(RespostasIa.Valida());
+        var lote = Concluida(await ClienteExecucoes.CriarAsync(
+            _ambiente.CriarCliente(),
+            [ArquivoEnvio.Fixture(NFeValida)],
+            cancelamento: Cancelamento));
+
+        _ambiente.ChatClient
+            .ResponderInvocacao(AuditoriaNFe.Application.Ferramentas.PoliticaFerramentas.CalcularTotal, new { campo = "total/ICMSTot/vNF" })
+            .ResponderAposFerramenta(RoteiroPerguntaComCalculo.RespostaAposCalcularTotal);
+
+        var execucaoId = Concluida(await ClienteExecucoes.CriarAsync(
+            _ambiente.CriarCliente(),
+            pergunta: "Qual o valor total?",
+            sessaoId: lote.SessaoId,
+            cancelamento: Cancelamento)).ExecucaoId;
+
+        var gravada = await ExecucaoGravadaAsync(execucaoId);
+        var chamadas = gravada["chamadasFerramentas"].AsBsonArray.Select(c => c.AsBsonDocument).ToList();
+        Assert.Contains(chamadas, c => c["nome"].AsString == "calcular_total" && c["status"].AsString == "Sucesso");
+        Assert.NotEmpty(gravada["calculos"].AsBsonArray);
+    }
+
+    [Fact]
     public async Task Execucao_sem_MCP_registra_etapa_5_nao_aplicavel_e_nenhum_trecho()
     {
         _ambiente.ChatClient.Responder(RespostasIa.Valida());
