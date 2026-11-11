@@ -2,6 +2,7 @@ using System.Text.Json.Nodes;
 using AuditoriaNFe.Application.ContextProviders;
 using AuditoriaNFe.Application.Contratos;
 using AuditoriaNFe.Application.Ferramentas;
+using AuditoriaNFe.Application.Fluxo;
 using AuditoriaNFe.Application.Servicos;
 using AuditoriaNFe.Domain.Sessoes;
 using AuditoriaNFe.Tests.Duplos;
@@ -77,8 +78,7 @@ public sealed class PerguntasTests
     [Fact]
     public async Task Pergunta_fora_do_escopo_TS017()
     {
-        _ambiente.ChatClient.Responder(RespostasIa.ComForaDeEscopo(
-            "O escopo deste agente é auditoria de NF-e modelo 55 versão 4.00."));
+        _ambiente.ChatClient.Limpar();
 
         var envelope = Concluida(await ClienteExecucoes.CriarAsync(
             _ambiente.CriarCliente(),
@@ -86,6 +86,32 @@ public sealed class PerguntasTests
             cancelamento: Cancelamento));
 
         Assert.True(envelope.Resposta?.ForaDeEscopo);
+        Assert.Null(envelope.Erro);
+        Assert.Empty(_ambiente.ChatClient.Chamadas);
+        Assert.Equal("Executada", Etapa(envelope, 7).Estado);
+        Assert.Equal("Executada", Etapa(envelope, 8).Estado);
+    }
+
+    [Fact]
+    public async Task Pergunta_sem_arquivos_pula_etapas_de_xml()
+    {
+        _ambiente.ChatClient.Limpar();
+
+        var envelope = Concluida(await ClienteExecucoes.CriarAsync(
+            _ambiente.CriarCliente(),
+            pergunta: "Como fazer bolo?",
+            cancelamento: Cancelamento));
+
+        foreach (var numero in new[] { 2, 3, 4 })
+        {
+            var etapa = Etapa(envelope, numero);
+            Assert.Equal("NaoAplicavel", etapa.Estado);
+            Assert.Equal(FluxoNoveEtapas.JustificativaSemArquivos, etapa.Justificativa);
+        }
+
+        Assert.True(envelope.Resposta?.ForaDeEscopo);
+        Assert.Null(envelope.Erro);
+        Assert.Empty(_ambiente.ChatClient.Chamadas);
     }
 
     [Fact]

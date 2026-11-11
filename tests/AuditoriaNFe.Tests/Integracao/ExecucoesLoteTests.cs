@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net;
 using AuditoriaNFe.Application.Contratos;
+using AuditoriaNFe.Application.Fluxo;
 using AuditoriaNFe.Infrastructure.Persistencia.Mongo;
 using AuditoriaNFe.Tests.Duplos;
 using AuditoriaNFe.Tests.Fixtures.Xml;
@@ -38,6 +39,23 @@ public sealed class ExecucoesLoteTests
     {
         _ambiente.ChatClient.Responder(RespostasIa.Valida());
         return Concluida(await ClienteExecucoes.CriarAsync(_ambiente.CriarCliente(), arquivos, cancelamento: Cancelamento));
+    }
+
+    [Fact]
+    public async Task Lote_sem_documento_analisavel_nao_chama_ia()
+    {
+        _ambiente.ChatClient.Limpar();
+
+        var envelope = Concluida(await ClienteExecucoes.CriarAsync(
+            _ambiente.CriarCliente(),
+            [ArquivoEnvio.Fixture(FixturesXml.Casos.EventoCancelamento), ArquivoEnvio.Fixture(FixturesXml.Casos.Malformado)],
+            cancelamento: Cancelamento));
+
+        Assert.Empty(_ambiente.ChatClient.Chamadas);
+        Assert.Equal("NaoAplicavel", Etapa(envelope, 7).Estado);
+        Assert.Equal(FluxoNoveEtapas.JustificativaIaSemDocumentos, Etapa(envelope, 7).Justificativa);
+        Assert.Equal("NaoAplicavel", Etapa(envelope, 8).Estado);
+        Assert.Null(envelope.Erro);
     }
 
     [Fact]
