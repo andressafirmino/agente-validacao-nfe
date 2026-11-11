@@ -60,6 +60,8 @@ internal static class MapeamentoMongo
                 mapa.MapField("_etapas").SetElementName("etapas");
                 mapa.MapField("_arquivos").SetElementName("arquivos");
                 mapa.MapField("_chamadasFerramentas").SetElementName("chamadasFerramentas");
+                mapa.MapField("_calculos").SetElementName("calculos");
+                mapa.MapMember(e => e.RespostaPergunta).SetIgnoreIfNull(true);
                 mapa.MapField("_trechosConsultados").SetElementName("trechosConsultados");
                 mapa.MapField("_versoes").SetElementName("versoes");
             });

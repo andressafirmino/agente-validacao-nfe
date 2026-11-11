@@ -18,6 +18,7 @@ public static class MontadorEnvelope
         return EnvelopeV1.De(execucao, fim, duracao) with
         {
             Parecer = execucao.Parecer is null ? null : MontadorParecer.ParaContrato(execucao),
+            Resposta = execucao.RespostaPergunta is null ? null : MontadorResposta.ParaContrato(execucao.RespostaPergunta),
         };
     }
 
