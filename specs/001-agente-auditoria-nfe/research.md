@@ -799,6 +799,22 @@ testes de arquitetura, health checks, `SemSegredosTests` e a ordem de tarefas do
     usuário não root, logs sem senhas nem chave; sem a variável, modo `SomenteAgentCard`; com o
     provedor simulado e os limites padrão, a inicialização é recusada citando o D-09.
 - **Alternativas**: preview protegido pelo login do Vercel; Render Free; esperar a DP-10 (ADR-0013).
+- **Provisionamento manual (T183, 2026-11-10)**: MongoDB Atlas Free na AWS `us-east-1` (cluster
+  `8.0.x`); `02-colecoes.js` executado com sucesso — coleções `contextos_usuario`, `documentos`,
+  `execucoes`, `sessoes`, `sessoes_agente` e índice `ttl_contextos_usuario_expira_em` conferidos.
+  Neon Free Postgres `17` na AWS `us-east-1`; `neon-consumo.sql` e migração idempotente EF
+  `20261105132907_Inicial` com `consumo.chamadas_provedor` criada (vazia após migração). Projeto
+  OpenAI `auditoria-nfe-homolog` com limite de gasto e chave de API do projeto (sem gravar segredos).
+- **Publicação homologação (T184, 2026-11-10)**: URL `https://agente-auditoria-nfe.vercel.app`;
+  deployment de produção `dpl_HhaXGJ8ksWLeZ4h351UQNHjdaaux` (região `iad1`, após correção do Neon). A variável
+  `Hospedagem__Modo=Homologacao` do projeto Vercel prevaleceu sobre o `ENV` padrão
+  `SomenteAgentCard` da imagem. `ConnectionStrings__Consumo` no formato de chaves Npgsql (com host
+  `-pooler`); formato URI `postgresql://` recusado na inicialização (corrigido no painel). TS-075:
+  `/health/live` e `/health/ready` 200; card 401 sem Bearer e 200 com credencial SOFIA; Swagger 200;
+  `POST /api/v1/execucoes` com NF-e sintética concluída (tokens OpenAI registrados em
+  `metadados.consumo`); continuidade na mesma sessão; `GET /api/v1/contexto-usuario` com CNPJs;
+  lote 4.000.001 bytes com 413 e ERR-002; `/a2a/auditoria-nfe` 401/404 até a Fase 8. Card com
+  `implantacao` de homologação pública.
 
 ## 3. Uso documentado das APIs do Microsoft Agent Framework
 
