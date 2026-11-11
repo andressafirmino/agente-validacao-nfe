@@ -402,15 +402,15 @@ o agente desligado, verificar a falha de descoberta sem envio.
 
 ### Tests for User Story 6 ⚠️
 
-- [ ] T152 [P] [US6] Criar `tests/AuditoriaNFe.Tests/Integracao/SimuladorTests.cs`: TS-035 (fluxo básico contra o host de teste: card exibido com habilidade, `idAgente` e limites; solicitação enviada; estado da Task, status, análise, achados e observações exibidos; IDs conferidos) e TS-035a (card inacessível: falha de descoberta informada, código de saída diferente de zero, nenhuma solicitação enviada)
+- [X] T152 [P] [US6] Criar `tests/AuditoriaNFe.Tests/Integracao/SimuladorTests.cs`: TS-035 (fluxo básico contra o host de teste: card exibido com habilidade, `idAgente` e limites; solicitação enviada; estado da Task, status, análise, achados e observações exibidos; IDs conferidos) e TS-035a (card inacessível: falha de descoberta informada, código de saída diferente de zero, nenhuma solicitação enviada)
 
 ### Implementation for User Story 6
 
-- [ ] T153 [P] [US6] Criar os XMLs sintéticos do simulador em `src/Sofia.Simulator/Exemplos/` (um válido, um com erro de layout, um com totalizador divergente e um texto que não é NF-e, gerados com dados fictícios) (FR-050)
-- [ ] T154 [US6] Implementar `src/Sofia.Simulator/Descoberta/DescobertaAgente.cs` com o `A2ACardResolver` do `A2A.V0_3` (sem cabeçalho `A2A-Version`); falha → mensagem clara e término sem envio (FR-051a, research R-12)
-- [ ] T155 [US6] Implementar `src/Sofia.Simulator/Cenarios/CenarioBasico.cs`, `src/Sofia.Simulator/Contrato/` (cópia própria dos DTOs do contrato SOFIA, sem referência aos projetos do agente) e `src/Sofia.Simulator/Exibicao/ExibicaoConsole.cs`: monta a `SolicitacaoAnaliseSofia` com `idExecucao` e `idSolicitacao` novos, nome fictício, pergunta e os XMLs lidos como texto; envia por `A2AClient.SendMessageAsync` sem `configuration`; exibe o card, o estado da Task, o status, a análise, os achados, as observações e o resultado da conferência dos IDs (FR-049) (depende de T154)
-- [ ] T156 [P] [US6] Implementar os cenários opcionais `src/Sofia.Simulator/Cenarios/CenarioDocumentoNaoSuportado.cs` (TS-065) e `CenarioContratoInvalido.cs` (`versaoContrato: "2.0"`, TS-066) (FR-051) (depende de T155)
-- [ ] T157 [US6] Implementar `src/Sofia.Simulator/Program.cs` com os argumentos `--endereco` (padrão `http://localhost:5310`) e `--cenario` (`basico`, `documento-nao-suportado`, `contrato-invalido`) (depende de T155, T156)
+- [X] T153 [P] [US6] Criar os XMLs sintéticos do simulador em `src/Sofia.Simulator/Exemplos/` (um válido, um com erro de layout, um com totalizador divergente e um texto que não é NF-e, gerados com dados fictícios) (FR-050)
+- [X] T154 [US6] Implementar `src/Sofia.Simulator/Descoberta/DescobertaAgente.cs` com o `A2ACardResolver` do `A2A.V0_3` (sem cabeçalho `A2A-Version`); falha → mensagem clara e término sem envio (FR-051a, research R-12)
+- [X] T155 [US6] Implementar `src/Sofia.Simulator/Cenarios/CenarioBasico.cs`, `src/Sofia.Simulator/Contrato/` (cópia própria dos DTOs do contrato SOFIA, sem referência aos projetos do agente) e `src/Sofia.Simulator/Exibicao/ExibicaoConsole.cs`: monta a `SolicitacaoAnaliseSofia` com `idExecucao` e `idSolicitacao` novos, nome fictício, pergunta e os XMLs lidos como texto; envia por `A2AClient.SendMessageAsync` sem `configuration`; exibe o card, o estado da Task, o status, a análise, os achados, as observações e o resultado da conferência dos IDs (FR-049) (depende de T154)
+- [X] T156 [P] [US6] Implementar os cenários opcionais `src/Sofia.Simulator/Cenarios/CenarioDocumentoNaoSuportado.cs` (TS-065) e `CenarioContratoInvalido.cs` (`versaoContrato: "2.0"`, TS-066) (FR-051) (depende de T155)
+- [X] T157 [US6] Implementar `src/Sofia.Simulator/Program.cs` com os argumentos `--endereco` (padrão `http://localhost:5310`) e `--cenario` (`basico`, `documento-nao-suportado`, `contrato-invalido`) (depende de T155, T156)
 
 **Checkpoint**: TS-035 e TS-035a passam; SC-005 atendido com o endereço como única configuração.
 
