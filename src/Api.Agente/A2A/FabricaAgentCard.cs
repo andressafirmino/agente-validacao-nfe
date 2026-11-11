@@ -7,6 +7,7 @@ using System.Text.Unicode;
 using Api.Agente.Hospedagem;
 using Api.Agente.Seguranca;
 using AuditoriaNFe.Application.Configuracao;
+using global::A2A;
 using Microsoft.Extensions.Options;
 
 namespace Api.Agente.A2A;
@@ -28,6 +29,66 @@ public sealed class FabricaAgentCard(
     public static JsonSerializerOptions OpcoesJson { get; } = CriarOpcoesJson();
 
     public AgentCardV03 Card { get; } = Montar(a2a.Value, limites.Value, hospedagem.Value.Modo);
+
+    public AgentCard CriarCardSdk()
+    {
+        var a2aOp = a2a.Value;
+        var lim = limites.Value;
+        var card = Card;
+        return new AgentCard
+        {
+            Name = card.Name,
+            Description = card.Description,
+            Version = card.Version,
+            DefaultInputModes = [.. card.DefaultInputModes],
+            DefaultOutputModes = [.. card.DefaultOutputModes],
+            SupportedInterfaces =
+            [
+                new AgentInterface
+                {
+                    Url = card.Url,
+                    ProtocolBinding = ProtocolBindingNames.JsonRpc,
+                },
+            ],
+            Capabilities = new AgentCapabilities
+            {
+                Streaming = card.Capabilities.Streaming,
+                PushNotifications = card.Capabilities.PushNotifications,
+                Extensions = card.Capabilities.Extensions.Select(e => new AgentExtension
+                {
+                    Uri = e.Uri,
+                    Description = e.Description,
+                    Required = e.Required,
+                    Params = JsonSerializer.SerializeToElement(e.Params, OpcoesJson),
+                }).ToList(),
+            },
+            Skills =
+            [
+                new AgentSkill
+                {
+                    Id = "analisar_documentos",
+                    Name = "Auditoria de XMLs de NF-e",
+                    Description = card.Skills[0].Description,
+                    Tags = [.. card.Skills[0].Tags],
+                    Examples = [.. card.Skills[0].Examples],
+                },
+            ],
+            SecuritySchemes = new Dictionary<string, SecurityScheme>
+            {
+                [CredencialServicoSofiaOpcoes.NomeEsquema] = new() { HttpAuthSecurityScheme = new HttpAuthSecurityScheme { Scheme = "bearer" } },
+            },
+            SecurityRequirements =
+            [
+                new SecurityRequirement
+                {
+                    Schemes = new Dictionary<string, StringList>
+                    {
+                        [CredencialServicoSofiaOpcoes.NomeEsquema] = new() { List = [] },
+                    },
+                },
+            ],
+        };
+    }
 
     private static AgentCardV03 Montar(A2AOpcoes a2a, LimitesOpcoes limites, ModoHospedagem modo) => new(
         Name: "AgenteAuditoriaNFe",

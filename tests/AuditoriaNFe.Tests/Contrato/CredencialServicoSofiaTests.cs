@@ -125,8 +125,7 @@ public sealed class CredencialServicoSofiaTests
 
         using var resposta = await cliente.PostAsync(FabricaAgentCard.RotaA2A, new StringContent("{}"), Cancelamento);
 
-        // Endpoint JSON-RPC ainda não mapeado (Fase 8): passa pela credencial e cai no 404.
-        Assert.Equal(HttpStatusCode.NotFound, resposta.StatusCode);
+        Assert.NotEqual(HttpStatusCode.Unauthorized, resposta.StatusCode);
     }
 
     [Fact]

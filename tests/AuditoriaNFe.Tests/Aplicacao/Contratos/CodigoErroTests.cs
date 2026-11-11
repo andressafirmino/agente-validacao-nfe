@@ -5,9 +5,9 @@ namespace AuditoriaNFe.Tests.Aplicacao.Contratos;
 public sealed class CodigoErroTests
 {
     [Fact]
-    public void Codigos_vao_de_ERR_001_a_ERR_025_sem_lacunas()
+    public void Codigos_vao_de_ERR_001_a_ERR_027_sem_lacunas()
     {
-        var esperados = Enumerable.Range(1, 25).Select(n => $"ERR-{n:000}");
+        var esperados = Enumerable.Range(1, 27).Select(n => $"ERR-{n:000}");
 
         Assert.Equal(esperados, CodigoErro.Todos);
     }

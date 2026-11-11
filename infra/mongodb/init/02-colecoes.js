@@ -134,6 +134,14 @@ banco.execucoes.createIndex(
   { chaveIsolamento: 1, sessaoId: 1, iniciadaEm: -1 },
   { name: "ix_execucoes_chave_sessao_inicio" });
 
+banco.execucoes.createIndex(
+  { chaveIdempotenciaSofia: 1 },
+  {
+    name: "ux_execucoes_chave_idempotencia_sofia",
+    unique: true,
+    partialFilterExpression: { chaveIdempotenciaSofia: { $exists: true, $type: "string" } }
+  });
+
 banco.documentos.createIndex(
   { chaveIsolamento: 1, sessaoId: 1 },
   { name: "ix_documentos_chave_sessao" });

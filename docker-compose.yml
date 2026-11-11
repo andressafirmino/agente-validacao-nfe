@@ -23,6 +23,9 @@ services:
       OpenAI__Modelo: ${OpenAI__Modelo:-}
       Mcp__Habilitado: ${Mcp__Habilitado:-false}
       A2A__UrlPublica: ${A2A__UrlPublica:-http://localhost:5310}
+      A2A__IdAgente: ${A2A__IdAgente:-agente-auditoria-nfe}
+      A2A__ChamadorPadrao: ${A2A__ChamadorPadrao:-sofia}
+      SOFIA_A2A_TOKEN: ${SOFIA_A2A_TOKEN:?Defina SOFIA_A2A_TOKEN no arquivo .env}
       # CORS só para navegador nas rotas /api/v1 (FR-052e); vazio = nenhuma origem permitida.
       Cors__AllowedOrigins__0: ${Cors__AllowedOrigins__0:-}
       Limites__TamanhoTotalBytes: ${Limites__TamanhoTotalBytes:-5242880}

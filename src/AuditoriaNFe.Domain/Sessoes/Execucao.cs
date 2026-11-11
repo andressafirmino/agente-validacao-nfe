@@ -36,10 +36,17 @@ public sealed class Execucao
 
     public Guid Id { get; private set; }
     public string? CorrelacaoId { get; private set; }
+    public Guid? IdExecucaoSofia { get; private set; }
+    public Guid? IdSolicitacaoSofia { get; private set; }
+    public string? ChaveIdempotenciaSofia { get; private set; }
     public Guid? SessaoId { get; private set; }
     public string ChaveIsolamento { get; private set; }
     public string UsuarioId { get; private set; }
     public string ChamadorId { get; private set; }
+
+    /// <summary>Só no A2A; nunca em log (data-model §2).</summary>
+    public string? UsuarioNome { get; private set; }
+
     public bool UsuarioIdentificado { get; private set; }
     public CanalExecucao Canal { get; private set; }
     public TipoExecucao Tipo { get; private set; }
@@ -129,6 +136,24 @@ public sealed class Execucao
 
         SessaoId = sessaoId;
     }
+
+    public void ConfigurarSofia(Guid idExecucao, Guid idSolicitacao, string? usuarioNome, string chaveIdempotencia)
+    {
+        ExigirNaoFinalizada();
+        if (idExecucao == Guid.Empty || idSolicitacao == Guid.Empty)
+        {
+            throw new ArgumentException("Ids da SOFIA inválidos.");
+        }
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(chaveIdempotencia);
+        IdExecucaoSofia = idExecucao;
+        IdSolicitacaoSofia = idSolicitacao;
+        UsuarioNome = usuarioNome;
+        ChaveIdempotenciaSofia = chaveIdempotencia;
+    }
+
+    public static string MontarChaveIdempotencia(string chamadorId, Guid idSolicitacao) =>
+        $"{chamadorId}{Identificacao.IdentificacaoSolicitante.Separador}{idSolicitacao:D}";
 
     public void IniciarProcessamento()
     {
@@ -268,6 +293,10 @@ public sealed class Execucao
         Estado = estado;
         Erro = erro;
         ConcluidaEm = agora;
+        if (estado == EstadoExecucao.Falhou)
+        {
+            ChaveIdempotenciaSofia = null;
+        }
     }
 
     private void ExigirNaoFinalizada()

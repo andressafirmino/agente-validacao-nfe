@@ -37,6 +37,8 @@ public static class MensagensErro
         [CodigoErro.SchemaIndisponivelParaData] = "Validação de layout não realizada: schema não disponível para a data de referência do documento.",
         [CodigoErro.LimiteAtingido] = "Limite de solicitações atingido. Tente novamente mais tarde.",
         [CodigoErro.ArmazenamentoIndisponivel] = "O armazenamento de sessões está indisponível. Nenhuma análise foi executada; tente novamente mais tarde.",
+        [CodigoErro.SolicitacaoEmAndamento] = "Já existe uma execução em andamento para este identificador de solicitação.",
+        [CodigoErro.RequisicaoCancelada] = "A requisição foi cancelada pelo chamador. A execução foi encerrada com as etapas registradas.",
     };
 
     public const string SessaoEncerrada = "Sessão encerrada. Inicie uma nova sessão enviando a solicitação sem o identificador de sessão.";
