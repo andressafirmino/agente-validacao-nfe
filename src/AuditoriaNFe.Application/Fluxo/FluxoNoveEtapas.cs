@@ -60,6 +60,10 @@ public sealed partial class FluxoNoveEtapas(
 {
     public const string JustificativaMcpDesabilitado = "não aplicável — integração não habilitada";
     public const string JustificativaSemFerramentas = "não aplicável — sem ferramentas externas na v1";
+    public const string JustificativaSemArquivos = "não aplicável — nenhum arquivo enviado";
+    public const string JustificativaRespostaForaEscopo = "resposta determinística — pergunta fora do escopo";
+    public const string JustificativaIaSemDocumentos = "não aplicável — sem documentos analisados para análise por IA";
+    public const string JustificativaValidacaoIaNaoExecutada = "não aplicável — análise por IA não executada";
     private const string Sistema = "sessão";
     private const string CaminhoCnpjEmitente = "emit/CNPJ";
     private const string CaminhoCnpjDestinatario = "dest/CNPJ";
@@ -77,12 +81,34 @@ public sealed partial class FluxoNoveEtapas(
         var execucao = andamento.Execucao;
         var estado = new EstadoProcessamento(execucao, sessao);
 
-        await Etapa(andamento, 2, cancellationToken, () => ValidarFormato(estado, arquivos));
-        await Etapa(andamento, 3, cancellationToken, () => IdentificarDocumentos(estado));
-        await EtapaAsync(andamento, 4, cancellationToken, () => ValidarLayoutEConteudoAsync(estado, cancellationToken));
+        if (arquivos.Count == 0)
+        {
+            await Etapa(andamento, 2, cancellationToken, () => new ResultadoEtapa(EstadoEtapa.NaoAplicavel, JustificativaSemArquivos));
+            await Etapa(andamento, 3, cancellationToken, () => new ResultadoEtapa(EstadoEtapa.NaoAplicavel, JustificativaSemArquivos));
+            await Etapa(andamento, 4, cancellationToken, () => new ResultadoEtapa(EstadoEtapa.NaoAplicavel, JustificativaSemArquivos));
+        }
+        else
+        {
+            await Etapa(andamento, 2, cancellationToken, () => ValidarFormato(estado, arquivos));
+            await Etapa(andamento, 3, cancellationToken, () => IdentificarDocumentos(estado));
+            await EtapaAsync(andamento, 4, cancellationToken, () => ValidarLayoutEConteudoAsync(estado, cancellationToken));
+        }
+
         await EtapaAsync(andamento, 5, cancellationToken, () => ConsultarManuaisAsync(estado, cancellationToken));
         await Etapa(andamento, 6, cancellationToken, () => new ResultadoEtapa(EstadoEtapa.NaoAplicavel, JustificativaSemFerramentas));
-        await AnalisarComIaAsync(estado, andamento, cancellationToken);
+
+        if (AvaliadorEscopoPergunta.DeveResponderForaDoEscopoDeterministico(execucao.Tipo, execucao.Pergunta))
+        {
+            ResponderForaDoEscopoDeterministico(estado, andamento);
+        }
+        else if (DevePularAnaliseIa(estado))
+        {
+            PularAnaliseIa(andamento);
+        }
+        else
+        {
+            await AnalisarComIaAsync(estado, andamento, cancellationToken);
+        }
 
         andamento.Iniciar(9, relogio.Agora);
         var inicio = relogio.Agora;
@@ -349,6 +375,28 @@ public sealed partial class FluxoNoveEtapas(
         }
 
         return new ResultadoEtapa(EstadoEtapa.Executada);
+    }
+
+    private static bool DevePularAnaliseIa(EstadoProcessamento estado) =>
+        estado.Execucao.Tipo == TipoExecucao.AnaliseLote && !estado.Arquivos.Any(a => a.LayoutAprovado);
+
+    private void ResponderForaDoEscopoDeterministico(EstadoProcessamento estado, AndamentoFluxo andamento)
+    {
+        var texto = MensagensErro.Para(CodigoErro.ForaDoEscopo);
+        estado.Execucao.DefinirRespostaPergunta(new RespostaPerguntaExecucao(texto, [], [], informacaoIndisponivel: false, foraDeEscopo: true));
+        var inicio = relogio.Agora;
+        andamento.Iniciar(7, inicio);
+        var fim = relogio.Agora;
+        estado.Execucao.RegistrarEtapa(7, EstadoEtapa.Executada, inicio, fim, JustificativaRespostaForaEscopo);
+        estado.Execucao.RegistrarEtapa(8, EstadoEtapa.Executada, fim, relogio.Agora);
+    }
+
+    private void PularAnaliseIa(AndamentoFluxo andamento)
+    {
+        var inicio = relogio.Agora;
+        andamento.Iniciar(7, inicio);
+        andamento.Execucao.RegistrarEtapa(7, EstadoEtapa.NaoAplicavel, justificativa: JustificativaIaSemDocumentos);
+        andamento.Execucao.RegistrarEtapa(8, EstadoEtapa.NaoAplicavel, justificativa: JustificativaValidacaoIaNaoExecutada);
     }
 
     private async Task AnalisarComIaAsync(EstadoProcessamento estado, AndamentoFluxo andamento, CancellationToken cancellationToken)
