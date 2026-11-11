@@ -43,6 +43,7 @@ próprio com execução completa dos testes de contrato A2A.
 | `Swashbuckle.AspNetCore.SwaggerUI` | 10.3.1 | Estável | Interface Swagger UI (somente a interface) | Api.Agente |
 | `OpenTelemetry.Extensions.Hosting` | 1.20.1 | Estável | Traces, métricas e logs | Api.Agente |
 | `xunit.v3` | 4.0.2 | Estável | Testes | Tests |
+| `JsonSchema.Net` | 9.6.0 | Estável | Validação Draft 2020-12 dos schemas SOFIA nos testes de contrato | Tests |
 | `Microsoft.AspNetCore.Mvc.Testing` | 10.0.14 | Estável | `WebApplicationFactory` | Tests |
 | `Testcontainers.MongoDb` / `Testcontainers.PostgreSql` | 4.16.0 | Estável | Bancos reais e descartáveis (P17) | Tests |
 
@@ -275,13 +276,14 @@ seria escolhido por ser o mais recente.
   (FR-052b).
 - **Estados (D-04 revisado)**: a análise roda dentro da requisição; a Task volta no estado final.
   Os estados intermediários emitidos pelo `TaskUpdater` não são observáveis pela SOFIA na v1.
-- **Validação inicial (spike)**: antes do manipulador, um teste confirma, na versão fixada, os
-  nomes do card v0.3 produzidos pelo conversor, a Task com Artifact devolvida por `message/send`
-  v0.3 com e sem `configuration`, e o erro do `FailAsync` na resposta. O spike também verifica se o
-  `AddA2AServer` do MAF aceita um `IAgentHandler` próprio registrado com a chave do agente e se o
-  `IA2ARequestHandler` resultante pode ser entregue ao `MapA2AWithV03Compat`. Se sim, esse caminho
-  é adotado e o desvio D-07 (constitution 3.1, hospedagem A2A pelo MAF) é encerrado; se não, segue
-  o `A2AServer` direto com o D-07 aprovado.
+- **Validação inicial (spike, T138, 2026-11-10)**: `CompatibilidadeA2AV03Tests` confirma na
+  1.0.0-preview3 que `MapAgentCardGetWithV03Compat` (`blendedCard: false`) devolve `protocolVersion`
+  0.3.0 e `url`, e que `MapA2AWithV03Compat` devolve Task `completed` com Artifact
+  `analise-sofia-v1`; `FailAsync` devolve `failed` com a mensagem de status. O `AddA2AServer` do MAF
+  1.26.0-preview continua inadequado (resposta Message, não Task+Artifact); mantém-se o `A2AServer`
+  direto e o D-07.
+- **Autenticação no card (FR-052h, ADR-0014)**: o card declara `securitySchemes.sofiaService`
+  Bearer e `security`; a extensão SOFIA informa `autenticacao: "bearer — credencial de serviço da SOFIA"`.
 - **Alternativas**: hosting A2A do MAF (não atende o contrato); implementar o protocolo à mão
   (rejeitado pelo FR-043); fixar o SDK A2A 0.3.x (abandona a linha 1.0 e a convivência com A2A 1.0).
 
@@ -629,7 +631,8 @@ seria escolhido por ser o mais recente.
 - **Repetição (FR-043h)**: a SOFIA reutiliza o `idSolicitacao` nas retentativas, e o
   `InMemoryTaskStore` não sobrevive a reinícios nem identifica a solicitação de negócio. A
   idempotência fica no MongoDB: `chaveIdempotenciaSofia` com índice único parcial
-  (`partialFilterExpression` com `$exists: true`), removida quando a execução falha. Execução
+  (`partialFilterExpression` com `$exists: true` e `$type: "string"`, para não indexar `null` no
+  canal REST), removida quando a execução falha. Execução
   terminada com sucesso é devolvida pelo mesmo mapeador, sem custo de IA; em andamento → ERR-026.
   Alternativas: reprocessar sempre (custo duplicado e contexto do usuário contado duas vezes) ou
   recusar toda repetição (a SOFIA perderia o resultado após um tempo limite de rede).

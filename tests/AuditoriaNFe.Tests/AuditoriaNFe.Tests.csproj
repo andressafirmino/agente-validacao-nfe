@@ -19,6 +19,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Fixtures\Sofia\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="A2A.V0_3" />
+    <PackageReference Include="A2A.V0_3Compat" />
+    <PackageReference Include="JsonSchema.Net" />
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Testcontainers.MongoDb" />

@@ -1,4 +1,6 @@
+using Api.Agente.Seguranca;
 using AuditoriaNFe.Application.Abstracoes;
+using AuditoriaNFe.Tests.Contrato;
 using AuditoriaNFe.Domain.Sessoes;
 using AuditoriaNFe.Infrastructure.Ia;
 using AuditoriaNFe.Tests.Duplos;
@@ -72,6 +74,10 @@ public sealed class AmbienteIntegracao : IAsyncLifetime
             builder.UseSetting("Persistencia:AplicarMigracoes", "true");
             builder.UseSetting("Aprovacao:Diretorio", DiretorioAprovacoes);
             builder.UseSetting("LimiteTaxa:PermissoesPorJanela", "10000");
+            builder.UseSetting(CredencialServicoSofiaOpcoes.ChaveToken, CredencialServicoSofiaTests.Chave);
+            builder.UseSetting("A2A:UrlPublica", "http://localhost");
+            builder.UseSetting("A2A:IdAgente", "agente-auditoria-nfe");
+            builder.UseSetting("A2A:ChamadorPadrao", "sofia");
             foreach (var (chave, valor) in configuracoes ?? new Dictionary<string, string?>())
             {
                 builder.UseSetting(chave, valor);

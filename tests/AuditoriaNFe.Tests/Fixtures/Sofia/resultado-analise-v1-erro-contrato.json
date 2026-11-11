@@ -1,0 +1,11 @@
+{
+  "versaoContrato": "1.0",
+  "idExecucao": "8b2f0ad6-c2e4-4a68-8bdd-20f785bc798e",
+  "idSolicitacao": "e1b3a4cb-d729-4bd4-b796-b9c94be07b46",
+  "agente": { "idAgente": "agente-auditoria-nfe", "nome": "AgenteAuditoriaNFe" },
+  "status": "erro",
+  "analise": "A solicitação não foi analisada: a versão do contrato informada não é suportada.",
+  "achados": [],
+  "observacoes": [],
+  "erro": { "codigo": "ERR-007", "mensagem": "Versão do contrato não suportada: esperado \"1.0\"." }
+}

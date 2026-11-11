@@ -15,6 +15,9 @@ using Microsoft.Extensions.Options;
 
 namespace AuditoriaNFe.Application.CasosDeUso;
 
+/// <summary>Ids da SOFIA e chave de idempotência (FR-043h), só no canal A2A.</summary>
+public sealed record DadosSofia(Guid IdExecucao, Guid IdSolicitacao, string ChaveIdempotencia);
+
 /// <summary>Solicitação recebida por um dos canais, já com a identificação lida.</summary>
 public sealed record SolicitacaoAuditoria(
     IdentificacaoSolicitante Identificacao,
@@ -22,7 +25,8 @@ public sealed record SolicitacaoAuditoria(
     string? Pergunta,
     IReadOnlyList<ArquivoSolicitacao> Arquivos,
     Guid? SessaoId = null,
-    string? CorrelacaoId = null);
+    string? CorrelacaoId = null,
+    DadosSofia? Sofia = null);
 
 /// <param name="Rejeitada">O status HTTP vem do código do erro do envelope.</param>
 public sealed record ResultadoSolicitacao(EnvelopeV1 Envelope, bool Rejeitada);
@@ -49,6 +53,53 @@ public sealed partial class ExecutarSolicitacaoAuditoria(
     IOptions<ExecucaoOpcoes> execucaoOpcoes,
     ILogger<ExecutarSolicitacaoAuditoria> logger)
 {
+    /// <summary>Canal A2A: idempotência (FR-043h) antes de criar execução.</summary>
+    public async Task<ResultadoSolicitacao> ExecutarSofiaAsync(SolicitacaoAuditoria solicitacao, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(solicitacao);
+        if (solicitacao.Sofia is not { } sofia)
+        {
+            throw new ArgumentException("Solicitação A2A exige dados da SOFIA.", nameof(solicitacao));
+        }
+
+        var existente = await execucoes.ObterPorChaveIdempotenciaSofiaAsync(sofia.ChaveIdempotencia, cancellationToken);
+        if (existente is not null)
+        {
+            if (existente.IdExecucaoSofia != sofia.IdExecucao || existente.UsuarioId != solicitacao.Identificacao.UsuarioId)
+            {
+                var execucaoId = ids.Novo();
+                return Rejeitar(solicitacao, execucaoId, CodigoErro.MensagemForaDoContrato);
+            }
+
+            switch (existente.Estado)
+            {
+                case EstadoExecucao.Recebida or EstadoExecucao.EmProcessamento:
+                    return ResultadoErroSofia(solicitacao, sofia, CodigoErro.SolicitacaoEmAndamento);
+                case EstadoExecucao.Concluida or EstadoExecucao.Rejeitada:
+                    return new ResultadoSolicitacao(MontadorEnvelope.De(existente), false);
+                case EstadoExecucao.Falhou:
+                    break;
+            }
+        }
+
+        try
+        {
+            return await ExecutarAsync(solicitacao, cancellationToken);
+        }
+        catch (ExecucaoIdempotenciaConcorrenteException)
+        {
+            existente = await execucoes.ObterPorChaveIdempotenciaSofiaAsync(sofia.ChaveIdempotencia, cancellationToken);
+            if (existente is null)
+            {
+                throw;
+            }
+
+            return existente.Estado is EstadoExecucao.Recebida or EstadoExecucao.EmProcessamento
+                ? ResultadoErroSofia(solicitacao, sofia, CodigoErro.SolicitacaoEmAndamento)
+                : new ResultadoSolicitacao(MontadorEnvelope.De(existente), false);
+        }
+    }
+
     public async Task<ResultadoSolicitacao> ExecutarAsync(SolicitacaoAuditoria solicitacao, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(solicitacao);
@@ -118,6 +169,15 @@ public sealed partial class ExecutarSolicitacaoAuditoria(
                 ["catalogoExtracao"] = catalogo.VersaoCatalogoExtracao,
                 ["instrucoes"] = InstrucoesAgente.Versao,
             });
+        if (solicitacao.Sofia is { } sofia)
+        {
+            execucao.ConfigurarSofia(
+                sofia.IdExecucao,
+                sofia.IdSolicitacao,
+                solicitacao.Identificacao.UsuarioNome,
+                sofia.ChaveIdempotencia);
+        }
+
         execucao.AssociarSessao(sessao.Id);
         execucao.IniciarProcessamento();
         execucao.RegistrarEtapa(1, EstadoEtapa.Executada, recebidaEm, relogio.Agora);
@@ -137,6 +197,11 @@ public sealed partial class ExecutarSolicitacaoAuditoria(
             try
             {
                 await fluxo.ExecutarAsync(andamento, sessao, solicitacao.Arquivos, limite.Token);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested && !tempoMaximo.IsCancellationRequested)
+            {
+                var agora = relogio.Agora;
+                execucao.Falhar(new ErroExecucao(CodigoErro.RequisicaoCancelada, MensagensErro.Para(CodigoErro.RequisicaoCancelada)), agora);
             }
             catch (OperationCanceledException) when (tempoMaximo.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
             {
@@ -211,6 +276,19 @@ public sealed partial class ExecutarSolicitacaoAuditoria(
                 sessaoId,
                 solicitacao.CorrelacaoId),
             true);
+
+    private ResultadoSolicitacao ResultadoErroSofia(SolicitacaoAuditoria solicitacao, DadosSofia sofia, string codigo)
+    {
+        var execucaoId = ids.Novo();
+        var envelope = MontadorEnvelope.Rejeitada(
+            execucaoId,
+            solicitacao.Identificacao,
+            solicitacao.Canal,
+            relogio.Agora,
+            codigo,
+            correlacaoId: sofia.IdSolicitacao.ToString("D"));
+        return new ResultadoSolicitacao(envelope, true);
+    }
 
     private static TipoExecucao Tipo(SolicitacaoAuditoria solicitacao) =>
         (solicitacao.Arquivos.Count > 0, !string.IsNullOrWhiteSpace(solicitacao.Pergunta)) switch

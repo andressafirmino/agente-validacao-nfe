@@ -42,6 +42,9 @@ public sealed partial class ArquivoRecebido
     /// <summary>Saneado, sem caminho.</summary>
     public string Nome { get; private set; }
 
+    /// <summary>Id informado pela SOFIA (<c>documentos[].idDocumento</c>), até 128 caracteres.</summary>
+    public string? IdDocumento { get; private set; }
+
     public long TamanhoBytes { get; private set; }
 
     /// <summary>SHA-256 dos bytes recebidos (FR-009).</summary>
@@ -65,6 +68,16 @@ public sealed partial class ArquivoRecebido
 
     /// <summary>Documento gravado na base da sessão a partir deste arquivo.</summary>
     public Guid? DocumentoId { get; private set; }
+
+    public void DefinirIdDocumento(string? idDocumento)
+    {
+        if (idDocumento is { Length: > 128 } or { Length: 0 })
+        {
+            throw new ArgumentException("idDocumento deve ter de 1 a 128 caracteres.", nameof(idDocumento));
+        }
+
+        IdDocumento = idDocumento;
+    }
 
     public void RegistrarIdentificacao(IdentificacaoDocumento identificacao)
     {

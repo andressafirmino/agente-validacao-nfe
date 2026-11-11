@@ -18,7 +18,7 @@ using Microsoft.Extensions.Options;
 namespace AuditoriaNFe.Application.Fluxo;
 
 /// <summary>Arquivo recebido em <c>arquivos[]</c>; o conteúdo só existe durante a execução (FR-037a).</summary>
-public sealed record ArquivoSolicitacao(string Nome, byte[] Conteudo);
+public sealed record ArquivoSolicitacao(string Nome, byte[] Conteudo, string? IdDocumento = null);
 
 /// <summary>Etapa em andamento, para registrar a falha quando o tempo máximo se esgota (ERR-016).</summary>
 public sealed class AndamentoFluxo(Execucao execucao)
@@ -115,6 +115,7 @@ public sealed partial class FluxoNoveEtapas(
         foreach (var arquivo in arquivos)
         {
             var registro = new ArquivoRecebido(arquivo.Nome, arquivo.Conteudo.LongLength, Convert.ToHexStringLower(SHA256.HashData(arquivo.Conteudo)));
+            registro.DefinirIdDocumento(arquivo.IdDocumento);
             estado.Execucao.RegistrarArquivo(registro);
             var documento = xml.Ler(arquivo.Conteudo);
             if (documento is null)

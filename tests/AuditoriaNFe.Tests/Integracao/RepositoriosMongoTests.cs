@@ -32,7 +32,7 @@ public sealed class RepositoriosMongoTests(ContainerMongo mongo) : IClassFixture
     {
         var contexto = Contexto();
         var repositorio = new SessaoRepositorio(contexto);
-        var sessao = Sessao.Criar(Guid.CreateVersion7(), Dono, TimeSpan.FromHours(24), Agora, contextoA2A: "ctx-1");
+        var sessao = Sessao.Criar(Guid.CreateVersion7(), Dono, TimeSpan.FromHours(24), Agora, usuarioNome: "ctx-1");
         sessao.RegistrarDocumento(Guid.CreateVersion7(), ChaveAcesso, new string('a', 64), Agora);
         sessao.RegistrarExecucao(Guid.CreateVersion7(), Agora);
 
@@ -43,7 +43,7 @@ public sealed class RepositoriosMongoTests(ContainerMongo mongo) : IClassFixture
         Assert.Equal(sessao.UltimaAtividadeEm, lida.UltimaAtividadeEm);
         Assert.Equal(TimeSpan.FromHours(24), lida.ExpiraApos);
         Assert.Equal(EstadoSessao.Ativa, lida.Estado);
-        Assert.Equal("ctx-1", lida.ContextoA2A);
+        Assert.Equal("ctx-1", lida.UsuarioNome);
         Assert.Equal(sessao.Documentos, lida.Documentos);
         Assert.Equal(sessao.Execucoes, lida.Execucoes);
         Assert.Equal(new string('a', 64), lida.HashesPorChave[ChaveAcesso]);

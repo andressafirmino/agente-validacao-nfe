@@ -16,12 +16,14 @@ public sealed partial class IdentificacaoSolicitante
     public const int TamanhoMaximo = 128;
 
     // Caractere fora do formato aceito: a concatenação não é ambígua.
-    private const char Separador = '|';
+    internal const char Separador = '|';
+    public const string PrefixoUsuarioPorNome = "nome-sha256:";
 
-    private IdentificacaoSolicitante(string usuarioId, string chamadorId)
+    private IdentificacaoSolicitante(string usuarioId, string chamadorId, string? usuarioNome = null)
     {
         UsuarioId = usuarioId;
         ChamadorId = chamadorId;
+        UsuarioNome = usuarioNome;
         ChaveIsolamento = CalcularChave(chamadorId, usuarioId);
     }
 
@@ -30,7 +32,10 @@ public sealed partial class IdentificacaoSolicitante
 
     public string ChamadorId { get; }
 
-    public bool UsuarioIdentificado => UsuarioId != UsuarioAnonimo;
+      public bool UsuarioIdentificado => UsuarioId != UsuarioAnonimo;
+
+    /// <summary>Nome recebido no A2A, sem espaços nas pontas; nunca em log (data-model §0).</summary>
+    public string? UsuarioNome { get; }
 
     /// <summary>SHA-256 hexadecimal minúsculo de <c>chamadorId</c> + separador + <c>usuarioId</c>.</summary>
     public string ChaveIsolamento { get; }
@@ -59,6 +64,36 @@ public sealed partial class IdentificacaoSolicitante
             ? identificacao
             : throw new ArgumentException("Identificação do usuário ou do chamador em formato inválido.");
 
+    /// <summary>Identificação A2A a partir do nome do usuário (FR-052d, data-model §0).</summary>
+    public static bool TentarCriarPorNome(string? nome, string chamadorPadrao, [NotNullWhen(true)] out IdentificacaoSolicitante? identificacao)
+    {
+        var usuarioNome = nome?.Trim();
+        if (string.IsNullOrEmpty(usuarioNome) || usuarioNome.Length > 200)
+        {
+            identificacao = null;
+            return false;
+        }
+
+        if (!FormatoValido(chamadorPadrao))
+        {
+            identificacao = null;
+            return false;
+        }
+
+        var normalizado = NormalizarNome(usuarioNome);
+        var hash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(normalizado)));
+        var usuarioId = $"{PrefixoUsuarioPorNome}{hash}";
+        identificacao = new IdentificacaoSolicitante(usuarioId, chamadorPadrao, usuarioNome);
+        return true;
+    }
+
+    /// <summary>Unicode NFC, espaços nas pontas, internos reduzidos a um, minúsculas invariantes.</summary>
+    public static string NormalizarNome(string nome)
+    {
+        var nfc = nome.Normalize(NormalizationForm.FormC).Trim();
+        return EspacosInternos().Replace(nfc, " ").ToLowerInvariant();
+    }
+
     public static bool FormatoValido(string valor) => Formato().IsMatch(valor);
 
     private static string CalcularChave(string chamadorId, string usuarioId)
@@ -69,4 +104,7 @@ public sealed partial class IdentificacaoSolicitante
 
     [GeneratedRegex(@"\A[A-Za-z0-9._:@-]{1,128}\z", RegexOptions.CultureInvariant)]
     private static partial Regex Formato();
+
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex EspacosInternos();
 }

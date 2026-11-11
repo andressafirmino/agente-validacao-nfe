@@ -28,8 +28,8 @@ public sealed partial class Sessao
 
     public string ChamadorId { get; private set; }
 
-    /// <summary><c>contextId</c> A2A associado, quando o canal for A2A.</summary>
-    public string? ContextoA2A { get; private set; }
+    /// <summary>Nome do usuário nas sessões criadas pelo A2A (FR-052d); nunca em log.</summary>
+    public string? UsuarioNome { get; private set; }
 
     /// <summary>Estado gravado. O estado efetivo depende do instante: use <see cref="EstadoEm"/>.</summary>
     public EstadoSessao Estado { get; private set; }
@@ -55,7 +55,7 @@ public sealed partial class Sessao
         IdentificacaoSolicitante identificacao,
         TimeSpan expiraApos,
         DateTimeOffset agora,
-        string? contextoA2A = null)
+        string? usuarioNome = null)
     {
         ArgumentNullException.ThrowIfNull(identificacao);
         if (id == Guid.Empty)
@@ -71,7 +71,7 @@ public sealed partial class Sessao
             ChaveIsolamento = identificacao.ChaveIsolamento,
             UsuarioId = identificacao.UsuarioId,
             ChamadorId = identificacao.ChamadorId,
-            ContextoA2A = contextoA2A,
+            UsuarioNome = usuarioNome ?? identificacao.UsuarioNome,
             Estado = EstadoSessao.Ativa,
             CriadaEm = agora,
             UltimaAtividadeEm = agora,
