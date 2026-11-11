@@ -101,6 +101,13 @@ public static class InfraestruturaServiceCollectionExtensions
             provedor.GetRequiredService<IOptions<McpOpcoes>>().Value.Habilitado
                 ? new ConsultaManuaisMcp(provedor.GetRequiredService<IOptions<McpOpcoes>>(), provedor.GetRequiredService<ILoggerFactory>())
                 : new ConsultaManuaisDesabilitada());
+        services.TryAddSingleton<IFerramentasExternas>(provedor =>
+        {
+            var mcp = provedor.GetRequiredService<IOptions<McpOpcoes>>().Value;
+            return mcp is { Habilitado: true, FerramentasExternasHabilitado: true }
+                ? new FerramentasExternasMcp(provedor.GetRequiredService<IOptions<McpOpcoes>>(), provedor.GetRequiredService<ILoggerFactory>())
+                : new FerramentasExternasDesabilitada();
+        });
         return services;
     }
 }

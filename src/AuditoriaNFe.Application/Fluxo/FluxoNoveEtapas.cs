@@ -46,6 +46,7 @@ public sealed partial class FluxoNoveEtapas(
     IProcessadorXml xml,
     ICatalogoRegras catalogo,
     IConsultaManuais manuais,
+    IFerramentasExternas ferramentasExternas,
     IDocumentoRepositorio documentos,
     IExecucaoRepositorio execucoes,
     IContextoUsuarioRepositorio contextosUsuario,
@@ -59,7 +60,8 @@ public sealed partial class FluxoNoveEtapas(
     ILogger<FluxoNoveEtapas> logger)
 {
     public const string JustificativaMcpDesabilitado = "não aplicável — integração não habilitada";
-    public const string JustificativaSemFerramentas = "não aplicável — sem ferramentas externas na v1";
+    public const string JustificativaSemFerramentas = "não aplicável — integração de ferramentas externas não habilitada";
+    public const string JustificativaFerramentasExternasConsultadas = "capacidades externas consultadas — nenhuma ação delegada na v1";
     public const string JustificativaSemArquivos = "não aplicável — nenhum arquivo enviado";
     public const string JustificativaRespostaForaEscopo = "resposta determinística — pergunta fora do escopo";
     public const string JustificativaIaSemDocumentos = "não aplicável — sem documentos analisados para análise por IA";
@@ -95,7 +97,7 @@ public sealed partial class FluxoNoveEtapas(
         }
 
         await EtapaAsync(andamento, 5, cancellationToken, () => ConsultarManuaisAsync(estado, cancellationToken));
-        await Etapa(andamento, 6, cancellationToken, () => new ResultadoEtapa(EstadoEtapa.NaoAplicavel, JustificativaSemFerramentas));
+        await EtapaAsync(andamento, 6, cancellationToken, () => ConsultarFerramentasExternasAsync(cancellationToken));
 
         if (AvaliadorEscopoPergunta.DeveResponderForaDoEscopoDeterministico(execucao.Tipo, execucao.Pergunta))
         {
@@ -375,6 +377,27 @@ public sealed partial class FluxoNoveEtapas(
         }
 
         return new ResultadoEtapa(EstadoEtapa.Executada);
+    }
+
+    private async Task<ResultadoEtapa> ConsultarFerramentasExternasAsync(CancellationToken cancellationToken)
+    {
+        if (!ferramentasExternas.Habilitada)
+        {
+            return new ResultadoEtapa(EstadoEtapa.NaoAplicavel, JustificativaSemFerramentas);
+        }
+
+        try
+        {
+            _ = await ferramentasExternas.ConsultarCapacidadesAsync(cancellationToken).ConfigureAwait(false);
+            return new ResultadoEtapa(EstadoEtapa.Executada, JustificativaFerramentasExternasConsultadas);
+        }
+        catch (Exception erro) when (erro is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
+        {
+            LogFalhaFerramentasExternas(logger, erro.GetType().Name);
+            return new ResultadoEtapa(
+                EstadoEtapa.NaoAplicavel,
+                "não aplicável — consulta de ferramentas externas indisponível");
+        }
     }
 
     private static bool DevePularAnaliseIa(EstadoProcessamento estado) =>
@@ -678,6 +701,10 @@ public sealed partial class FluxoNoveEtapas(
     [LoggerMessage(EventId = 1521, Level = LogLevel.Warning,
         Message = "Consulta a manuais indisponível na execução {ExecucaoId} ({TipoErro}).")]
     private static partial void LogFalhaManuais(ILogger logger, Guid execucaoId, string tipoErro);
+
+    [LoggerMessage(EventId = 1522, Level = LogLevel.Warning,
+        Message = "Consulta de ferramentas externas indisponível ({TipoErro}).")]
+    private static partial void LogFalhaFerramentasExternas(ILogger logger, string tipoErro);
 
     private sealed record ResultadoEtapa(EstadoEtapa Estado, string? Justificativa = null);
 

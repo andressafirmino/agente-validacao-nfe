@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json.Nodes;
+using Api.Agente;
 using Api.Agente.A2A;
 using Api.Agente.Documentacao;
 using Api.Agente.Endpoints;
@@ -179,7 +180,7 @@ public sealed class ModoHomologacaoTests
     /// o dublê de IA do ambiente. As migrações vêm do host padrão em <c>Development</c>, porque a
     /// homologação não as aplica na inicialização.
     /// </summary>
-    private WebApplicationFactory<Program> CriarFabrica(IReadOnlyDictionary<string, string?>? ajustes = null)
+    private WebApplicationFactory<ApiAgenteMarcador> CriarFabrica(IReadOnlyDictionary<string, string?>? ajustes = null)
     {
         _ = _ambiente.Fabrica.Services;
         var configuracoes = new Dictionary<string, string?>
@@ -203,7 +204,7 @@ public sealed class ModoHomologacaoTests
         return _ambiente.CriarFabrica(ambiente: Environments.Production, configuracoes: configuracoes);
     }
 
-    private static string[] RotasApiV1Mapeadas(WebApplicationFactory<Program> fabrica) =>
+    private static string[] RotasApiV1Mapeadas(WebApplicationFactory<ApiAgenteMarcador> fabrica) =>
         fabrica.Services.GetRequiredService<EndpointDataSource>().Endpoints
             .OfType<RouteEndpoint>()
             .Where(e => e.RoutePattern.RawText?.StartsWith(RotasApiV1.Prefixo, StringComparison.Ordinal) == true)

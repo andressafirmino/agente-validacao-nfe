@@ -1,0 +1,31 @@
+{
+  "versao": "1",
+  "trechos": [
+    {
+      "chunkId": "nt-sintetico-w04-10-001",
+      "documento": "NT SINTÉTICA — validação de totalizador (somente ambiente de testes)",
+      "versao": "1.0",
+      "vigencia": { "inicio": "2020-01-01", "fim": null },
+      "localizacao": { "secao": "Regra W04-10", "pagina": 1 },
+      "trecho": "O valor de ICMS informado em ICMSTot/vICMS deve coincidir com a soma dos valores de ICMS dos itens tributados.",
+      "regrasRelacionadas": ["W04-10"],
+      "tipoDocumento": "NF-e",
+      "modelo": "55",
+      "versaoLayout": "4.00",
+      "palavrasChave": ["ICMSTot", "vICMS", "totalizador", "W04-10"]
+    },
+    {
+      "chunkId": "nt-sintetico-w16-10-001",
+      "documento": "NT SINTÉTICA — total da NF-e (somente ambiente de testes)",
+      "versao": "1.0",
+      "vigencia": { "inicio": "2020-01-01", "fim": null },
+      "localizacao": { "secao": "Regra W16-10", "pagina": 2 },
+      "trecho": "O campo ICMSTot/vNF deve refletir o total da nota conforme composição dos totalizadores na NF-e modelo 55 layout 4.00.",
+      "regrasRelacionadas": ["W16-10"],
+      "tipoDocumento": "NF-e",
+      "modelo": "55",
+      "versaoLayout": "4.00",
+      "palavrasChave": ["vNF", "ICMSTot", "totalizador", "W16-10"]
+    }
+  ]
+}
