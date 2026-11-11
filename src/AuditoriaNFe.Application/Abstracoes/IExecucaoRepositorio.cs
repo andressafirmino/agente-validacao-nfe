@@ -12,5 +12,8 @@ public interface IExecucaoRepositorio
 
     Task InserirAsync(Execucao execucao, CancellationToken cancellationToken);
 
+    /// <summary>Busca a execução ativa ou concluída com a mesma chave de idempotência SOFIA (FR-043h).</summary>
+    Task<Execucao?> ObterPorChaveIdempotenciaSofiaAsync(string chaveIdempotencia, CancellationToken cancellationToken);
+
     Task AtualizarAsync(Execucao execucao, CancellationToken cancellationToken);
 }

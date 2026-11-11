@@ -34,6 +34,8 @@ public static class CodigoErro
     public const string SchemaIndisponivelParaData = "ERR-023";
     public const string LimiteAtingido = "ERR-024";
     public const string ArmazenamentoIndisponivel = "ERR-025";
+    public const string SolicitacaoEmAndamento = "ERR-026";
+    public const string RequisicaoCancelada = "ERR-027";
 
     /// <summary>Códigos sem uso enquanto vigorar o desvio D-05.</summary>
     public static readonly IReadOnlySet<string> Reservados = new HashSet<string>([NaoAutorizado, SemPapelAprovador]);
@@ -45,6 +47,6 @@ public static class CodigoErro
         DocumentoDuplicado, ConteudoDivergente, BaseConhecimentoIndisponivel, ProvedorIaIndisponivel,
         RespostaIaInvalida, TempoMaximoEsgotado, InformacaoIndisponivel, ForaDoEscopo, SemPapelAprovador,
         RecomendacaoJaDecidida, JustificativaObrigatoria, FalhaCheckpoint, SchemaIndisponivelParaData,
-        LimiteAtingido, ArmazenamentoIndisponivel,
+        LimiteAtingido, ArmazenamentoIndisponivel, SolicitacaoEmAndamento, RequisicaoCancelada,
     ];
 }

@@ -1,5 +1,4 @@
 <Project>
-
   <!--
     Versões exatas de research §1, consultadas no NuGet. Pacotes em pré-lançamento só mudam em PR
     próprio com a execução completa dos testes de contrato A2A.
@@ -7,19 +6,15 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
-
   <ItemGroup Label="Microsoft Agent Framework">
+    <PackageVersion Include="A2A" Version="1.0.0-preview3" />
+    <PackageVersion Include="A2A.AspNetCore" Version="1.0.0-preview3" />
+    <PackageVersion Include="A2A.V0_3" Version="1.0.0-preview3" />
+    <PackageVersion Include="A2A.V0_3Compat" Version="1.0.0-preview3" />
     <PackageVersion Include="Microsoft.Agents.AI" Version="1.26.0" />
     <PackageVersion Include="Microsoft.Agents.AI.OpenAI" Version="1.26.0" />
     <PackageVersion Include="Microsoft.Agents.AI.Workflows" Version="1.26.0" />
   </ItemGroup>
-
-  <ItemGroup Label="Hosting e cliente A2A (pré-lançamento)">
-    <PackageVersion Include="Microsoft.Agents.AI.Hosting.A2A.AspNetCore" Version="1.26.0-preview.261023.1" />
-    <PackageVersion Include="Microsoft.Agents.AI.Hosting.AspNetCore" Version="1.26.0-preview.261023.1" />
-    <PackageVersion Include="Microsoft.Agents.AI.A2A" Version="1.26.0-preview.261023.1" />
-  </ItemGroup>
-
   <ItemGroup Label="IA, MCP e persistência">
     <PackageVersion Include="Microsoft.Extensions.AI" Version="10.11.0" />
     <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="10.11.0" />
@@ -29,13 +24,11 @@
     <!-- Mesma versão do EF Core exigida pelo Npgsql.EntityFrameworkCore.PostgreSQL 10.0.3. -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.4" />
   </ItemGroup>
-
   <ItemGroup Label="Opções e configuração">
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.14" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.14" />
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="10.0.14" />
   </ItemGroup>
-
   <ItemGroup Label="Host">
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.14" />
     <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.3.1" />
@@ -43,12 +36,11 @@
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.20.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.20.1" />
   </ItemGroup>
-
   <ItemGroup Label="Testes">
     <PackageVersion Include="xunit.v3" Version="4.0.2" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.14" />
     <PackageVersion Include="Testcontainers.MongoDb" Version="4.16.0" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.16.0" />
+    <PackageVersion Include="JsonSchema.Net" Version="9.6.0" />
   </ItemGroup>
-
 </Project>

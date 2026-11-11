@@ -34,10 +34,15 @@ if (modo == ModoHospedagem.Homologacao)
     ValidadorModoHomologacao.Verificar(builder.Configuration);
     builder.Services.AdicionarHomologacao(builder.Configuration);
 }
+else
+{
+    builder.Services.AdicionarAgentCard(builder.Configuration);
+}
 
 builder.Services
     .AdicionarOpcoesAuditoria(builder.Configuration)
     .AdicionarComum()
+    .AdicionarServidorA2A()
     .AdicionarPersistenciaMongo(builder.Configuration)
     .AdicionarPersistenciaConsumo(builder.Configuration)
     .AdicionarIa(builder.Environment.EnvironmentName)
@@ -69,8 +74,9 @@ await MigracoesConsumo.AplicarSeHabilitadoAsync(app.Services);
 if (modo == ModoHospedagem.Homologacao)
 {
     app.UsarCabecalhosDoProxy();
-    app.UsarCredencialServicoSofia();
 }
+
+app.UsarCredencialServicoSofia();
 
 app.UseExceptionHandler();
 app.UsarDocumentacaoApi(modo);
@@ -81,10 +87,7 @@ app.UseRateLimiter();
 app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
 app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = registro => registro.Tags.Contains(Prontidao) });
 app.MapearApiV1().MapearExecucoes().MapearSessoes().MapearContextoUsuario();
-if (modo == ModoHospedagem.Homologacao)
-{
-    app.MapearAgentCard();
-}
+app.MapearA2A();
 
 await app.RunAsync();
 

@@ -43,6 +43,7 @@ próprio com execução completa dos testes de contrato A2A.
 | `Swashbuckle.AspNetCore.SwaggerUI` | 10.3.1 | Estável | Interface Swagger UI (somente a interface) | Api.Agente |
 | `OpenTelemetry.Extensions.Hosting` | 1.20.1 | Estável | Traces, métricas e logs | Api.Agente |
 | `xunit.v3` | 4.0.2 | Estável | Testes | Tests |
+| `JsonSchema.Net` | 9.6.0 | Estável | Validação Draft 2020-12 dos schemas SOFIA nos testes de contrato | Tests |
 | `Microsoft.AspNetCore.Mvc.Testing` | 10.0.14 | Estável | `WebApplicationFactory` | Tests |
 | `Testcontainers.MongoDb` / `Testcontainers.PostgreSql` | 4.16.0 | Estável | Bancos reais e descartáveis (P17) | Tests |
 
@@ -275,13 +276,14 @@ seria escolhido por ser o mais recente.
   (FR-052b).
 - **Estados (D-04 revisado)**: a análise roda dentro da requisição; a Task volta no estado final.
   Os estados intermediários emitidos pelo `TaskUpdater` não são observáveis pela SOFIA na v1.
-- **Validação inicial (spike)**: antes do manipulador, um teste confirma, na versão fixada, os
-  nomes do card v0.3 produzidos pelo conversor, a Task com Artifact devolvida por `message/send`
-  v0.3 com e sem `configuration`, e o erro do `FailAsync` na resposta. O spike também verifica se o
-  `AddA2AServer` do MAF aceita um `IAgentHandler` próprio registrado com a chave do agente e se o
-  `IA2ARequestHandler` resultante pode ser entregue ao `MapA2AWithV03Compat`. Se sim, esse caminho
-  é adotado e o desvio D-07 (constitution 3.1, hospedagem A2A pelo MAF) é encerrado; se não, segue
-  o `A2AServer` direto com o D-07 aprovado.
+- **Validação inicial (spike, T138, 2026-11-10)**: `CompatibilidadeA2AV03Tests` confirma na
+  1.0.0-preview3 que `MapAgentCardGetWithV03Compat` (`blendedCard: false`) devolve `protocolVersion`
+  0.3.0 e `url`, e que `MapA2AWithV03Compat` devolve Task `completed` com Artifact
+  `analise-sofia-v1`; `FailAsync` devolve `failed` com a mensagem de status. O `AddA2AServer` do MAF
+  1.26.0-preview continua inadequado (resposta Message, não Task+Artifact); mantém-se o `A2AServer`
+  direto e o D-07.
+- **Autenticação no card (FR-052h, ADR-0014)**: o card declara `securitySchemes.sofiaService`
+  Bearer e `security`; a extensão SOFIA informa `autenticacao: "bearer — credencial de serviço da SOFIA"`.
 - **Alternativas**: hosting A2A do MAF (não atende o contrato); implementar o protocolo à mão
   (rejeitado pelo FR-043); fixar o SDK A2A 0.3.x (abandona a linha 1.0 e a convivência com A2A 1.0).
 
@@ -629,7 +631,8 @@ seria escolhido por ser o mais recente.
 - **Repetição (FR-043h)**: a SOFIA reutiliza o `idSolicitacao` nas retentativas, e o
   `InMemoryTaskStore` não sobrevive a reinícios nem identifica a solicitação de negócio. A
   idempotência fica no MongoDB: `chaveIdempotenciaSofia` com índice único parcial
-  (`partialFilterExpression` com `$exists: true`), removida quando a execução falha. Execução
+  (`partialFilterExpression` com `$exists: true` e `$type: "string"`, para não indexar `null` no
+  canal REST), removida quando a execução falha. Execução
   terminada com sucesso é devolvida pelo mesmo mapeador, sem custo de IA; em andamento → ERR-026.
   Alternativas: reprocessar sempre (custo duplicado e contexto do usuário contado duas vezes) ou
   recusar toda repetição (a SOFIA perderia o resultado após um tempo limite de rede).
@@ -799,6 +802,22 @@ testes de arquitetura, health checks, `SemSegredosTests` e a ordem de tarefas do
     usuário não root, logs sem senhas nem chave; sem a variável, modo `SomenteAgentCard`; com o
     provedor simulado e os limites padrão, a inicialização é recusada citando o D-09.
 - **Alternativas**: preview protegido pelo login do Vercel; Render Free; esperar a DP-10 (ADR-0013).
+- **Provisionamento manual (T183, 2026-11-10)**: MongoDB Atlas Free na AWS `us-east-1` (cluster
+  `8.0.x`); `02-colecoes.js` executado com sucesso — coleções `contextos_usuario`, `documentos`,
+  `execucoes`, `sessoes`, `sessoes_agente` e índice `ttl_contextos_usuario_expira_em` conferidos.
+  Neon Free Postgres `17` na AWS `us-east-1`; `neon-consumo.sql` e migração idempotente EF
+  `20261105132907_Inicial` com `consumo.chamadas_provedor` criada (vazia após migração). Projeto
+  OpenAI `auditoria-nfe-homolog` com limite de gasto e chave de API do projeto (sem gravar segredos).
+- **Publicação homologação (T184, 2026-11-10)**: URL `https://agente-auditoria-nfe.vercel.app`;
+  deployment de produção `dpl_HhaXGJ8ksWLeZ4h351UQNHjdaaux` (região `iad1`, após correção do Neon). A variável
+  `Hospedagem__Modo=Homologacao` do projeto Vercel prevaleceu sobre o `ENV` padrão
+  `SomenteAgentCard` da imagem. `ConnectionStrings__Consumo` no formato de chaves Npgsql (com host
+  `-pooler`); formato URI `postgresql://` recusado na inicialização (corrigido no painel). TS-075:
+  `/health/live` e `/health/ready` 200; card 401 sem Bearer e 200 com credencial SOFIA; Swagger 200;
+  `POST /api/v1/execucoes` com NF-e sintética concluída (tokens OpenAI registrados em
+  `metadados.consumo`); continuidade na mesma sessão; `GET /api/v1/contexto-usuario` com CNPJs;
+  lote 4.000.001 bytes com 413 e ERR-002; `/a2a/auditoria-nfe` 401/404 até a Fase 8. Card com
+  `implantacao` de homologação pública.
 
 ## 3. Uso documentado das APIs do Microsoft Agent Framework
 

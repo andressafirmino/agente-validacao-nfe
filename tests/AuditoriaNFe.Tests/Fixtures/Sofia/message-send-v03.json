@@ -1,0 +1,18 @@
+{
+  "jsonrpc": "2.0",
+  "id": "rpc-001",
+  "method": "message/send",
+  "params": {
+    "message": {
+      "kind": "message",
+      "role": "user",
+      "messageId": "5f92c2ba-6870-4862-87ba-1ae8669a77f4",
+      "parts": [
+        {
+          "kind": "text",
+          "text": "{\"versaoContrato\":\"1.0\",\"idExecucao\":\"8b2f0ad6-c2e4-4a68-8bdd-20f785bc798e\",\"idSolicitacao\":\"e1b3a4cb-d729-4bd4-b796-b9c94be07b46\",\"usuario\":{\"nome\":\"Maria Oliveira\"},\"pergunta\":\"Verifique divergências fiscais nos documentos.\",\"documentos\":[{\"idDocumento\":\"doc-001\",\"nome\":\"NFe-123.xml\",\"tipo\":\"application/xml\",\"texto\":\"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?><nfeProc versao=\\\"4.00\\\" xmlns=\\\"http://www.portalfiscal.inf.br/nfe\\\">…</nfeProc>\"},{\"idDocumento\":\"doc-002\",\"nome\":\"pedido.txt\",\"tipo\":\"text/plain\",\"texto\":\"Pedido de compra número 123...\"}],\"contexto\":{\"idioma\":\"pt-BR\",\"instrucoes\":\"Analisar conforme a especialidade do agente.\"}}"
+        }
+      ]
+    }
+  }
+}

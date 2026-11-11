@@ -56,6 +56,7 @@ internal static class MapeamentoMongo
             BsonClassMap.TryRegisterClassMap<Execucao>(mapa =>
             {
                 mapa.AutoMap();
+                mapa.MapMember(e => e.ChaveIdempotenciaSofia).SetIgnoreIfNull(true);
                 mapa.MapField("_etapas").SetElementName("etapas");
                 mapa.MapField("_arquivos").SetElementName("arquivos");
                 mapa.MapField("_chamadasFerramentas").SetElementName("chamadasFerramentas");

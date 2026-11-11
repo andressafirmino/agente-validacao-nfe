@@ -1,0 +1,25 @@
+{
+  "jsonrpc": "2.0",
+  "id": "rpc-001",
+  "result": {
+    "kind": "task",
+    "id": "0193f0c3-0000-7000-8000-0000000000c1",
+    "contextId": "0193f0c3-0000-7000-8000-0000000000c2",
+    "status": {
+      "state": "completed",
+      "timestamp": "2026-11-05T14:03:12Z"
+    },
+    "artifacts": [
+      {
+        "artifactId": "0193f0c3-0000-7000-8000-0000000000c3",
+        "name": "analise-sofia-v1",
+        "parts": [
+          {
+            "kind": "text",
+            "text": "{\"versaoContrato\":\"1.0\",\"idExecucao\":\"8b2f0ad6-c2e4-4a68-8bdd-20f785bc798e\",\"idSolicitacao\":\"e1b3a4cb-d729-4bd4-b796-b9c94be07b46\",\"agente\":{\"idAgente\":\"agente-auditoria-nfe\",\"nome\":\"AgenteAuditoriaNFe\"},\"status\":\"parcial\",\"analise\":\"Foram recebidos 2 documentos e analisado 1. Resultado geral: Com inconsistências. O total do ICMS da NF-e doc-001 difere da soma do ICMS dos itens.\",\"achados\":[{\"idAchado\":\"0193f0c2-7000-7000-8000-000000000101\",\"descricao\":\"Inconsistência de negócio: Total do ICMS diferente da soma do ICMS dos itens.\",\"idDocumentos\":[\"doc-001\"],\"evidencias\":[\"Campo NFe/infNFe/total/ICMSTot/vICMS: valor informado 100.00\",\"Valor calculado pela regra W04-10 (versão 1): 90.00\",\"Regra W04-10 do catálogo de regras v1\"],\"severidade\":\"alta\"}],\"observacoes\":[\"doc-001 (NFe-123.xml): NF-e 4.00 validada com o pacote PL_010e_v1.02 (data de referência 2026-09-15, origem dhRecbto).\",\"doc-002 (pedido.txt): não analisado — documento não suportado (ERR-009).\",\"Limitação: consulta a manuais oficiais não habilitada.\",\"Revisão humana recomendada: consulta a manuais oficiais não habilitada.\",\"Identificador interno da execução: 0193f0c2-6a00-7b00-8c00-0000000000aa.\"],\"erro\":null}"
+          }
+        ]
+      }
+    ]
+  }
+}
