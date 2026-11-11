@@ -1,4 +1,11 @@
 using Api.RAG;
+using Api.RAG.Infraestrutura;
 
-var app = ApiRagHosting.CriarAplicacao();
+var builder = WebApplication.CreateBuilder(args);
+ApiRagHosting.ConfigurarServicos(builder);
+var app = builder.Build();
+ApiRagHosting.MapearEndpoints(app);
+await MigracoesRag.AplicarSeHabilitadoAsync(app.Services);
 app.Run();
+
+public partial class Program;

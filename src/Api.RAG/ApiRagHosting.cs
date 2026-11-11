@@ -1,3 +1,5 @@
+using Api.RAG.Configuracao;
+using Api.RAG.Endpoints;
 using Api.RAG.Mcp;
 using Api.RAG.Servicos;
 using ModelContextProtocol.AspNetCore;
@@ -23,6 +25,8 @@ public static class ApiRagHosting
 
     public static void ConfigurarServicos(WebApplicationBuilder builder)
     {
+        builder.Services.AdicionarOpcoesRag(builder.Configuration);
+        builder.Services.AdicionarPersistenciaRag(builder.Configuration);
         builder.Services.AddSingleton<CatalogoTrechos>();
         builder.Services.AddMcpServer()
             .WithHttpTransport(options => options.SessionMode = HttpServerSessionMode.Stateless)
@@ -31,7 +35,7 @@ public static class ApiRagHosting
 
     public static void MapearEndpoints(WebApplication app)
     {
-        app.MapGet("/health/live", () => Results.Ok("Healthy"));
+        SaudeRagEndpoints.Mapear(app);
         app.MapMcp("/mcp");
     }
 }

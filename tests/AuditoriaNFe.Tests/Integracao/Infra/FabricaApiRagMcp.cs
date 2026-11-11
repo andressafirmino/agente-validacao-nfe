@@ -12,9 +12,11 @@ public sealed class ServidorApiRagMcp : IAsyncDisposable
     private readonly int _porta = ObterPortaLivre();
     private WebApplication? _app;
 
-    public string EndpointMcp => $"http://127.0.0.1:{_porta}/mcp";
+    public string BaseUrl => $"http://127.0.0.1:{_porta}";
 
-    public async Task IniciarAsync(CancellationToken cancellationToken = default)
+    public string EndpointMcp => $"{BaseUrl}/mcp";
+
+    public async Task IniciarAsync(string? connectionStringRag = null, CancellationToken cancellationToken = default)
     {
         if (_app is not null)
         {
@@ -22,7 +24,12 @@ public sealed class ServidorApiRagMcp : IAsyncDisposable
         }
 
         var raiz = Path.GetDirectoryName(typeof(ApiRagMarcador).Assembly.Location)!;
-        var url = $"http://127.0.0.1:{_porta}";
+        var url = BaseUrl;
+        if (connectionStringRag is not null)
+        {
+            Environment.SetEnvironmentVariable("ConnectionStrings__Rag", connectionStringRag);
+        }
+
         _app = ApiRagHosting.CriarAplicacao(
             new WebApplicationOptions
             {
