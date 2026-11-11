@@ -1,3 +1,4 @@
+using Api.Agente;
 using Api.Agente.Seguranca;
 using AuditoriaNFe.Application.Abstracoes;
 using AuditoriaNFe.Tests.Contrato;
@@ -31,7 +32,7 @@ public sealed class AmbienteIntegracao : IAsyncLifetime
     public const string ProvedorRoteirizado = "OpenAI";
     public const string IndiceTtlContextos = "ttl_contextos_usuario_expira_em";
 
-    private readonly List<WebApplicationFactory<Program>> _fabricas = [];
+    private readonly List<WebApplicationFactory<ApiAgenteMarcador>> _fabricas = [];
 
     public ContainerMongo Mongo { get; } = new();
     public ContainerPostgres Postgres { get; } = new();
@@ -40,7 +41,7 @@ public sealed class AmbienteIntegracao : IAsyncLifetime
     public string DiretorioAprovacoes { get; } = Path.Combine(Path.GetTempPath(), $"aprovacoes-{Guid.NewGuid():N}");
 
     /// <summary>Host padrão, em <c>Development</c>.</summary>
-    public WebApplicationFactory<Program> Fabrica { get; private set; } = null!;
+    public WebApplicationFactory<ApiAgenteMarcador> Fabrica { get; private set; } = null!;
 
     public async ValueTask InitializeAsync()
     {
@@ -59,13 +60,13 @@ public sealed class AmbienteIntegracao : IAsyncLifetime
     /// com o ambiente. Com <paramref name="provedorReal"/>, usa <c>Ia:Provedor=OpenAI</c> com a chave
     /// e o modelo das variáveis de ambiente, sem o <see cref="ChatClientRoteirizado"/> (avaliação).
     /// </summary>
-    public WebApplicationFactory<Program> CriarFabrica(
+    public WebApplicationFactory<ApiAgenteMarcador> CriarFabrica(
         string ambiente = "Development",
         IReadOnlyDictionary<string, string?>? configuracoes = null,
         Action<IServiceCollection>? servicos = null,
         bool provedorReal = false)
     {
-        var fabrica = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+        var fabrica = new WebApplicationFactory<ApiAgenteMarcador>().WithWebHostBuilder(builder =>
         {
             builder.UseEnvironment(ambiente);
             builder.UseSetting("ConnectionStrings:MongoDb", Mongo.ConnectionString);

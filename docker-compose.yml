@@ -4,6 +4,18 @@ name: auditoria-nfe
 # (modelo em .env.example), nunca deste arquivo.
 
 services:
+  api-rag:
+    build:
+      context: .
+      dockerfile: src/Api.RAG/Dockerfile
+    image: auditoria-nfe-api-rag:local
+    container_name: auditoria-nfe-api-rag
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5320:8080"
+    networks:
+      - auditoria-nfe-net
+
   api-agente:
     build:
       context: .
@@ -22,6 +34,8 @@ services:
       OpenAI__ApiKey: ${OpenAI__ApiKey:-}
       OpenAI__Modelo: ${OpenAI__Modelo:-}
       Mcp__Habilitado: ${Mcp__Habilitado:-false}
+      Mcp__FerramentasExternasHabilitado: ${Mcp__FerramentasExternasHabilitado:-false}
+      Mcp__Endpoint: ${Mcp__Endpoint:-http://api-rag:8080/mcp}
       A2A__UrlPublica: ${A2A__UrlPublica:-http://localhost:5310}
       A2A__IdAgente: ${A2A__IdAgente:-agente-auditoria-nfe}
       A2A__ChamadorPadrao: ${A2A__ChamadorPadrao:-sofia}
@@ -40,6 +54,8 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
+      api-rag:
+        condition: service_started
     networks:
       - auditoria-nfe-net
 
