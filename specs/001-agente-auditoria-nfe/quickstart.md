@@ -159,11 +159,13 @@ livre (TS-057). Com outro `X-Usuario-Id` ou `X-Chamador-Id`, a consulta não enc
 O simulador fala o contrato SOFIA v1.0 sobre A2A v0.3 (`contracts/sofia-a2a.md`): envia uma
 `SolicitacaoAnaliseSofia` com nome fictício, uma pergunta e os XMLs sintéticos de
 `src/Sofia.Simulator/Exemplos` lidos como texto, e lê o `ResultadoAnaliseSofia` do Artifact
-`analise-sofia-v1`. O endereço do agente é a única configuração (SC-005).
+`analise-sofia-v1`. O endereço do agente é a única configuração (SC-005); a credencial de serviço
+vem da variável de ambiente `SOFIA_A2A_TOKEN` (mesmo valor do agente — FR-052h).
 
 ### 8.1 Fluxo básico — TS-035 (obrigatório)
 
 ```powershell
+$env:SOFIA_A2A_TOKEN = '<credencial-da-turma>'   # ou carregue do .env local
 dotnet run --project src/Sofia.Simulator -- --endereco http://localhost:5310 --cenario basico
 ```
 
