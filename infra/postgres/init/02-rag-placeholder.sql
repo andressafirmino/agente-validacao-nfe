@@ -1,0 +1,3 @@
+-- Reservado para a base vetorial da Api.RAG (feature 002 / ingestão de NTs e manuais).
+-- O schema consumo continua em 01-consumo.sql; quando houver ingestão real, criar extensão vector
+-- e tabelas em migração dedicada da Api.RAG.

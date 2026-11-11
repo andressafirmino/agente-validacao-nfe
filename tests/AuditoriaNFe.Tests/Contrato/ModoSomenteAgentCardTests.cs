@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json.Nodes;
+using Api.Agente;
 using Api.Agente.A2A;
 using Api.Agente.Documentacao;
 using Api.Agente.Hospedagem;
@@ -162,10 +163,10 @@ public sealed class ModoSomenteAgentCardTests
         Assert.Contains("D-08", erro.Message, StringComparison.Ordinal);
     }
 
-    private static WebApplicationFactory<Program> CriarFabrica(
+    private static WebApplicationFactory<ApiAgenteMarcador> CriarFabrica(
         string modo = nameof(ModoHospedagem.SomenteAgentCard),
         string urlPublica = UrlPublica) =>
-        new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+        new WebApplicationFactory<ApiAgenteMarcador>().WithWebHostBuilder(builder =>
         {
             builder.UseEnvironment(Environments.Production);
             builder.UseSetting(HospedagemOpcoes.ChaveModo, modo);

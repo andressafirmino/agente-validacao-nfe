@@ -9,6 +9,9 @@ public sealed class McpOpcoes
 
     public bool Habilitado { get; set; }
 
+    /// <summary>Etapa 6: consulta de capacidades externas no mesmo servidor MCP (FR-047a).</summary>
+    public bool FerramentasExternasHabilitado { get; set; }
+
     /// <summary>URL absoluta do servidor MCP; obrigatória quando <see cref="Habilitado"/>.</summary>
     public string? Endpoint { get; set; }
 

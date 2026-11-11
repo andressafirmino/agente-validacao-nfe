@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/Api.Agente/Api.Agente.csproj" />
+    <Project Path="src/Api.RAG/Api.RAG.csproj" />
     <Project Path="src/AuditoriaNFe.Application/AuditoriaNFe.Application.csproj" />
     <Project Path="src/AuditoriaNFe.Domain/AuditoriaNFe.Domain.csproj" />
     <Project Path="src/AuditoriaNFe.Infrastructure/AuditoriaNFe.Infrastructure.csproj" />

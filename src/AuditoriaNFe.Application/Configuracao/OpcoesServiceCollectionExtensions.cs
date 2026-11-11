@@ -26,7 +26,10 @@ public static class OpcoesServiceCollectionExtensions
         Registrar<McpOpcoes>(services, configuration, McpOpcoes.Secao)
             .Validate(
                 o => !o.Habilitado || EhUrlHttp(o.Endpoint),
-                "Mcp:Endpoint deve ser uma URL http ou https absoluta quando Mcp:Habilitado = true.");
+                "Mcp:Endpoint deve ser uma URL http ou https absoluta quando Mcp:Habilitado = true.")
+            .Validate(
+                o => !o.FerramentasExternasHabilitado || o.Habilitado,
+                "Mcp:FerramentasExternasHabilitado exige Mcp:Habilitado = true.");
         Registrar<AprovacaoOpcoes>(services, configuration, AprovacaoOpcoes.Secao);
         Registrar<SegurancaOpcoes>(services, configuration, SegurancaOpcoes.Secao)
             .Validate(
