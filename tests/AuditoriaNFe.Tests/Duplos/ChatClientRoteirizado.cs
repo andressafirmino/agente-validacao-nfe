@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using AuditoriaNFe.Application.Contratos;
 using Microsoft.Extensions.AI;
 
@@ -59,6 +60,35 @@ public sealed class ChatClientRoteirizado(string modelo = ChatClientRoteirizado.
             CachedInputTokenCount = tokensEntradaCache,
             TotalTokenCount = tokensEntrada + tokensSaida,
         });
+
+    public ChatClientRoteirizado ResponderInvocacao(string nomeFuncao, object argumentos)
+    {
+        var id = Guid.NewGuid().ToString("N");
+        var mapa = JsonSerializer.Deserialize<Dictionary<string, object?>>(JsonSerializer.Serialize(argumentos))
+            ?? new Dictionary<string, object?>();
+        var chamada = new FunctionCallContent(id, nomeFuncao, mapa);
+        _roteiro.Enqueue(_ => Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, [chamada]))
+        {
+            ModelId = modelo,
+            FinishReason = ChatFinishReason.ToolCalls,
+        }));
+        return this;
+    }
+
+    public ChatClientRoteirizado ResponderAposFerramenta(Func<IReadOnlyList<ChatMessage>, string> fabrica)
+    {
+        _roteiro.Enqueue(_ =>
+        {
+            var mensagens = _chamadas.LastOrDefault()?.Mensagens ?? [];
+            var texto = fabrica(mensagens);
+            return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, texto))
+            {
+                ModelId = modelo,
+                FinishReason = ChatFinishReason.Stop,
+            });
+        });
+        return this;
+    }
 
     public ChatClientRoteirizado Lancar(Exception erro)
     {

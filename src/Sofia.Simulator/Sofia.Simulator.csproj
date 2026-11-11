@@ -2,6 +2,16 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <RootNamespace>Sofia.Simulator</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="A2A.V0_3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Exemplos\*.xml" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Exemplos\*.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 
 </Project>

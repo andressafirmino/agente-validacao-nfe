@@ -6,6 +6,10 @@ using AuditoriaNFe.Application.Configuracao;
 using AuditoriaNFe.Application.ContextProviders;
 using AuditoriaNFe.Application.Consumo;
 using AuditoriaNFe.Application.Contratos;
+using AuditoriaNFe.Application.Ferramentas;
+using AuditoriaNFe.Domain.Calculos;
+using AuditoriaNFe.Domain.Rastreabilidade;
+using AuditoriaNFe.Domain.Sessoes;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
@@ -84,7 +88,8 @@ public sealed partial class ValidadorSaidaIa(IOptions<IaOpcoes> ia, ILogger<Vali
             IReadOnlyList<string> problemas = Ler(resposta, out var saida);
             if (saida is not null)
             {
-                problemas = Validar(saida, contexto);
+                var calculos = EscopoFerramentasExecucao.Atual?.Execucao.Calculos ?? contexto.Calculos;
+                problemas = Validar(saida, contexto with { Calculos = calculos });
             }
 
             if (problemas.Count == 0)
@@ -161,6 +166,7 @@ public sealed partial class ValidadorSaidaIa(IOptions<IaOpcoes> ia, ILogger<Vali
         var regras = contexto.Regras.Select(r => r.RegraId).ToHashSet(StringComparer.Ordinal);
         var trechos = contexto.Execucao.Trechos.Select(t => t.ChunkId).ToHashSet(StringComparer.Ordinal);
         var achados = contexto.Execucao.Achados.Select(a => a.Id).ToHashSet();
+        var calculosPorId = contexto.Calculos.ToDictionary(c => c.Id);
 
         for (var i = 0; i < saida.Indicios.Count; i++)
         {
@@ -183,7 +189,7 @@ public sealed partial class ValidadorSaidaIa(IOptions<IaOpcoes> ia, ILogger<Vali
 
             for (var j = 0; j < indicio.Evidencias.Count; j++)
             {
-                ValidarEvidencia(indicio.Evidencias[j], $"{rotulo}.evidencias[{j}]", campos, regras, trechos, problemas);
+                ValidarEvidencia(indicio.Evidencias[j], $"{rotulo}.evidencias[{j}]", campos, regras, trechos, calculosPorId, problemas);
             }
 
             ValidarAchados(indicio.AchadosRelacionados, $"{rotulo}.achadosRelacionados", achados, problemas);
@@ -210,17 +216,107 @@ public sealed partial class ValidadorSaidaIa(IOptions<IaOpcoes> ia, ILogger<Vali
             ValidarValores(recomendacao.ValoresCitados, $"recomendacoes[{i}].valoresCitados", problemas);
         }
 
-        if (saida.Resposta is { } resposta)
+        if (contexto.Tipo == TipoExecucao.Pergunta)
         {
-            if (string.IsNullOrWhiteSpace(resposta.Texto))
+            problemas.AddRange(ValidarRespostaPergunta(saida, campos, calculosPorId));
+        }
+        else if (contexto.Tipo == TipoExecucao.AnaliseComPergunta)
+        {
+            if (saida.Resposta is not null || saida.ForaDeEscopo || saida.InformacaoIndisponivel)
             {
-                problemas.Add("resposta.texto é obrigatório.");
+                problemas.AddRange(ValidarRespostaPergunta(saida, campos, calculosPorId));
+            }
+        }
+        else
+        {
+            if (saida.Resposta is not null)
+            {
+                problemas.Add("resposta deve ser null quando não há pergunta.");
             }
 
-            ValidarValores(resposta.ValoresCitados, "resposta.valoresCitados", problemas);
+            if (saida.ForaDeEscopo || saida.InformacaoIndisponivel)
+            {
+                problemas.Add("foraDeEscopo e informacaoIndisponivel devem ser false em análise de lote.");
+            }
         }
 
         return problemas;
+    }
+
+    private static IEnumerable<string> ValidarRespostaPergunta(
+        ContratoIaV1 saida,
+        Dictionary<string, Dictionary<string, string>> campos,
+        IReadOnlyDictionary<Guid, RegistroCalculo> calculosPorId)
+    {
+        var problemas = new List<string>();
+        if (saida.ForaDeEscopo && saida.InformacaoIndisponivel)
+        {
+            problemas.Add("foraDeEscopo e informacaoIndisponivel não podem ser true juntos.");
+        }
+
+        if (saida.Resposta is not { } resposta)
+        {
+            problemas.Add("resposta é obrigatória quando há pergunta.");
+            return problemas;
+        }
+
+        if (string.IsNullOrWhiteSpace(resposta.Texto))
+        {
+            problemas.Add("resposta.texto é obrigatório.");
+            return problemas;
+        }
+
+        if (saida.ForaDeEscopo || saida.InformacaoIndisponivel)
+        {
+            if (resposta.ValoresCitados.Count > 0 && saida.InformacaoIndisponivel)
+            {
+                problemas.Add("informacaoIndisponivel não pode citar valores financeiros.");
+            }
+
+            return problemas;
+        }
+
+        var valores = resposta.ValoresCitados
+            .Select(v => new ValorCitado(
+                v.Valor,
+                string.IsNullOrWhiteSpace(v.CalculoId) ? null : Guid.TryParse(v.CalculoId, out var id) ? id : null,
+                v.ChaveAcesso,
+                v.Caminho))
+            .ToList();
+        var camposLeitura = campos.ToDictionary(
+            e => e.Key,
+            e => (IReadOnlyDictionary<string, string>)e.Value,
+            StringComparer.Ordinal);
+        problemas.AddRange(VerificadorValoresCitados.Verificar(resposta.Texto, valores, calculosPorId, camposLeitura));
+        ValidarDocumentosExcluidos(resposta, calculosPorId, problemas);
+        return problemas;
+    }
+
+    private static void ValidarDocumentosExcluidos(
+        RespostaIaV1 resposta,
+        IReadOnlyDictionary<Guid, RegistroCalculo> calculos,
+        List<string> problemas)
+    {
+        var idsCalculo = resposta.ValoresCitados
+            .Select(v => v.CalculoId)
+            .Where(id => !string.IsNullOrWhiteSpace(id) && Guid.TryParse(id, out _))
+            .Select(id => Guid.Parse(id!))
+            .Distinct()
+            .ToList();
+        if (idsCalculo.Count == 0)
+        {
+            return;
+        }
+
+        var esperados = idsCalculo
+            .SelectMany(id => calculos.TryGetValue(id, out var registro) ? registro.DocumentosExcluidos : [])
+            .Select(d => (d.ChaveAcesso, Motivo: d.Motivo.ToString()))
+            .ToHashSet();
+        var informados = resposta.DocumentosExcluidos.Select(d => (d.ChaveAcesso, d.Motivo)).ToHashSet();
+        if (!esperados.SetEquals(informados))
+        {
+            problemas.Add("resposta.documentosExcluidos não confere com os cálculos citados.");
+        }
     }
 
     private static List<string> Ler(AgentResponse<ContratoIaV1> resposta, out ContratoIaV1? saida)
@@ -243,6 +339,7 @@ public sealed partial class ValidadorSaidaIa(IOptions<IaOpcoes> ia, ILogger<Vali
         Dictionary<string, Dictionary<string, string>> campos,
         HashSet<string> regras,
         HashSet<string> trechos,
+        IReadOnlyDictionary<Guid, RegistroCalculo> calculos,
         List<string> problemas)
     {
         if (!TiposEvidencia.Contains(evidencia.Tipo))
@@ -277,8 +374,12 @@ public sealed partial class ValidadorSaidaIa(IOptions<IaOpcoes> ia, ILogger<Vali
                 }
 
                 break;
-            default:
-                problemas.Add($"{rotulo}: não há cálculos registrados nesta execução.");
+            case "Calculo":
+                if (evidencia.CalculoId is null || !Guid.TryParse(evidencia.CalculoId, out var id) || !calculos.ContainsKey(id))
+                {
+                    problemas.Add($"{rotulo}: o cálculo citado não existe na execução.");
+                }
+
                 break;
         }
     }

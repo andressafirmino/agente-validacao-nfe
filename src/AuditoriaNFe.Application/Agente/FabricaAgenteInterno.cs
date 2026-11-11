@@ -1,5 +1,6 @@
 using AuditoriaNFe.Application.Configuracao;
 using AuditoriaNFe.Application.ContextProviders;
+using AuditoriaNFe.Application.Ferramentas;
 using AuditoriaNFe.Application.Middleware;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -17,7 +18,9 @@ namespace AuditoriaNFe.Application.Agente;
 /// </summary>
 public sealed class FabricaAgenteInterno(
     IChatClient chatClient,
-    MiddlewareExecucaoAgente middleware,
+    MiddlewareExecucaoAgente middlewareExecucao,
+    MiddlewareFunctionCalling middlewareFerramentas,
+    FerramentasLeitura ferramentas,
     IOptions<HistoricoOpcoes> historico,
     ILoggerFactory logs)
 {
@@ -37,6 +40,11 @@ public sealed class FabricaAgenteInterno(
             provedores.Add(new ContextoUsuarioProvider(contexto.Usuario));
         }
 
+        var funcoes = ferramentas.CriarFuncoes()
+            .Where(f => PoliticaFerramentas.Autorizada(contexto.Tipo, f.Name))
+            .Cast<AITool>()
+            .ToList();
+
         var agente = new ChatClientAgent(
             chatClient,
             new ChatClientAgentOptions
@@ -44,7 +52,7 @@ public sealed class FabricaAgenteInterno(
                 Id = IdAgente,
                 Name = NomeAgente,
                 Description = "Agente interno de auditoria de NF-e modelo 55.",
-                ChatOptions = new ChatOptions { Instructions = InstrucoesAgente.Texto },
+                ChatOptions = new ChatOptions { Instructions = InstrucoesAgente.Texto, Tools = funcoes },
                 AIContextProviders = provedores,
                 ChatHistoryProvider = new InMemoryChatHistoryProvider(new InMemoryChatHistoryProviderOptions
                 {
@@ -57,6 +65,6 @@ public sealed class FabricaAgenteInterno(
                 }),
             },
             logs);
-        return middleware.Aplicar(agente);
+        return middlewareFerramentas.Aplicar(middlewareExecucao.Aplicar(agente));
     }
 }

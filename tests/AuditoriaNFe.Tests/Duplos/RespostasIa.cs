@@ -63,5 +63,67 @@ public static class RespostasIa
         ["calculoId"] = calculoId,
     };
 
+    public static string ComPergunta(
+        Guid calculoId,
+        string valor,
+        string texto,
+        IEnumerable<JsonObject>? documentosExcluidos = null) =>
+        Valida(resposta: new JsonObject
+        {
+            ["texto"] = texto,
+            ["valoresCitados"] = new JsonArray(new JsonObject
+            {
+                ["valor"] = valor,
+                ["calculoId"] = calculoId.ToString("D"),
+                ["chaveAcesso"] = null,
+                ["caminho"] = null,
+            }),
+            ["documentosExcluidos"] = Lista(documentosExcluidos),
+        });
+
+    public static string ComIndisponibilidade(string texto) =>
+        new JsonObject
+        {
+            ["versaoContrato"] = "1.0",
+            ["indicios"] = new JsonArray(),
+            ["ausenciasEvidencia"] = new JsonArray(),
+            ["resposta"] = new JsonObject
+            {
+                ["texto"] = texto,
+                ["valoresCitados"] = new JsonArray(),
+                ["documentosExcluidos"] = new JsonArray(),
+            },
+            ["foraDeEscopo"] = false,
+            ["informacaoIndisponivel"] = true,
+            ["recomendacoes"] = new JsonArray(),
+            ["resumo"] = ResumoPadrao,
+        }.ToJsonString();
+
+    public static string RespostaPerguntaSimples(string texto, IEnumerable<JsonObject>? valoresCitados = null) =>
+        Valida(resposta: new JsonObject
+        {
+            ["texto"] = texto,
+            ["valoresCitados"] = Lista(valoresCitados),
+            ["documentosExcluidos"] = new JsonArray(),
+        });
+
+    public static string ComForaDeEscopo(string texto) =>
+        new JsonObject
+        {
+            ["versaoContrato"] = "1.0",
+            ["indicios"] = new JsonArray(),
+            ["ausenciasEvidencia"] = new JsonArray(),
+            ["resposta"] = new JsonObject
+            {
+                ["texto"] = texto,
+                ["valoresCitados"] = new JsonArray(),
+                ["documentosExcluidos"] = new JsonArray(),
+            },
+            ["foraDeEscopo"] = true,
+            ["informacaoIndisponivel"] = false,
+            ["recomendacoes"] = new JsonArray(),
+            ["resumo"] = ResumoPadrao,
+        }.ToJsonString();
+
     private static JsonArray Lista(IEnumerable<JsonObject>? itens) => new([.. (itens ?? []).Select(i => (JsonNode)i)]);
 }

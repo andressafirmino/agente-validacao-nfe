@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using AuditoriaNFe.Application.Abstracoes;
 using AuditoriaNFe.Application.Agente;
 using AuditoriaNFe.Application.Configuracao;
+using AuditoriaNFe.Application.Ferramentas;
 using AuditoriaNFe.Application.ContextProviders;
 using AuditoriaNFe.Application.Contratos;
 using AuditoriaNFe.Application.Servicos;
@@ -354,9 +355,13 @@ public sealed partial class FluxoNoveEtapas(
     {
         andamento.Iniciar(7, relogio.Agora);
         var inicio = relogio.Agora;
+        var ferramentasEstado = await MontarEstadoFerramentasAsync(estado, cancellationToken);
+        using var escopoFerramentas = EscopoFerramentasExecucao.Iniciar(estado.Execucao, ferramentasEstado);
         var contexto = new ContextoAgenteIa(
             MontarContexto(estado),
             await MontarContextoSessaoAsync(estado, cancellationToken),
+            estado.Execucao.Tipo,
+            estado.Execucao.Calculos,
             await MontarContextoUsuarioAsync(estado.Execucao, cancellationToken));
         var resultado = await validadorSaida.ObterSaidaAsync(fabricaAgente.Criar(contexto), contexto, estado.Sessao.HistoricoAgente, cancellationToken);
         var fim = relogio.Agora;
@@ -509,6 +514,55 @@ public sealed partial class FluxoNoveEtapas(
         }
 
         estado.ResumoIa = saida.Resumo;
+        if (contexto.EhPergunta && saida.Resposta is not null)
+        {
+            estado.Execucao.DefinirRespostaPergunta(MontadorResposta.De(saida));
+        }
+    }
+
+    private async Task<FerramentasEstadoExecucao> MontarEstadoFerramentasAsync(EstadoProcessamento estado, CancellationToken cancellationToken)
+    {
+        var visoes = new List<DocumentoFerramenta>();
+        var persistidos = await documentos.ListarPorSessaoAsync(estado.Sessao.Id, estado.Execucao.ChaveIsolamento, cancellationToken);
+        var porChave = persistidos.ToDictionary(d => d.ChaveAcesso, StringComparer.Ordinal);
+        foreach (var arquivo in estado.Arquivos)
+        {
+            if (arquivo.Identificacao?.ChaveAcesso is not { } chave)
+            {
+                continue;
+            }
+
+            var campos = arquivo.Campos ?? [];
+            if (porChave.TryGetValue(chave, out var existente))
+            {
+                visoes.Add(MontadorEstadoFerramentas.DePersistido(existente, arquivo.Registro));
+            }
+            else
+            {
+                visoes.Add(MontadorEstadoFerramentas.DeArquivo(arquivo.Registro, campos));
+            }
+        }
+
+        foreach (var doc in persistidos)
+        {
+            if (visoes.Any(d => d.ChaveAcesso == doc.ChaveAcesso))
+            {
+                continue;
+            }
+
+            visoes.Add(MontadorEstadoFerramentas.DePersistido(doc));
+        }
+
+        var achados = new List<Achado>(estado.Achados);
+        var anteriores = (await execucoes.ListarPorSessaoAsync(estado.Sessao.Id, estado.Execucao.ChaveIsolamento, cancellationToken))
+            .Where(e => e.Id != estado.Execucao.Id && e.Parecer is not null)
+            .OrderBy(e => e.IniciadaEm);
+        foreach (var exec in anteriores)
+        {
+            achados.AddRange(exec.Parecer!.Achados.Where(a => a.Origem == OrigemAchado.Deterministica));
+        }
+
+        return MontadorEstadoFerramentas.Montar(visoes, achados, estado.Execucao.Calculos.ToList());
     }
 
     private Evidencia Evidencia(EvidenciaIaV1 evidencia, ContextoAgenteIa contexto, EstadoProcessamento estado) => evidencia.Tipo switch
