@@ -12,7 +12,7 @@ public sealed class DescobertaAgente(Uri enderecoAgente, HttpClient http)
             var resolvedor = new A2ACardResolver(enderecoAgente, http);
             return await resolvedor.GetAgentCardAsync(cancellationToken);
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or InvalidOperationException)
+        catch (Exception ex)
         {
             throw new DescobertaAgenteException(
                 $"Falha de descoberta: não foi possível obter o Agent Card em {enderecoAgente}. {ex.Message}",

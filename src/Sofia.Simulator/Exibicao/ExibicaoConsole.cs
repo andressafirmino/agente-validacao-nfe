@@ -31,9 +31,38 @@ public static class ExibicaoConsole
         }
 
         var json = JsonSerializer.Serialize(card, new JsonSerializerOptions { WriteIndented = true });
-        if (json.Contains("idAgente", StringComparison.Ordinal))
+        saida.WriteLine("Limites e extensão SOFIA (trecho do card):");
+        using (var documento = JsonDocument.Parse(json))
         {
-            saida.WriteLine("Extensão SOFIA: idAgente e limites presentes no card.");
+            if (documento.RootElement.TryGetProperty("capabilities", out var capabilities)
+                && capabilities.TryGetProperty("extensions", out var extensions))
+            {
+                foreach (var extensao in extensions.EnumerateArray())
+                {
+                    if (!extensao.TryGetProperty("params", out var parametros))
+                    {
+                        continue;
+                    }
+
+                    if (parametros.TryGetProperty("idAgente", out var idAgente))
+                    {
+                        saida.WriteLine($"  idAgente: {idAgente.GetString()}");
+                    }
+
+                    if (parametros.TryGetProperty("limites", out var limites))
+                    {
+                        if (limites.TryGetProperty("quantidadeDocumentos", out var qtd))
+                        {
+                            saida.WriteLine($"  limite quantidade de documentos: {qtd}");
+                        }
+
+                        if (limites.TryGetProperty("tamanhoTotalBytes", out var bytes))
+                        {
+                            saida.WriteLine($"  limite tamanho total (bytes): {bytes}");
+                        }
+                    }
+                }
+            }
         }
 
         saida.WriteLine();
