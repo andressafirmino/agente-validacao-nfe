@@ -26,7 +26,7 @@ public sealed class McpApiRagIntegracaoTests : IAsyncDisposable
     [Fact]
     public async Task MCP_com_Api_RAG_recupera_trecho_sintetico_na_etapa_5()
     {
-        await _rag.IniciarAsync(Cancelamento);
+        await _rag.IniciarAsync(cancellationToken: Cancelamento);
         _ambiente.ChatClient.Responder(RespostasIa.Valida());
 
         var fabrica = _ambiente.CriarFabrica(configuracoes: new Dictionary<string, string?>
@@ -49,7 +49,7 @@ public sealed class McpApiRagIntegracaoTests : IAsyncDisposable
     [Fact]
     public async Task MCP_com_ferramentas_externas_habilitadas_executa_etapa_6()
     {
-        await _rag.IniciarAsync(Cancelamento);
+        await _rag.IniciarAsync(cancellationToken: Cancelamento);
         _ambiente.ChatClient.Responder(RespostasIa.Valida());
 
         var fabrica = _ambiente.CriarFabrica(configuracoes: new Dictionary<string, string?>

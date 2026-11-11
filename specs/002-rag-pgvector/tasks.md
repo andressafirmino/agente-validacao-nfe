@@ -18,10 +18,10 @@
 
 **Checkpoint**: DbContext aplica migrações ou script; health falha se Postgres indisponível.
 
-- [ ] T204 Criar `src/Api.RAG/Infraestrutura/RagDbContext.cs` + entidades EF conforme `data-model.md` e primeira migração em `src/Api.RAG/Infraestrutura/Migracoes/`
-- [ ] T205 Registrar DbContext, `RagOpcoes` e provedor de embeddings em `ApiRagHosting.cs` / extensões DI
-- [ ] T206 [P] Criar `src/Api.RAG/Endpoints/SaudeRagEndpoints.cs`: `/health/live` (existente) e `/health/ready` com `CanConnect` ao Postgres
-- [ ] T207 [P] Criar `tests/AuditoriaNFe.Tests/Rag/RagPostgresIntegracaoFixture.cs`: Testcontainers + script `03-rag-schema` (reutilizar padrão `AmbienteIntegracao`)
+- [X] T204 Criar `src/Api.RAG/Infraestrutura/RagDbContext.cs` + entidades EF conforme `data-model.md` e primeira migração em `src/Api.RAG/Infraestrutura/Migracoes/`
+- [X] T205 Registrar DbContext, `RagOpcoes` e provedor de embeddings em `ApiRagHosting.cs` / extensões DI
+- [X] T206 [P] Criar `src/Api.RAG/Endpoints/SaudeRagEndpoints.cs`: `/health/live` (existente) e `/health/ready` com `CanConnect` ao Postgres
+- [X] T207 [P] Criar `tests/AuditoriaNFe.Tests/Rag/RagPostgresIntegracaoFixture.cs`: Testcontainers + script `03-rag-schema` (reutilizar padrão `AmbienteIntegracao`)
 
 ## Phase 3: User Story 1 — Ingerir documento (Priority: P1) 🎯 MVP
 

@@ -24,4 +24,8 @@ CREATE SCHEMA IF NOT EXISTS rag AUTHORIZATION :"usuario_app";
 
 GRANT USAGE, CREATE ON SCHEMA rag TO :"usuario_app";
 
+-- O tipo pgvector fica em public; o usuário app precisa resolvê-lo nas migrações EF (ADR-0006).
+GRANT USAGE ON SCHEMA public TO :"usuario_app";
+ALTER ROLE :"usuario_app" IN DATABASE :"DBNAME" SET search_path = consumo, rag, public;
+
 COMMENT ON SCHEMA rag IS 'Base de conhecimento vetorial da Api.RAG (feature 002-rag-pgvector).';
