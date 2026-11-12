@@ -1,0 +1,27 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!--
+    MAAI001: AgentSessionStore e demais APIs experimentais do Microsoft Agent Framework 1.26
+    (research §1, lição V-08). Só nos projetos que usam o store e nos testes.
+  -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'AuditoriaNFe.Application' Or '$(MSBuildProjectName)' == 'AuditoriaNFe.Infrastructure' Or '$(MSBuildProjectName)' == 'AuditoriaNFe.Tests'">
+    <NoWarn>$(NoWarn);MAAI001</NoWarn>
+  </PropertyGroup>
+
+  <!--
+    MEAI001: continuações de resposta do Microsoft.Extensions.AI, marcadas com [Experimental] e
+    expostas pelo hosting A2A 1.26.0-preview.261023.1 (research §1). Só no host.
+  -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Api.Agente'">
+    <NoWarn>$(NoWarn);MEAI001</NoWarn>
+  </PropertyGroup>
+
+</Project>
