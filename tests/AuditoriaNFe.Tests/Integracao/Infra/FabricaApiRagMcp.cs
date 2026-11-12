@@ -21,6 +21,7 @@ public sealed class ServidorApiRagMcp : IAsyncDisposable
         string? connectionStringRag = null,
         string? chaveAdministracao = null,
         Action<IServiceCollection>? personalizarServicos = null,
+        IReadOnlyDictionary<string, string?>? variaveisAmbiente = null,
         CancellationToken cancellationToken = default)
     {
         if (_app is not null)
@@ -38,6 +39,17 @@ public sealed class ServidorApiRagMcp : IAsyncDisposable
         if (chaveAdministracao is not null)
         {
             Environment.SetEnvironmentVariable("Rag__ChaveAdministracao", chaveAdministracao);
+        }
+
+        Environment.SetEnvironmentVariable("Rag__ModoRecuperacao", "Semente");
+        Environment.SetEnvironmentVariable("Rag__PermitirFallbackSemente", "true");
+
+        if (variaveisAmbiente is not null)
+        {
+            foreach (var (chave, valor) in variaveisAmbiente)
+            {
+                Environment.SetEnvironmentVariable(chave, valor);
+            }
         }
 
         _app = ApiRagHosting.CriarAplicacao(

@@ -41,6 +41,7 @@ public static class RagServiceCollectionExtensions
         services.AddSingleton<SegmentadorTexto>();
         services.AddSingleton<ValidadorIngestaoRag>();
         services.AddScoped<ServicoIngestao>();
+        services.AddScoped<ServicoBuscaTrechos>();
         return services;
     }
 }

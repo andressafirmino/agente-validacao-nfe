@@ -34,7 +34,7 @@ public sealed class IngestaoRagIntegracaoTests(RagPostgresIntegracaoFixture ambi
             ambiente.ConnectionString,
             ChaveAdmin,
             ProvedorEmbeddingsDeterministico.Registrar,
-            Cancelamento);
+            cancellationToken: Cancelamento);
     }
 
     public async ValueTask DisposeAsync()

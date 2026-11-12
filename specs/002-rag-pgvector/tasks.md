@@ -52,15 +52,15 @@
 
 ### Tests US2
 
-- [ ] T215 [P] [US2] `tests/AuditoriaNFe.Tests/Rag/BuscaVetorialMcpIntegracaoTests.cs` (Kestrel real + Postgres, padrão `ServidorApiRagMcp`)
-- [ ] T216 [US2] Teste vigência: `dataReferencia` fora do intervalo → lista vazia no MCP
+- [X] T215 [P] [US2] `tests/AuditoriaNFe.Tests/Rag/BuscaVetorialMcpIntegracaoTests.cs` (Kestrel real + Postgres, padrão `ServidorApiRagMcp`)
+- [X] T216 [US2] Teste vigência: `dataReferencia` fora do intervalo → lista vazia no MCP
 
 ### Implementation US2
 
-- [ ] T217 [US2] `src/Api.RAG/Servicos/ServicoBuscaTrechos.cs`: filtro vigência + pgvector + boost regras (research R-05)
-- [ ] T218 [US2] Alterar `FerramentasBaseConhecimento` / substituir uso direto de `CatalogoTrechos` quando `Rag:ModoRecuperacao=Vetorial`
-- [ ] T219 [US2] Fallback para `CatalogoTrechos` quando base vazia e `Rag:PermitirFallbackSemente=true`
-- [ ] T220 [P] [US2] Atualizar `docker-compose.yml` envs `ConnectionStrings__Rag`, `Rag__ChaveAdministracao` para api-rag
+- [X] T217 [US2] `src/Api.RAG/Servicos/ServicoBuscaTrechos.cs`: filtro vigência + pgvector + boost regras (research R-05)
+- [X] T218 [US2] Alterar `FerramentasBaseConhecimento` / substituir uso direto de `CatalogoTrechos` quando `Rag:ModoRecuperacao=Vetorial`
+- [X] T219 [US2] Fallback para `CatalogoTrechos` quando base vazia e `Rag:PermitirFallbackSemente=true`
+- [X] T220 [P] [US2] Atualizar `docker-compose.yml` envs `ConnectionStrings__Rag`, `Rag__ChaveAdministracao` para api-rag
 
 **Checkpoint US2**: etapa 5 do agente `Executada` com MCP após ingestão local.
 

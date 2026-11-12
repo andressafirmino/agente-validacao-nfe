@@ -1,30 +1,51 @@
 using System.ComponentModel;
+using Api.RAG.Configuracao;
 using Api.RAG.Servicos;
+using Microsoft.Extensions.Options;
 using ModelContextProtocol.Server;
 
 namespace Api.RAG.Mcp;
 
 [McpServerToolType]
-public sealed class FerramentasBaseConhecimento(CatalogoTrechos catalogo)
+public sealed class FerramentasBaseConhecimento(
+    CatalogoTrechos catalogo,
+    ServicoBuscaTrechos buscaVetorial,
+    IOptions<RagOpcoes> opcoes)
 {
     [McpServerTool(Name = ConsultaManuaisMcp.NomeFerramenta), Description(
         "Busca trechos de manuais oficiais e notas técnicas vigentes na data de referência da NF-e.")]
-    public RespostaBusca BuscarTrechosManual(
+    public async Task<RespostaBusca> BuscarTrechosManual(
         [Description("Tipo do documento fiscal; use NF-e.")] string tipoDocumento,
         [Description("Modelo do documento; use 55.")] string modelo,
         [Description("Versão do layout; use 4.00.")] string versaoLayout,
         [Description("Data de referência do documento (yyyy-MM-dd).")] string dataReferencia,
         [Description("Texto de consulta montado a partir dos achados; não incluir XML.")] string consulta,
         [Description("Ids de regras do catálogo relacionadas, se houver.")] string[]? regrasRelacionadas,
-        [Description("Quantidade máxima de trechos (1 a 20).")] int quantidadeMaxima) =>
-        catalogo.Buscar(new ParametrosBusca(
+        [Description("Quantidade máxima de trechos (1 a 20).")] int quantidadeMaxima,
+        CancellationToken cancellationToken = default)
+    {
+        var parametros = new ParametrosBusca(
             tipoDocumento,
             modelo,
             versaoLayout,
             dataReferencia,
             consulta,
             regrasRelacionadas,
-            quantidadeMaxima));
+            quantidadeMaxima);
+
+        if (opcoes.Value.ModoRecuperacao != RagOpcoes.ModoRecuperacaoValor.Vetorial)
+        {
+            return catalogo.Buscar(parametros);
+        }
+
+        var vetorial = await buscaVetorial.BuscarAsync(parametros, cancellationToken).ConfigureAwait(false);
+        if (vetorial.Trechos.Count > 0 || !opcoes.Value.PermitirFallbackSemente)
+        {
+            return vetorial;
+        }
+
+        return catalogo.Buscar(parametros);
+    }
 }
 
 /// <summary>Nome compartilhado com o cliente em AuditoriaNFe.Infrastructure.</summary>
