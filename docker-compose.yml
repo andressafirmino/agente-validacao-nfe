@@ -11,8 +11,19 @@ services:
     image: auditoria-nfe-api-rag:local
     container_name: auditoria-nfe-api-rag
     restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Rag: Host=postgres;Port=5432;Database=auditoria_agente;Username=${POSTGRES_APP_USER:?Defina POSTGRES_APP_USER no arquivo .env};Password=${POSTGRES_APP_PASSWORD:?Defina POSTGRES_APP_PASSWORD no arquivo .env}
+      Rag__AplicarMigracoes: "true"
+      Rag__ChaveAdministracao: ${RAG_CHAVE_ADMINISTRACAO:?Defina RAG_CHAVE_ADMINISTRACAO no arquivo .env}
+      Rag__ModoRecuperacao: ${Rag__ModoRecuperacao:-Semente}
+      Rag__PermitirFallbackSemente: ${Rag__PermitirFallbackSemente:-true}
+      OpenAI__ApiKey: ${OpenAI__ApiKey:-}
     ports:
       - "127.0.0.1:5320:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - auditoria-nfe-net
 
