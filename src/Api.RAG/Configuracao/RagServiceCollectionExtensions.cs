@@ -39,6 +39,7 @@ public static class RagServiceCollectionExtensions
 
         services.AdicionarProtecaoAdministracaoRag();
         services.AddSingleton<SegmentadorTexto>();
+        services.AddSingleton<ExtraidorTextoPdf>();
         services.AddSingleton<ValidadorIngestaoRag>();
         services.AddScoped<ServicoIngestao>();
         services.AddScoped<ServicoBuscaTrechos>();

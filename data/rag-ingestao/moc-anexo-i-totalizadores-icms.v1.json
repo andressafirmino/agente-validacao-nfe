@@ -1,0 +1,17 @@
+{
+  "versaoContrato": "1.0",
+  "documentoIdExterno": "MOC-7.0-ANEXO-I-TOTALIZADORES",
+  "titulo": "MOC 7.0 Anexo I — regras de totalização ICMSTot (grupo W)",
+  "tipoDocumento": "NF-e",
+  "modelo": "55",
+  "versaoLayout": "4.00",
+  "versaoDocumento": "7.03",
+  "vigenciaInicio": "2017-12-04",
+  "vigenciaFim": null,
+  "fonte": "MOC 7.0 Anexo I seção 4.2.1 (texto operacional para RAG)",
+  "regrasRelacionadas": [
+    "W03-10", "W04-10", "W04a-10", "W04b-10", "W05-10", "W06-10", "W07-10", "W08-10",
+    "W09-10", "W10-10", "W11-10", "W12-10", "W13-10", "W14-10", "W15-10", "W16-10", "W16a-10"
+  ],
+  "conteudoTexto": "Seção ICMSTot — grupo W02 — NF-e modelo 55 layout 4.00\n\nRegra W03-10: O campo ICMSTot/vBC (id W03) deve ser igual à soma dos valores de base de cálculo vBC (id N15) informados em todos os itens (det). Aplicação facultativa na SEFAZ (rejeição 531). Vigente desde 2017-12-04.\n\nRegra W04-10: O campo ICMSTot/vICMS (id W04) deve ser igual à soma dos valores de ICMS vICMS (id N17) dos itens tributados. Não somar itens com CST 40, CST 41 ou CST 50. Rejeição facultativa 532. Perguntas frequentes citam divergência entre total do ICMS no grupo ICMSTot e a soma das linhas.\n\nRegra W04a-10: ICMSTot/vICMSDeson (W04a) = soma de vICMSDeson (N28a) dos itens.\n\nRegra W05-10: ICMSTot/vBCST (W05) = soma de vBCST (N21).\n\nRegra W06-10: ICMSTot/vST (W06) = soma de vICMSST (N23).\n\nRegra W07-10: ICMSTot/vProd (W07) = soma de vProd (I11) dos itens sujeitos ao ICMS com indTot (I17b) = 1.\n\nRegra W08-10 a W15-10: vFrete (I15), vSeg (I16), vDesc (I17), vII (P04), vIPI (O14), vPIS (Q09), vCOFINS (S11), vOutro (I17a) respectivamente somados nos itens para fechar os totalizadores do grupo ICMSTot.\n\nRegra W16-10: O valor da nota ICMSTot/vNF (id W16) deve respeitar a composição dos totalizadores conforme a versão vigente da regra na data de referência da NF-e. Tolerância de R$ 0,50 (*3) quando aplicável. O total vNF é o campo mais citado em auditoria de fechamento da nota fiscal eletrônica.\n\nRegra W16a-10: vTotTrib (W16a) opcional = soma de vTotTrib (M02) dos itens; ausência vale zero (Lei da Transparência, achado informativo).\n\nInterpretação para consultas por similaridade: utilize os nomes de tags XML (ICMSTot, vICMS, vNF, vProd), identificadores de regra (W04-10, W16-10) e expressões como validação de totalizadores, soma dos itens e NF-e modelo 55."
+}

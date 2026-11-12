@@ -15,7 +15,9 @@ Confirme `api-rag` em `http://127.0.0.1:5320/health/live`.
 
 Após implementar a feature: migrações EF da Api.RAG ou script `infra/postgres/init/03-rag-schema.sql`.
 
-## 3. Ingerir fixture sintética
+## 3. Ingerir base operacional ou fixture
+
+Pacotes JSON prontos: `data/rag-ingestao/` (ver README da pasta). Para teste mínimo, use a fixture:
 
 ```powershell
 $headers = @{ Authorization = "Bearer $env:RAG_ADMIN_KEY" }

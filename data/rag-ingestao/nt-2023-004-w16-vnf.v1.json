@@ -1,0 +1,14 @@
+{
+  "versaoContrato": "1.0",
+  "documentoIdExterno": "NT-2023-004-v1.20-W16",
+  "titulo": "NT 2023.004 v1.20 — composição do valor da NF-e (W16-10)",
+  "tipoDocumento": "NF-e",
+  "modelo": "55",
+  "versaoLayout": "4.00",
+  "versaoDocumento": "1.20",
+  "vigenciaInicio": "2024-10-07",
+  "vigenciaFim": null,
+  "fonte": "NT 2023.004 v1.20 pp. 15-16 (texto operacional para RAG)",
+  "regrasRelacionadas": ["W16-10"],
+  "conteudoTexto": "Nota Técnica 2023.004 — Regra W16-10 — valor total da NF-e\n\nO campo ICMSTot/vNF (identificador W16) representa o valor total da nota fiscal eletrônica. A validação W16-10 verifica se vNF está coerente com a soma dos componentes previstos na versão da regra vigente na data de referência do documento (dhEmi ou dhRecbto conforme FR-010a).\n\nO analista deve confrontar vNF com vProd, frete, seguro, desconto, II, IPI, ICMS, ISSQN e demais componentes aplicáveis à vigência. Divergências superiores à tolerância (*3) de R$ 0,50 configuram achado de severidade alta.\n\nPerguntas típicas: \"Por que o vNF não bate com a soma dos produtos?\", \"O que é a regra W16-10?\", \"Qual tolerância para o total da nota?\" — respondidas com este trecho e citação do chunk na etapa 7."
+}
