@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using AuditoriaNFe.Application.Abstracoes;
 using AuditoriaNFe.Application.Agente;
 using AuditoriaNFe.Application.Configuracao;
@@ -314,6 +315,76 @@ public sealed partial class FluxoNoveEtapas(
         arquivo.Registro.AssociarDocumento(documento.Id);
     }
 
+    private List<ConsultaManuaisPlanejada> MontarConsultasManuais(EstadoProcessamento estado)
+    {
+        var consultas = new List<ConsultaManuaisPlanejada>();
+        var porData = estado.Arquivos
+            .Where(a => a.DataReferencia is not null)
+            .GroupBy(a => a.DataReferencia!.Value)
+            .OrderBy(g => g.Key)
+            .ToList();
+
+        var sufixoPergunta = MontarSufixoPergunta(estado);
+
+        foreach (var grupo in porData)
+        {
+            var nomes = grupo.Select(a => a.Registro.Nome).ToHashSet(StringComparer.Ordinal);
+            var regras = estado.Achados
+                .Where(a => a.RegraId is not null && a.Arquivo is not null && nomes.Contains(a.Arquivo))
+                .Select(a => a.RegraId!)
+                .Distinct(StringComparer.Ordinal)
+                .Order(StringComparer.Ordinal)
+                .ToList();
+            var data = grupo.Key;
+            var consulta = string.Format(
+                CultureInfo.InvariantCulture,
+                "Validação de totalizadores da NF-e modelo 55, versão de layout 4.00, vigente em {0:yyyy-MM-dd}.{1}{2}",
+                data,
+                regras.Count == 0 ? string.Empty : $" Regras relacionadas: {string.Join(", ", regras)}.",
+                sufixoPergunta);
+            consultas.Add(new ConsultaManuaisPlanejada(data, consulta, regras));
+        }
+
+        if (porData.Count > 0 || estado.Execucao.Pergunta is null
+            || !RelacionadaPerguntaManuais(estado.Execucao.Tipo, estado.Execucao.Pergunta))
+        {
+            return consultas;
+        }
+
+        var dataReferencia = DateOnly.FromDateTime(relogio.Agora.UtcDateTime);
+        var pergunta = estado.Execucao.Pergunta.Trim();
+        var consultaLivre = string.Format(
+            CultureInfo.InvariantCulture,
+            "Pergunta sobre manuais e regras de validação da NF-e modelo 55, layout 4.00, vigente em {0:yyyy-MM-dd}: {1}",
+            dataReferencia,
+            pergunta);
+        var regrasPergunta = RegrasCitadasNaPergunta(pergunta);
+        consultas.Add(new ConsultaManuaisPlanejada(dataReferencia, consultaLivre, regrasPergunta));
+        return consultas;
+    }
+
+    private static string MontarSufixoPergunta(EstadoProcessamento estado)
+    {
+        if (estado.Execucao.Tipo != TipoExecucao.AnaliseComPergunta || string.IsNullOrWhiteSpace(estado.Execucao.Pergunta))
+        {
+            return string.Empty;
+        }
+
+        return string.Format(CultureInfo.InvariantCulture, " Pergunta do usuário: {0}", estado.Execucao.Pergunta.Trim());
+    }
+
+    private static bool RelacionadaPerguntaManuais(TipoExecucao tipo, string pergunta) =>
+        tipo is TipoExecucao.Pergunta or TipoExecucao.AnaliseComPergunta
+        && !AvaliadorEscopoPergunta.DeveResponderForaDoEscopoDeterministico(tipo, pergunta);
+
+    private static IReadOnlyList<string> RegrasCitadasNaPergunta(string pergunta) =>
+        RegraCatalogoNaPergunta()
+            .Matches(pergunta)
+            .Select(m => m.Value)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
     private async Task<ResultadoEtapa> ConsultarManuaisAsync(EstadoProcessamento estado, CancellationToken cancellationToken)
     {
         if (!manuais.Habilitada)
@@ -321,8 +392,8 @@ public sealed partial class FluxoNoveEtapas(
             return new ResultadoEtapa(EstadoEtapa.NaoAplicavel, JustificativaMcpDesabilitado);
         }
 
-        var porData = estado.Arquivos.Where(a => a.DataReferencia is not null).GroupBy(a => a.DataReferencia!.Value).OrderBy(g => g.Key).ToList();
-        if (porData.Count == 0)
+        var consultas = MontarConsultasManuais(estado);
+        if (consultas.Count == 0)
         {
             return new ResultadoEtapa(EstadoEtapa.NaoAplicavel, "não aplicável — nenhum documento analisado para consultar");
         }
@@ -330,26 +401,20 @@ public sealed partial class FluxoNoveEtapas(
         var recuperados = 0;
         try
         {
-            foreach (var grupo in porData)
+            foreach (var item in consultas)
             {
-                var nomes = grupo.Select(a => a.Registro.Nome).ToHashSet(StringComparer.Ordinal);
-                var regras = estado.Achados
-                    .Where(a => a.RegraId is not null && a.Arquivo is not null && nomes.Contains(a.Arquivo))
-                    .Select(a => a.RegraId!)
-                    .Distinct(StringComparer.Ordinal)
-                    .Order(StringComparer.Ordinal)
-                    .ToList();
-                var data = grupo.Key;
-                var consulta = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "Validação de totalizadores da NF-e modelo 55, versão de layout 4.00, vigente em {0:yyyy-MM-dd}.{1}",
-                    data,
-                    regras.Count == 0 ? string.Empty : $" Regras relacionadas: {string.Join(", ", regras)}.");
                 var resultado = await manuais.ConsultarAsync(
-                    new ConsultaManuais("NF-e", IdentificacaoDocumento.ModeloSuportado, IdentificacaoDocumento.VersaoSuportada, data, consulta, regras, mcp.Value.QuantidadeMaximaTrechos),
+                    new ConsultaManuais(
+                        "NF-e",
+                        IdentificacaoDocumento.ModeloSuportado,
+                        IdentificacaoDocumento.VersaoSuportada,
+                        item.Data,
+                        item.Consulta,
+                        item.Regras,
+                        mcp.Value.QuantidadeMaximaTrechos),
                     cancellationToken);
 
-                foreach (var trecho in resultado.Trechos.Where(t => Valido(t, data)))
+                foreach (var trecho in resultado.Trechos.Where(t => Valido(t, item.Data)))
                 {
                     recuperados++;
                     if (estado.Trechos.TryAdd(trecho.ChunkId, trecho))
@@ -705,6 +770,11 @@ public sealed partial class FluxoNoveEtapas(
     [LoggerMessage(EventId = 1522, Level = LogLevel.Warning,
         Message = "Consulta de ferramentas externas indisponível ({TipoErro}).")]
     private static partial void LogFalhaFerramentasExternas(ILogger logger, string tipoErro);
+
+    private sealed record ConsultaManuaisPlanejada(DateOnly Data, string Consulta, IReadOnlyList<string> Regras);
+
+    [GeneratedRegex(@"\bW\d{2}(?:[a-z](?:\.\d+)?)?-\d{2}\b", RegexOptions.IgnoreCase)]
+    private static partial Regex RegraCatalogoNaPergunta();
 
     private sealed record ResultadoEtapa(EstadoEtapa Estado, string? Justificativa = null);
 
