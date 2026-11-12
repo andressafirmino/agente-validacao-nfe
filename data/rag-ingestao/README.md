@@ -5,9 +5,10 @@ PostgreSQL (PgVector) via API. Após ingestão, a busca usa somente o que está 
 
 **Pré-requisitos**: `Rag__ModoRecuperacao=Vetorial`, `OpenAI__ApiKey` na Api.RAG, Bearer admin.
 
-**Navegador (produção)**: abra `https://<host>/api/v1/rag/ingestao` (redireciona ao Swagger) ou
-`https://<host>/swagger`, clique **Authorize** e informe o valor de `Rag__ChaveAdministracao` (sem
-escrever `Bearer `). Depois execute **POST /api/v1/rag/ingestao** com o JSON do pacote.
+**Navegador (produção)**: use sempre **`https://`** (não `http://`). Abra
+`https://<host>/api/v1/rag/ingestao` (redireciona ao Swagger) ou `https://<host>/swagger`, clique
+**Authorize** e informe o valor de `Rag__ChaveAdministracao` (sem escrever `Bearer `). No servidor
+OpenAPI escolha **`/`** (mesma origem). Depois **POST /api/v1/rag/ingestao** com o JSON do pacote.
 
 ## Arquivos
 
