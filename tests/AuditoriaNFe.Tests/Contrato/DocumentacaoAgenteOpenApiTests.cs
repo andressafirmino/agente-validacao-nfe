@@ -51,8 +51,7 @@ public sealed class DocumentacaoAgenteOpenApiTests(AmbienteIntegracao ambiente)
             .GetProperty("post");
 
         var descricaoCorpo = operacao.GetProperty("requestBody").GetProperty("description").GetString() ?? string.Empty;
-        Assert.Contains("pergunta", descricaoCorpo, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("arquivos", descricaoCorpo, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Pergunta", descricaoCorpo, StringComparison.OrdinalIgnoreCase);
 
         var propriedades = operacao
             .GetProperty("requestBody")
@@ -66,9 +65,10 @@ public sealed class DocumentacaoAgenteOpenApiTests(AmbienteIntegracao ambiente)
             Assert.True(propriedades.TryGetProperty(campo, out _), $"Campo multipart ausente: {campo}");
         }
 
-        var info = documento.RootElement.GetProperty("info").GetProperty("description").GetString() ?? string.Empty;
-        Assert.Contains("X-Usuario-Id", info, StringComparison.Ordinal);
-        Assert.Contains(DocumentacaoAgenteOpenApiExtensions.ExemploUsuarioId, info, StringComparison.Ordinal);
+        var id = operacao.GetProperty("parameters").EnumerateArray()
+            .Single(p => string.Equals(p.GetProperty("name").GetString(), LeitorIdentificacaoHttp.CabecalhoUsuario, StringComparison.OrdinalIgnoreCase));
+        Assert.Equal("Id do usuário.", id.GetProperty("description").GetString());
+        Assert.Equal(DocumentacaoAgenteOpenApiExtensions.ExemploUsuarioId, id.GetProperty("example").GetString());
     }
 
     private async Task<JsonDocument> ObterOpenApiAsync()

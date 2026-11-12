@@ -56,10 +56,7 @@ public static class DocumentacaoAgenteOpenApiExtensions
             Name = LeitorIdentificacaoHttp.CabecalhoUsuario,
             In = ParameterLocation.Header,
             Required = false,
-            Description =
-                "Identificador opaco do usuário no canal direto (até 128 caracteres `[A-Za-z0-9._:@-]`). "
-                + "Preencha este cabeçalho **ou** `X-Usuario-Nome` (como no A2A/SOFIA) para `usuarioIdentificado` "
-                + "e para gravar/consultar o contexto. Ausente sem nome → `anonimo`.",
+            Description = "Id do usuário.",
             Schema = EsquemaIdentificadorOpenApi(),
             Example = ExemploUsuarioId,
         },
@@ -68,10 +65,7 @@ public static class DocumentacaoAgenteOpenApiExtensions
             Name = LeitorIdentificacaoHttp.CabecalhoUsuarioNome,
             In = ParameterLocation.Header,
             Required = false,
-            Description =
-                "Nome do usuário (como em SOFIA/A2A): gera o mesmo `usuarioId` interno (`nome-sha256:…`). "
-                + "Use quando não enviar `X-Usuario-Id`. Requer o mesmo `X-Chamador-Id` em todas as chamadas "
-                + "da sessão e do contexto.",
+            Description = "Nome do usuário (alternativa ao id, como no A2A).",
             Schema = new OpenApiSchema { Type = JsonSchemaType.String, MaxLength = 200 },
             Example = ExemploUsuarioNome,
         },
@@ -80,9 +74,7 @@ public static class DocumentacaoAgenteOpenApiExtensions
             Name = LeitorIdentificacaoHttp.CabecalhoChamador,
             In = ParameterLocation.Header,
             Required = false,
-            Description =
-                "Sistema chamador (não verificado na v1). Use o mesmo valor em execução, contexto e sessão. "
-                + "Ausente → `nao-informado`.",
+            Description = "Id do chamador.",
             Schema = EsquemaIdentificadorOpenApi(),
             Example = ExemploChamadorId,
         },
@@ -98,9 +90,7 @@ public static class DocumentacaoAgenteOpenApiExtensions
     private static OpenApiRequestBody CorpoMultipartExecucaoOpenApi() => new()
     {
         Required = true,
-        Description =
-            "Envie **pelo menos** `pergunta` **ou** um ou mais `arquivos` XML (ERR-001). "
-            + "Para homologar contexto, informe os cabeçalhos de identificação acima antes de executar.",
+        Description = "Pergunta e/ou XMLs de NF-e (ao menos um).",
         Content = new Dictionary<string, OpenApiMediaType>(StringComparer.Ordinal)
         {
             ["multipart/form-data"] = new()
@@ -114,25 +104,21 @@ public static class DocumentacaoAgenteOpenApiExtensions
                         {
                             Type = JsonSchemaType.String,
                             MaxLength = 4000,
-                            Description = "Pergunta em linguagem natural (opcional se houver arquivos).",
                         },
                         ["arquivos"] = new OpenApiSchema
                         {
                             Type = JsonSchemaType.Array,
-                            Description = "XMLs de NF-e modelo 55 (opcional se houver pergunta).",
                             Items = new OpenApiSchema { Type = JsonSchemaType.String, Format = "binary" },
                         },
                         ["sessaoId"] = new OpenApiSchema
                         {
                             Type = JsonSchemaType.String,
                             Format = "uuid",
-                            Description = "Continuidade de sessão (FR-036).",
                         },
                         ["correlacaoId"] = new OpenApiSchema
                         {
                             Type = JsonSchemaType.String,
                             MaxLength = 128,
-                            Description = "Correlação livre do chamador.",
                         },
                     },
                 },
