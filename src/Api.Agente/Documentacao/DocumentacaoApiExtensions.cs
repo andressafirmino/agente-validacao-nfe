@@ -27,15 +27,6 @@ public static class DocumentacaoApiExtensions
                         + "Multipart de execução: pelo menos pergunta ou XML. SOFIA/A2A não usa estes cabeçalhos.",
                 };
 
-                document.Servers =
-                [
-                    new OpenApiServer
-                    {
-                        Url = "/",
-                        Description = "Mesma origem da barra de endereços (use https:// no Vercel).",
-                    },
-                ];
-
                 return Task.CompletedTask;
             }));
         }
