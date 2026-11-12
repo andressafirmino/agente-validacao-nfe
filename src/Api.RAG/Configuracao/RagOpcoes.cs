@@ -34,6 +34,9 @@ public sealed class RagOpcoes
 
     public bool AplicarMigracoes { get; set; }
 
+    /// <summary>Swagger UI em <c>/swagger</c> e redirecionamento GET de <c>/api/v1/rag/ingestao</c>.</summary>
+    public bool ExporDocumentacaoOpenApi { get; set; } = true;
+
     /// <summary>Modelo OpenAI de embedding (DP-15).</summary>
     [Required]
     public string ModeloEmbedding { get; set; } = "text-embedding-3-small";

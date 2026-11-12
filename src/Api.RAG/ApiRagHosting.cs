@@ -1,4 +1,5 @@
 using Api.RAG.Configuracao;
+using Api.RAG.Documentacao;
 using Api.RAG.Endpoints;
 using Api.RAG.Mcp;
 using Api.RAG.Seguranca;
@@ -24,6 +25,7 @@ public static class ApiRagHosting
         ConfigurarServicos(builder);
         personalizarServicos?.Invoke(builder.Services);
         var app = builder.Build();
+        app.UsarDocumentacaoRag(builder.Configuration);
         app.UsarProtecaoAdministracaoRag();
         MapearEndpoints(app);
         return app;
@@ -32,6 +34,7 @@ public static class ApiRagHosting
     public static void ConfigurarServicos(WebApplicationBuilder builder)
     {
         builder.Services.AdicionarOpcoesRag(builder.Configuration);
+        builder.Services.AdicionarDocumentacaoRag(builder.Configuration);
         builder.Services.AdicionarPersistenciaRag(builder.Configuration);
         builder.Services.AddSingleton<CatalogoTrechos>();
         builder.Services.AddMcpServer()
