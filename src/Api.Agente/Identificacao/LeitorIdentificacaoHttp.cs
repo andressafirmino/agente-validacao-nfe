@@ -7,12 +7,14 @@ using Microsoft.Extensions.Primitives;
 namespace Api.Agente.Identificacao;
 
 /// <summary>
-/// Lê <c>X-Usuario-Id</c> e <c>X-Chamador-Id</c>, opcionais e não verificados na v1 (D-05; FR-052a,
-/// FR-052c). Cabeçalho repetido ou fora do formato invalida a identificação.
+/// Lê <c>X-Usuario-Id</c>, <c>X-Usuario-Nome</c> e <c>X-Chamador-Id</c>, opcionais e não verificados na v1
+/// (D-05; FR-052a, FR-052c). Com id ausente, <c>X-Usuario-Nome</c> usa a mesma regra do A2A. Cabeçalho
+/// repetido ou fora do formato invalida a identificação.
 /// </summary>
 public static class LeitorIdentificacaoHttp
 {
     public const string CabecalhoUsuario = "X-Usuario-Id";
+    public const string CabecalhoUsuarioNome = "X-Usuario-Nome";
     public const string CabecalhoChamador = "X-Chamador-Id";
 
     private const string ChaveItem = "AuditoriaNFe.Identificacao";
@@ -21,9 +23,29 @@ public static class LeitorIdentificacaoHttp
     {
         ArgumentNullException.ThrowIfNull(requisicao);
         identificacao = null;
-        return TentarValorUnico(requisicao.Headers[CabecalhoUsuario], out var usuario)
-            && TentarValorUnico(requisicao.Headers[CabecalhoChamador], out var chamador)
-            && IdentificacaoSolicitante.TentarCriar(usuario, chamador, out identificacao)
+        if (!TentarValorUnico(requisicao.Headers[CabecalhoUsuario], out var usuario)
+            || !TentarValorUnico(requisicao.Headers[CabecalhoUsuarioNome], out var usuarioNome)
+            || !TentarValorUnico(requisicao.Headers[CabecalhoChamador], out var chamador))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(usuario))
+        {
+            return IdentificacaoSolicitante.TentarCriar(usuario, chamador, out identificacao)
+                && identificacao is not null;
+        }
+
+        if (!string.IsNullOrEmpty(usuarioNome))
+        {
+            var chamadorEfetivo = string.IsNullOrEmpty(chamador)
+                ? IdentificacaoSolicitante.ChamadorNaoInformado
+                : chamador;
+            return IdentificacaoSolicitante.TentarCriarPorNome(usuarioNome, chamadorEfetivo, out identificacao)
+                && identificacao is not null;
+        }
+
+        return IdentificacaoSolicitante.TentarCriar(usuario, chamador, out identificacao)
             && identificacao is not null;
     }
 

@@ -1,4 +1,6 @@
 using Api.Agente.Hospedagem;
+using Microsoft.AspNetCore.OpenApi;
+using Microsoft.OpenApi;
 
 namespace Api.Agente.Documentacao;
 
@@ -11,7 +13,22 @@ public static class DocumentacaoApiExtensions
     {
         if (Habilitada(ambiente, modo))
         {
-            services.AddOpenApi();
+            services.AddOpenApi(options => options.AddDocumentTransformer((document, _, _) =>
+            {
+                document.Info = new OpenApiInfo
+                {
+                    Title = "Api.Agente",
+                    Version = "v1",
+                    Description =
+                        "Canal direto de auditoria de NF-e. **Identificação (opcional na v1, obrigatória para testar contexto):** "
+                        + "informe `X-Usuario-Id` *ou* `X-Usuario-Nome` (mesma lógica do A2A) e o mesmo `X-Chamador-Id` em "
+                        + "`POST /execucoes`, `GET /contexto-usuario` e demais rotas `/api/v1`. "
+                        + "Exemplos: `homolog-01` + `teste-vercel`, ou nome `Maria Silva` + chamador. "
+                        + "Multipart de execução: pelo menos pergunta ou XML. SOFIA/A2A não usa estes cabeçalhos.",
+                };
+
+                return Task.CompletedTask;
+            }));
         }
 
         return services;
@@ -22,7 +39,11 @@ public static class DocumentacaoApiExtensions
         if (Habilitada(app.Environment, modo))
         {
             app.MapOpenApi();
-            app.UseSwaggerUI(opcoes => opcoes.SwaggerEndpoint(RotaOpenApi, "Api.Agente v1"));
+            app.UseSwaggerUI(opcoes =>
+            {
+                opcoes.SwaggerEndpoint(RotaOpenApi, "Api.Agente v1");
+                opcoes.DocumentTitle = "Api.Agente — canal direto";
+            });
         }
 
         return app;

@@ -1,3 +1,4 @@
+using Api.Agente.Documentacao;
 using Api.Agente.Erros;
 using Api.Agente.Identificacao;
 using AuditoriaNFe.Application.Abstracoes;
@@ -22,6 +23,7 @@ public static class SessoesEndpoints
         api.MapDelete($"{Rota}/{{sessaoId:guid}}", EncerrarAsync)
             .WithName("encerrarSessao")
             .AddEndpointFilter<FiltroIdentificacao>()
+            .AplicarIdentificacaoOpenApi()
             .Produces(StatusCodes.Status204NoContent)
             .Produces<ErroRespostaV1>(StatusCodes.Status404NotFound);
 
