@@ -1,15 +1,14 @@
-# Api.RAG para o projeto Vercel api-rag-auditoria-nfe.
-# Configure no Vercel: Root Directory = src/Api.RAG e "Include files outside the root directory" = ON
-# (o contexto de build continua a raiz do repositório para os COPY abaixo).
+# Api.RAG — projeto Vercel api-rag-auditoria-nfe (Root Directory = src/Api.RAG).
+# Contexto Docker = esta pasta; props da raiz do repo em monorepo-root/.
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0.403 AS build
 WORKDIR /src
 
-COPY global.json Directory.Build.props Directory.Packages.props ./
-COPY src/Api.RAG/Api.RAG.csproj src/Api.RAG/
-RUN dotnet restore src/Api.RAG/Api.RAG.csproj
+COPY monorepo-root/global.json monorepo-root/Directory.Build.props monorepo-root/Directory.Packages.props ./
+COPY Api.RAG.csproj ./src/Api.RAG/
+COPY . ./src/Api.RAG/
 
-COPY src/Api.RAG/ src/Api.RAG/
+RUN dotnet restore src/Api.RAG/Api.RAG.csproj
 RUN dotnet publish src/Api.RAG/Api.RAG.csproj -c Release -o /app/publish --no-restore -p:UseAppHost=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0.14 AS final
