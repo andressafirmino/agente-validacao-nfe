@@ -13,7 +13,8 @@ public static class IngestaoPdfEndpoints
             .WithName("IngerirPdfRag")
             .WithTags("Ingestao")
             .WithSummary("Ingerir PDF (multipart/form-data)")
-            .AplicarSegurancaBearerAdminOpenApi();
+            .AplicarSegurancaBearerAdminOpenApi()
+            .AplicarCorpoMultipartIngestaoPdfOpenApi();
     }
 
     private static async Task<IResult> IngerirPdfAsync(
