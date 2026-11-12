@@ -20,11 +20,7 @@ public static class DocumentacaoApiExtensions
                     Title = "Api.Agente",
                     Version = "v1",
                     Description =
-                        "Canal direto de auditoria de NF-e. **Identificação (opcional na v1, obrigatória para testar contexto):** "
-                        + "informe `X-Usuario-Id` *ou* `X-Usuario-Nome` (mesma lógica do A2A) e o mesmo `X-Chamador-Id` em "
-                        + "`POST /execucoes`, `GET /contexto-usuario` e demais rotas `/api/v1`. "
-                        + "Exemplos: `homolog-01` + `teste-vercel`, ou nome `Maria Silva` + chamador. "
-                        + "Multipart de execução: pelo menos pergunta ou XML. SOFIA/A2A não usa estes cabeçalhos.",
+                        "Canal direto `/api/v1`. Cabeçalhos: X-Usuario-Id (ou X-Usuario-Nome) e X-Chamador-Id — use o mesmo par em todas as chamadas.",
                 };
 
                 return Task.CompletedTask;
