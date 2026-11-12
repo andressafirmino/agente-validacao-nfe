@@ -13,7 +13,8 @@ public static class IngestaoEndpoints
         app.MapPost("/api/v1/rag/ingestao", IngerirAsync)
             .WithName("IngerirDocumentoRag")
             .WithTags("Ingestao")
-            .WithSummary("Ingerir pacote JSON (contrato ingestao-rag-v1)");
+            .WithSummary("Ingerir pacote JSON (contrato ingestao-rag-v1)")
+            .AplicarSegurancaBearerAdminOpenApi();
 
         if (DocumentacaoRagExtensions.Habilitada(app.Configuration))
         {

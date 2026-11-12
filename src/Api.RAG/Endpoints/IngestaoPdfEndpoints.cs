@@ -1,4 +1,5 @@
 using Api.RAG.Contratos;
+using Api.RAG.Documentacao;
 using Api.RAG.Servicos;
 
 namespace Api.RAG.Endpoints;
@@ -11,7 +12,8 @@ public static class IngestaoPdfEndpoints
             .DisableAntiforgery()
             .WithName("IngerirPdfRag")
             .WithTags("Ingestao")
-            .WithSummary("Ingerir PDF (multipart/form-data)");
+            .WithSummary("Ingerir PDF (multipart/form-data)")
+            .AplicarSegurancaBearerAdminOpenApi();
     }
 
     private static async Task<IResult> IngerirPdfAsync(
