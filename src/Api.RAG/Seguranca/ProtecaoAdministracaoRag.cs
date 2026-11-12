@@ -65,6 +65,12 @@ public sealed class ProtecaoAdministracaoRag(RequestDelegate proximo, ValidadorC
             return proximo(contexto);
         }
 
+        if (HttpMethods.IsGet(contexto.Request.Method)
+            && contexto.Request.Path.Value?.Equals("/api/v1/rag/ingestao", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return proximo(contexto);
+        }
+
         if (!validador.Configurada)
         {
             contexto.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;

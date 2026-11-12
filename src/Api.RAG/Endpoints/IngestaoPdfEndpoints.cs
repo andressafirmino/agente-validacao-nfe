@@ -7,7 +7,11 @@ public static class IngestaoPdfEndpoints
 {
     public static void Mapear(WebApplication app)
     {
-        app.MapPost("/api/v1/rag/ingestao/pdf", IngerirPdfAsync).DisableAntiforgery();
+        app.MapPost("/api/v1/rag/ingestao/pdf", IngerirPdfAsync)
+            .DisableAntiforgery()
+            .WithName("IngerirPdfRag")
+            .WithTags("Ingestao")
+            .WithSummary("Ingerir PDF (multipart/form-data)");
     }
 
     private static async Task<IResult> IngerirPdfAsync(

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Api.RAG.Contratos;
+using Api.RAG.Documentacao;
 using Api.RAG.Servicos;
 namespace Api.RAG.Endpoints;
 
@@ -9,7 +10,20 @@ public static class IngestaoEndpoints
 
     public static void Mapear(WebApplication app)
     {
-        app.MapPost("/api/v1/rag/ingestao", IngerirAsync);
+        app.MapPost("/api/v1/rag/ingestao", IngerirAsync)
+            .WithName("IngerirDocumentoRag")
+            .WithTags("Ingestao")
+            .WithSummary("Ingerir pacote JSON (contrato ingestao-rag-v1)");
+
+        if (DocumentacaoRagExtensions.Habilitada(app.Configuration))
+        {
+            app.MapGet("/api/v1/rag/ingestao", () =>
+                    Results.Redirect($"{DocumentacaoRagExtensions.RotaSwaggerUi}/index.html"))
+                .WithName("NavegarIngestaoRag")
+                .WithTags("Ingestao")
+                .WithSummary("Abre o Swagger UI (GET no navegador)")
+                .ExcludeFromDescription();
+        }
     }
 
     private static async Task<IResult> IngerirAsync(
