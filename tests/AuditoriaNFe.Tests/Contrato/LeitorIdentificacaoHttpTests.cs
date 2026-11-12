@@ -28,6 +28,35 @@ public sealed class LeitorIdentificacaoHttpTests
         Assert.True(identificacao.UsuarioIdentificado);
     }
 
+    [Fact]
+    public void Com_nome_sem_id_usa_hash_como_no_A2A()
+    {
+        const string Nome = "Maria Silva";
+        var requisicao = Requisicao(
+            (LeitorIdentificacaoHttp.CabecalhoUsuarioNome, Nome),
+            (LeitorIdentificacaoHttp.CabecalhoChamador, "teste-vercel"));
+
+        Assert.True(LeitorIdentificacaoHttp.TentarLer(requisicao, out var identificacao));
+        Assert.True(IdentificacaoSolicitante.TentarCriarPorNome(Nome, "teste-vercel", out var esperada));
+        Assert.Equal(esperada.UsuarioId, identificacao.UsuarioId);
+        Assert.Equal(esperada.ChaveIsolamento, identificacao.ChaveIsolamento);
+        Assert.Equal(Nome.Trim(), identificacao.UsuarioNome);
+        Assert.True(identificacao.UsuarioIdentificado);
+    }
+
+    [Fact]
+    public void Id_informado_prevalece_sobre_nome()
+    {
+        var requisicao = Requisicao(
+            (LeitorIdentificacaoHttp.CabecalhoUsuario, "homolog-01"),
+            (LeitorIdentificacaoHttp.CabecalhoUsuarioNome, "Maria Silva"),
+            (LeitorIdentificacaoHttp.CabecalhoChamador, "teste-vercel"));
+
+        Assert.True(LeitorIdentificacaoHttp.TentarLer(requisicao, out var identificacao));
+        Assert.Equal("homolog-01", identificacao.UsuarioId);
+        Assert.Null(identificacao.UsuarioNome);
+    }
+
     [Theory]
     [InlineData("X-Usuario-Id", "usuário com espaço")]
     [InlineData("X-Chamador-Id", "sofia/producao")]

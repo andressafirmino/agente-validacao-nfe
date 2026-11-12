@@ -21,7 +21,11 @@ public static class CorsNavegadorExtensions
         services.AddCors(opcoes => opcoes.AddPolicy(Politica, politica => politica
             .WithOrigins(origens)
             .WithMethods(HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete)
-            .WithHeaders(HeaderNames.ContentType, LeitorIdentificacaoHttp.CabecalhoUsuario, LeitorIdentificacaoHttp.CabecalhoChamador)
+            .WithHeaders(
+                HeaderNames.ContentType,
+                LeitorIdentificacaoHttp.CabecalhoUsuario,
+                LeitorIdentificacaoHttp.CabecalhoUsuarioNome,
+                LeitorIdentificacaoHttp.CabecalhoChamador)
             .WithExposedHeaders(HeaderNames.RetryAfter)
             .SetPreflightMaxAge(CachePreflight)));
 

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Api.Agente.Documentacao;
 using Api.Agente.Erros;
 using Api.Agente.Identificacao;
 using AuditoriaNFe.Application.CasosDeUso;
@@ -24,17 +25,20 @@ public static class ContextoUsuarioEndpoints
         api.MapGet(Rota, ObterAsync)
             .WithName("obterContextoUsuario")
             .AddEndpointFilter<FiltroIdentificacao>()
+            .AplicarIdentificacaoOpenApi()
             .Produces<ContextoUsuarioV1>(StatusCodes.Status200OK)
             .Produces<ErroRespostaV1>(StatusCodes.Status404NotFound);
 
         api.MapDelete(Rota, ExcluirAsync)
             .WithName("excluirContextoUsuario")
             .AddEndpointFilter<FiltroIdentificacao>()
+            .AplicarIdentificacaoOpenApi()
             .Produces(StatusCodes.Status204NoContent);
 
         api.MapPut($"{Rota}/preferencias", DeclararPreferenciasAsync)
             .WithName("declararPreferencias")
             .AddEndpointFilter<FiltroIdentificacao>()
+            .AplicarIdentificacaoOpenApi()
             .Accepts<PreferenciasEntradaV1>("application/json")
             .Produces<ContextoUsuarioV1>(StatusCodes.Status200OK)
             .Produces<ErroRespostaV1>(StatusCodes.Status400BadRequest);
@@ -42,11 +46,13 @@ public static class ContextoUsuarioEndpoints
         api.MapDelete($"{Rota}/cnpjs/{{cnpj}}", RemoverCnpjAsync)
             .WithName("removerCnpjDoContexto")
             .AddEndpointFilter<FiltroIdentificacao>()
+            .AplicarIdentificacaoOpenApi()
             .Produces(StatusCodes.Status204NoContent);
 
         api.MapDelete($"{Rota}/achados-recorrentes/{{chave}}", RemoverAchadoRecorrenteAsync)
             .WithName("removerAchadoRecorrente")
             .AddEndpointFilter<FiltroIdentificacao>()
+            .AplicarIdentificacaoOpenApi()
             .Produces(StatusCodes.Status204NoContent);
 
         return api;

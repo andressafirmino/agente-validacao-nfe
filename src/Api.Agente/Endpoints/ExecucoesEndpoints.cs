@@ -1,3 +1,4 @@
+using Api.Agente.Documentacao;
 using Api.Agente.Erros;
 using Api.Agente.Identificacao;
 using Api.Agente.Limites;
@@ -7,8 +8,6 @@ using AuditoriaNFe.Application.Contratos;
 using AuditoriaNFe.Application.Fluxo;
 using AuditoriaNFe.Domain.Identificacao;
 using AuditoriaNFe.Domain.Sessoes;
-using Microsoft.OpenApi;
-
 namespace Api.Agente.Endpoints;
 
 /// <summary>
@@ -28,11 +27,8 @@ public static class ExecucoesEndpoints
             .DisableAntiforgery()
             .AddEndpointFilter<FiltroIdentificacao>()
             .ComLimitesDeExecucao()
-            .AddOpenApiOperationTransformer((operacao, _, _) =>
-            {
-                operacao.RequestBody = FormularioExecucao.CorpoOpenApi();
-                return Task.CompletedTask;
-            })
+            .AplicarCorpoMultipartExecucaoOpenApi()
+            .AplicarIdentificacaoOpenApi()
             .Produces<EnvelopeV1>(StatusCodes.Status200OK)
             .Produces<EnvelopeV1>(StatusCodes.Status400BadRequest)
             .Produces<EnvelopeV1>(StatusCodes.Status404NotFound)
@@ -44,6 +40,7 @@ public static class ExecucoesEndpoints
         api.MapGet($"{Rota}/{{execucaoId:guid}}", ObterAsync)
             .WithName("obterExecucao")
             .AddEndpointFilter<FiltroIdentificacao>()
+            .AplicarIdentificacaoOpenApi()
             .Produces<EnvelopeV1>(StatusCodes.Status200OK)
             .Produces<ErroRespostaV1>(StatusCodes.Status404NotFound);
 
@@ -142,34 +139,4 @@ public static class ExecucoesEndpoints
             ? MapeamentoErrosHttp.Erro(CodigoErro.SessaoNaoEncontrada, "Execução não encontrada.")
             : Results.Json(MontadorEnvelope.De(execucao), OpcoesJsonContrato.Padrao);
     }
-}
-
-/// <summary>Campos do multipart de <c>criarExecucao</c> no documento OpenAPI; a leitura é feita em <see cref="ExecucoesEndpoints"/>.</summary>
-internal static class FormularioExecucao
-{
-    public static OpenApiRequestBody CorpoOpenApi() => new()
-    {
-        Required = true,
-        Content = new Dictionary<string, OpenApiMediaType>(StringComparer.Ordinal)
-        {
-            ["multipart/form-data"] = new()
-            {
-                Schema = new OpenApiSchema
-                {
-                    Type = JsonSchemaType.Object,
-                    Properties = new Dictionary<string, IOpenApiSchema>(StringComparer.Ordinal)
-                    {
-                        ["pergunta"] = new OpenApiSchema { Type = JsonSchemaType.String },
-                        ["arquivos"] = new OpenApiSchema
-                        {
-                            Type = JsonSchemaType.Array,
-                            Items = new OpenApiSchema { Type = JsonSchemaType.String, Format = "binary" },
-                        },
-                        ["sessaoId"] = new OpenApiSchema { Type = JsonSchemaType.String, Format = "uuid" },
-                        ["correlacaoId"] = new OpenApiSchema { Type = JsonSchemaType.String, MaxLength = 128 },
-                    },
-                },
-            },
-        },
-    };
 }

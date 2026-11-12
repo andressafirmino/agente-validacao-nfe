@@ -26,7 +26,9 @@ public sealed class CorsNavegadorTests
         await using var app = await IniciarAsync(OrigemPermitida);
         using var cliente = app.GetTestClient();
 
-        using var resposta = await cliente.SendAsync(Preflight(RotaApi, OrigemPermitida, "POST", "content-type,x-usuario-id,x-chamador-id"), Cancelamento);
+        using var resposta = await cliente.SendAsync(
+            Preflight(RotaApi, OrigemPermitida, "POST", "content-type,x-usuario-id,x-usuario-nome,x-chamador-id"),
+            Cancelamento);
 
         Assert.Equal(HttpStatusCode.NoContent, resposta.StatusCode);
         Assert.Equal(OrigemPermitida, Cabecalho(resposta, "Access-Control-Allow-Origin"));
@@ -34,6 +36,7 @@ public sealed class CorsNavegadorTests
         var cabecalhos = Cabecalho(resposta, "Access-Control-Allow-Headers")!;
         Assert.Contains("content-type", cabecalhos, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(LeitorIdentificacaoHttp.CabecalhoUsuario, cabecalhos, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(LeitorIdentificacaoHttp.CabecalhoUsuarioNome, cabecalhos, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(LeitorIdentificacaoHttp.CabecalhoChamador, cabecalhos, StringComparison.OrdinalIgnoreCase);
         Assert.Null(Cabecalho(resposta, "Access-Control-Allow-Credentials"));
     }
