@@ -74,6 +74,102 @@ public static class DocumentacaoRagExtensions
             return Task.CompletedTask;
         });
 
+    /// <summary>Corpo multipart no Swagger (POST ingestao/pdf; metadados em <c>api-rag-ingestao.md</c>).</summary>
+    public static TBuilder AplicarCorpoMultipartIngestaoPdfOpenApi<TBuilder>(this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder =>
+        builder.AddOpenApiOperationTransformer((operation, _, _) =>
+        {
+            operation.RequestBody = CorpoMultipartIngestaoPdfOpenApi();
+            return Task.CompletedTask;
+        });
+
+    private static OpenApiRequestBody CorpoMultipartIngestaoPdfOpenApi() => new()
+    {
+        Required = true,
+        Description =
+            "PDF oficial + metadados de ingestão. Obrigatórios: arquivo, documentoIdExterno, titulo, versaoDocumento, vigenciaInicio (yyyy-MM-dd).",
+        Content = new Dictionary<string, OpenApiMediaType>(StringComparer.Ordinal)
+        {
+            ["multipart/form-data"] = new()
+            {
+                Schema = new OpenApiSchema
+                {
+                    Type = JsonSchemaType.Object,
+                    Properties = new Dictionary<string, IOpenApiSchema>(StringComparer.Ordinal)
+                    {
+                        ["arquivo"] = new OpenApiSchema
+                        {
+                            Type = JsonSchemaType.String,
+                            Format = "binary",
+                            Description = "PDF (application/pdf).",
+                        },
+                        ["documentoIdExterno"] = new OpenApiSchema
+                        {
+                            Type = JsonSchemaType.String,
+                            MaxLength = 128,
+                            Description = "Id estável do documento na base.",
+                        },
+                        ["titulo"] = new OpenApiSchema
+                        {
+                            Type = JsonSchemaType.String,
+                            MaxLength = 512,
+                        },
+                        ["versaoDocumento"] = new OpenApiSchema
+                        {
+                            Type = JsonSchemaType.String,
+                            MaxLength = 32,
+                        },
+                        ["vigenciaInicio"] = new OpenApiSchema
+                        {
+                            Type = JsonSchemaType.String,
+                            Format = "date",
+                            Description = "Data inicial de vigência (yyyy-MM-dd).",
+                        },
+                        ["vigenciaFim"] = new OpenApiSchema
+                        {
+                            Type = JsonSchemaType.String,
+                            Format = "date",
+                        },
+                        ["tipoDocumento"] = new OpenApiSchema
+                        {
+                            Type = JsonSchemaType.String,
+                            Description = "Padrão: NF-e.",
+                        },
+                        ["modelo"] = new OpenApiSchema
+                        {
+                            Type = JsonSchemaType.String,
+                            Description = "Padrão: 55.",
+                        },
+                        ["versaoLayout"] = new OpenApiSchema
+                        {
+                            Type = JsonSchemaType.String,
+                            Description = "Padrão: 4.00.",
+                        },
+                        ["regrasRelacionadas"] = new OpenApiSchema
+                        {
+                            Type = JsonSchemaType.String,
+                            Description = "IDs de regra separados por vírgula (ex.: W16-10,W04-10).",
+                        },
+                        ["fonte"] = new OpenApiSchema
+                        {
+                            Type = JsonSchemaType.String,
+                            MaxLength = 256,
+                            Description = "Proveniência; padrão = nome do arquivo.",
+                        },
+                    },
+                    Required = new HashSet<string>(StringComparer.Ordinal)
+                    {
+                        "arquivo",
+                        "documentoIdExterno",
+                        "titulo",
+                        "versaoDocumento",
+                        "vigenciaInicio",
+                    },
+                },
+            },
+        },
+    };
+
     public static WebApplication UsarDocumentacaoRag(this WebApplication app, IConfiguration configuration)
     {
         if (!Habilitada(configuration))
