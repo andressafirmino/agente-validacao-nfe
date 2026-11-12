@@ -39,6 +39,16 @@ public static class DocumentacaoRagExtensions
                     Description = "Chave admin (`Rag__ChaveAdministracao` no Vercel).",
                 };
 
+                // Evita Try-it-out em http:// quando a página está em https:// (CORS / mixed content).
+                document.Servers =
+                [
+                    new OpenApiServer
+                    {
+                        Url = "/",
+                        Description = "Mesma origem da barra de endereços (use https:// no Vercel).",
+                    },
+                ];
+
                 return Task.CompletedTask;
             });
 
