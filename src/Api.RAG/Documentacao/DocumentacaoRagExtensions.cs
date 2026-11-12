@@ -74,6 +74,28 @@ public static class DocumentacaoRagExtensions
             return Task.CompletedTask;
         });
 
+    /// <summary>Corpo JSON obrigatório no Swagger (contrato ingestao-rag-v1).</summary>
+    public static TBuilder AplicarCorpoJsonIngestaoOpenApi<TBuilder>(this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder =>
+        builder.AddOpenApiOperationTransformer((operation, _, _) =>
+        {
+            operation.RequestBody = new OpenApiRequestBody
+            {
+                Required = true,
+                Description =
+                    "Pacote de ingestao-rag-v1 (ex.: arquivos em data/rag-ingestao/*.json do repositorio).",
+                Content = new Dictionary<string, OpenApiMediaType>(StringComparer.Ordinal)
+                {
+                    ["application/json"] = new OpenApiMediaType
+                    {
+                        Schema = new OpenApiSchema { Type = JsonSchemaType.Object },
+                    },
+                },
+            };
+
+            return Task.CompletedTask;
+        });
+
     public static WebApplication UsarDocumentacaoRag(this WebApplication app, IConfiguration configuration)
     {
         if (!Habilitada(configuration))

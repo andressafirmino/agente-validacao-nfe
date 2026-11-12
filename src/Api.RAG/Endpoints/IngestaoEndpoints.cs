@@ -14,7 +14,8 @@ public static class IngestaoEndpoints
             .WithName("IngerirDocumentoRag")
             .WithTags("Ingestao")
             .WithSummary("Ingerir pacote JSON (contrato ingestao-rag-v1)")
-            .AplicarSegurancaBearerAdminOpenApi();
+            .AplicarSegurancaBearerAdminOpenApi()
+            .AplicarCorpoJsonIngestaoOpenApi();
 
         if (DocumentacaoRagExtensions.Habilitada(app.Configuration))
         {
