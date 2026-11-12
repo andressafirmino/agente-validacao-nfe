@@ -1,4 +1,6 @@
 using Api.RAG.Configuracao;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi;
 
 namespace Api.RAG.Documentacao;
@@ -39,7 +41,6 @@ public static class DocumentacaoRagExtensions
                     Description = "Chave admin (`Rag__ChaveAdministracao` no Vercel).",
                 };
 
-                // Evita Try-it-out em http:// quando a página está em https:// (CORS / mixed content).
                 document.Servers =
                 [
                     new OpenApiServer
@@ -49,19 +50,12 @@ public static class DocumentacaoRagExtensions
                     },
                 ];
 
-                return Task.CompletedTask;
-            });
-
-            options.AddOperationTransformer((operation, context, _) =>
-            {
-                if (context.Description.RelativePath?.StartsWith("api/v1/rag", StringComparison.OrdinalIgnoreCase) == true
-                    && string.Equals(context.Description.HttpMethod, "POST", StringComparison.OrdinalIgnoreCase))
+                foreach (var operacao in EnumerarOperacoes(document))
                 {
-                    operation.Security ??= [];
-                    operation.Security.Add(new OpenApiSecurityRequirement
+                    if (RequerSeguridadeAdmin(operacao))
                     {
-                        [new OpenApiSecuritySchemeReference(EsquemaBearer)] = [],
-                    });
+                        AplicarRequisitoBearer(operacao, document);
+                    }
                 }
 
                 return Task.CompletedTask;
@@ -70,6 +64,15 @@ public static class DocumentacaoRagExtensions
 
         return services;
     }
+
+    /// <summary>Marca a operação no OpenAPI com <c>security: [ { "Bearer": [] } ]</c> (Swagger Authorize).</summary>
+    public static TBuilder AplicarSegurancaBearerAdminOpenApi<TBuilder>(this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder =>
+        builder.AddOpenApiOperationTransformer((operation, context, _) =>
+        {
+            AplicarRequisitoBearer(operation, context.Document);
+            return Task.CompletedTask;
+        });
 
     public static WebApplication UsarDocumentacaoRag(this WebApplication app, IConfiguration configuration)
     {
@@ -92,4 +95,52 @@ public static class DocumentacaoRagExtensions
 
     public static bool Habilitada(IConfiguration configuration) =>
         configuration.GetValue($"{RagOpcoes.Secao}:ExporDocumentacaoOpenApi", defaultValue: true);
+
+    private static IEnumerable<OpenApiOperation> EnumerarOperacoes(OpenApiDocument document)
+    {
+        if (document.Paths is null)
+        {
+            yield break;
+        }
+
+        foreach (var caminho in document.Paths.Values)
+        {
+            if (caminho.Operations is null)
+            {
+                continue;
+            }
+
+            foreach (var operacao in caminho.Operations.Values)
+            {
+                yield return operacao;
+            }
+        }
+    }
+
+    private static bool RequerSeguridadeAdmin(OpenApiOperation operacao) =>
+        operacao.Tags?.Any(tag => string.Equals(tag.Name, "Ingestao", StringComparison.OrdinalIgnoreCase)) == true
+        && operacao.OperationId is not "NavegarIngestaoRag";
+
+    private static void AplicarRequisitoBearer(OpenApiOperation operation, OpenApiDocument? document)
+    {
+        if (document is null)
+        {
+            return;
+        }
+
+        document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+        document.Components.SecuritySchemes.TryAdd(EsquemaBearer, new OpenApiSecurityScheme
+        {
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            Description = "Chave admin (`Rag__ChaveAdministracao` no Vercel).",
+        });
+
+        var referencia = new OpenApiSecuritySchemeReference(EsquemaBearer, document, externalResource: null);
+        operation.Security =
+        [
+            new OpenApiSecurityRequirement { [referencia] = [] },
+        ];
+    }
 }
