@@ -43,6 +43,7 @@ public static class ApiRagHosting
     {
         SaudeRagEndpoints.Mapear(app);
         IngestaoEndpoints.Mapear(app);
+        IngestaoPdfEndpoints.Mapear(app);
         app.MapMcp("/mcp");
     }
 }

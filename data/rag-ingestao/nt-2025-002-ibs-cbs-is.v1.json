@@ -1,0 +1,16 @@
+{
+  "versaoContrato": "1.0",
+  "documentoIdExterno": "NT-2025-002-v1.53-IBS-CBS-IS",
+  "titulo": "NT 2025.002 v1.53 — totalizadores IBS, CBS e IS",
+  "tipoDocumento": "NF-e",
+  "modelo": "55",
+  "versaoLayout": "4.00",
+  "versaoDocumento": "1.53",
+  "vigenciaInicio": "2025-11-10",
+  "vigenciaFim": null,
+  "fonte": "NT 2025.002 v1.53 (texto operacional para RAG)",
+  "regrasRelacionadas": [
+    "W31-10", "W31-20", "W34-10", "W34-20", "W35-10", "W47-10", "W53-10", "W56-10", "W56a-10"
+  ],
+  "conteudoTexto": "Nota Técnica 2025.002 — Reforma tributária NF-e — grupos ISTot e IBSCBSTot\n\nAs regras W31 a W59 da validação de totalização passam a considerar IBS, CBS e IS quando os respectivos grupos estiverem preenchidos no XML.\n\nW31-10 e W31-20: coerência entre presença do grupo ISTot e itens com tributação IS (rejeições 1073 e 1117).\n\nW34-10 e W34-20: grupo IBSCBSTot deve existir se e somente se houver itens com grupo IBSCBS (UB12).\n\nW35-10: vBCIBSCBS no total = soma de gIBSCBS/vBC nos itens.\n\nW47-10: vIBS total = soma de gIBSCBS/vIBS nos itens.\n\nW53-10 e W56-10: totais de diferença, devolução e CBS somados a partir dos itens.\n\nW56a-10: vCredPres da CBS = soma nos itens.\n\nPara perguntas do usuário: explique que NF-e com RTC exige totalizadores de IBS/CBS/IS alinhados aos itens; cite tags IBSCBSTot, ISTot, vIBS, vCBS e regras W31, W34, W35, W47 quando a data de referência for a partir de 2025-11-10."
+}

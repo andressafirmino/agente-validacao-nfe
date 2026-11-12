@@ -11,8 +11,9 @@ TestResults/
 .env.*
 !.env.example
 
-# Dados locais do Docker (checkpoints de aprovação e afins)
-/data/
+# Dados locais do Docker (checkpoints de aprovação e afins); pacotes RAG versionados
+/data/*
+!/data/rag-ingestao/
 
 # Vínculo local com o projeto Vercel (D-08)
 .vercel
